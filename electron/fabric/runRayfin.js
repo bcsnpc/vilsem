@@ -91,11 +91,19 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
     log('Skipping vilsem app injection (template-only deploy).')
   } else {
     try {
-      // Build the renderer bundle first so the deploy carries the CURRENT vilsem code.
-      const be = C.cli.buildEmbed
-      log(`$ ${be.cmd} ${be.args.join(' ')}  (building vilsem renderer bundle)`)
-      const built = await runStreamed(be.cmd, be.args, REPO_ROOT, onOutput)
-      if (built.code !== 0) log('⚠ Renderer bundle build returned non-zero — using existing bundle if present.', 'stderr')
+      // In dev, rebuild the renderer bundle so the deploy carries the CURRENT vilsem
+      // code. In a packaged app there's no source tree to build from — the prebuilt
+      // bundle ships inside the installer (asarUnpack), so use it as-is.
+      let packaged = false
+      try { packaged = !!require('electron').app?.isPackaged } catch {}
+      if (!packaged) {
+        const be = C.cli.buildEmbed
+        log(`$ ${be.cmd} ${be.args.join(' ')}  (rebuilding vilsem renderer bundle)`)
+        const built = await runStreamed(be.cmd, be.args, REPO_ROOT, onOutput)
+        if (built.code !== 0) log('⚠ Renderer bundle build returned non-zero — using existing bundle if present.', 'stderr')
+      } else {
+        log('Using the vilsem renderer bundle shipped with the app.')
+      }
 
       injected = injectFullApp(projectDir, spec, { appName, workspaceId: opts.workspaceId, datasetId: opts.datasetId })
       log(`Injected full vilsem app (${injected.visualCount} visuals, ${Math.round(injected.bundleBytes / 1024)}KB renderer, ${injected.written.length} files): ${injected.written.join(', ')}`)

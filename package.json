@@ -14,7 +14,7 @@
     "ui:build": "cd ui && npm run build",
     "standalone:build": "cd ui && npx vite build --config vite.standalone.config.js",
     "fabric-embed:build": "cd ui && npx vite build --config vite.fabric-embed.config.js",
-    "build": "npm run ui:build && electron-builder"
+    "build": "npm run ui:build && npm run fabric-embed:build && electron-builder"
   },
   "build": {
     "appId": "com.semantica.app",
@@ -27,6 +27,8 @@
       "src/**/*",
       "dist/ui/**/*",
       "dist/app/**/*",
+      "dist/fabric-embed/**/*",
+      "pbiviz-semantica-renderer/dist/*.pbiviz",
       "node_modules/**/*",
       "package.json",
       "!.env",
@@ -47,6 +49,10 @@
         "from": "dist/ui",
         "to": "ui"
       }
+    ],
+    "asarUnpack": [
+      "pbiviz-semantica-renderer/dist/**",
+      "dist/fabric-embed/**"
     ],
     "win": {
       "target": [

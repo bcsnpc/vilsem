@@ -40,7 +40,7 @@ function readFlagDefaultOff(name, envVar) {
 }
 
 export const FLAGS = {
-  fabricExport:      readFlagDefaultOff('fabricExport', 'VITE_FEATURE_FABRIC_EXPORT'), // spike, default OFF
+  fabricExport:      readFlag('fabricExport', 'VITE_FEATURE_FABRIC_EXPORT'), // shipped feature, default ON (set VITE_FEATURE_FABRIC_EXPORT=false to hide)
   useEchartsRadar:   readFlag('useEchartsRadar',   'VITE_ECHARTS_RADAR'),
   useEchartsBar:     readFlag('useEchartsBar',     'VITE_ECHARTS_BAR'),
   useEchartsGauge:   true, // hardcoded for Phase 4.2 testing; restore readFlag() before Phase 6

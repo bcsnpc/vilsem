@@ -209,12 +209,12 @@ async function startup() {
   pbiRestylerHandlers.register()
   restylerDirectorHandlers.register()
   customTemplateHandlers.register() // Playground Spike
-  // Deploy-to-Fabric (Rayfin) — spike, ADDITIVE + feature-flagged. Registered only
-  // when FEATURE_FABRIC_EXPORT is on; with the flag off, none of its IPC exists and
-  // behaviour is identical to today. Isolated under electron/fabric/.
-  if (process.env.FEATURE_FABRIC_EXPORT === 'true') {
+  // Deploy-to-Fabric (Rayfin) — shipped feature, isolated under electron/fabric/.
+  // Registered by default; set FEATURE_FABRIC_EXPORT=false to disable. (Deploying to
+  // Fabric requires Node.js + npm on PATH, since it shells out to the Rayfin CLI.)
+  if (process.env.FEATURE_FABRIC_EXPORT !== 'false') {
     try { require('./fabric/ipc').register() }
-    catch (e) { console.error('[fabric] IPC registration failed (spike):', e.message) }
+    catch (e) { console.error('[fabric] IPC registration failed:', e.message) }
   }
 
   ipcMain.handle('minimize-window', () => mainWindow?.minimize())
