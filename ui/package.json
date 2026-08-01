@@ -1,0 +1,37 @@
+{
+  "name": "vilsem-ui",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vite build --config vite.standalone.config.js",
+    "build:app": "vite build",
+    "build:standalone": "vite build --config vite.standalone.config.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@nivo/core": "^0.99.0",
+    "@nivo/sunburst": "^0.99.0",
+    "@nivo/treemap": "^0.99.0",
+    "d3": "^7.9.0",
+    "d3-chord": "^3.0.1",
+    "d3-force": "^3.0.0",
+    "d3-hierarchy": "^3.1.2",
+    "d3-sankey": "^0.12.3",
+    "echarts": "6.0.0",
+    "echarts-for-react": "^3.0.6",
+    "lucide-react": "^1.22.0",
+    "powerbi-client": "^2.23.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-grid-layout": "^2.2.3",
+    "recharts": "^3.8.1",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "vite": "^5.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "powerbi-visuals"
+  ],
+  "rules": {
+    "powerbi-visuals/no-inner-outer-html": "off",
+    "powerbi-visuals/no-http-string": "off"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "id": "range_bar",
+    "name": "Floating Range Bar",
+    "description": "For each category, a bar spanning from a low measure to a high measure. Bind 1 dimension + 2 measures (low, high).",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "📊"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 30 } },
+    "low": { "kind": "measure", "count": 1 },
+    "high": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "barColor", "type": "color", "default": "#58AECB" }
+  ],
+  "transforms": [
+    { "calculate": "high - low", "as": "span" }
+  ],
+  "template": {
+    "grid": { "left": 8, "right": 16, "top": 12, "bottom": 28, "containLabel": true },
+    "tooltip": { "trigger": "axis" },
+    "xAxis": {
+      "type": "category",
+      "data": "$slot.category.categories",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9, "interval": 0, "rotate": 30 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "yAxis": {
+      "type": "value",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "splitLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "series": [
+      { "type": "bar", "stack": "range", "data": "$slot.low.values", "itemStyle": { "color": "transparent" }, "silent": true },
+      { "type": "bar", "stack": "range", "data": "$calc.span.values", "itemStyle": { "color": "$param.barColor", "borderRadius": 3 } }
+    ]
+  },
+  "themeBindings": {}
+}

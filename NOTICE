@@ -1,0 +1,52 @@
+vilsem
+Copyright 2026 Chiranjeevi Bhogireddy
+
+Repository: https://github.com/bcsnpc/semantic_app
+
+This product is licensed under the Apache License, Version 2.0 (see the LICENSE
+file). It includes third-party software under the terms of their respective
+licenses, all of which are permissive (MIT, BSD-2-Clause, BSD-3-Clause, ISC,
+0BSD, Unlicense, or Apache-2.0). The attributions below are required by those
+licenses; the full dependency list and license texts can be regenerated with
+`npx license-checker --production` in the repository root and in `ui/`.
+
+================================================================================
+Apache-2.0 dependencies (NOTICE propagation required by Apache-2.0 section 4d)
+================================================================================
+
+Apache ECharts (echarts)
+Copyright 2017-2025 The Apache Software Foundation
+
+  This product includes software developed at
+  The Apache Software Foundation (https://www.apache.org/).
+
+================================================================================
+Bundled runtime components (desktop installer only)
+================================================================================
+
+The packaged desktop application bundles the following third-party components as
+external resources. They are fetched during setup (they are git-ignored and are
+NOT redistributed in this source repository); this attribution applies to
+binary/installer distributions that include them.
+
+llama.cpp / ggml  —  MIT License
+  Copyright (c) 2023-2024 The ggml authors
+  https://github.com/ggml-org/llama.cpp
+
+LLVM OpenMP runtime (libomp)  —  Apache License 2.0 WITH LLVM-exception
+  Copyright (c) The LLVM Project
+  https://llvm.org  (see https://llvm.org/LICENSE.txt)
+
+Microsoft Phi-4-mini-instruct (GGUF model weights)  —  MIT License
+  Copyright (c) Microsoft Corporation
+  https://huggingface.co/microsoft/Phi-4-mini-instruct
+
+================================================================================
+General
+================================================================================
+
+All other third-party npm dependencies bundled into this product are distributed
+under permissive licenses (MIT, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, or
+Unlicense). Copies of their license texts are available in the corresponding
+packages under node_modules/, and a machine-readable summary can be produced with
+`npx license-checker --production --summary`.

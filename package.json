@@ -1,0 +1,88 @@
+{
+  "name": "vilsem",
+  "version": "1.0.0-beta.1",
+  "description": "vilsem — Microsoft Fabric desktop query engine",
+  "author": "vilsem",
+  "license": "Apache-2.0",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "vitest run",
+    "electron": "node scripts/launch-electron.js",
+    "electron:dev": "concurrently \"npm run ui:dev\" \"wait-on http://localhost:5173 && node scripts/launch-electron.js --dev\"",
+    "ui:dev": "cd ui && npm run dev",
+    "ui:build": "cd ui && npm run build",
+    "standalone:build": "cd ui && npx vite build --config vite.standalone.config.js",
+    "fabric-embed:build": "cd ui && npx vite build --config vite.fabric-embed.config.js",
+    "build": "npm run ui:build && electron-builder"
+  },
+  "build": {
+    "appId": "com.semantica.app",
+    "productName": "vilsem",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "dist/ui/**/*",
+      "dist/app/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "!.env",
+      "!.env.*",
+      "!.auth/**",
+      "!cache/**",
+      "!staging/**",
+      "!*.db",
+      "!Adventure/**",
+      "!**/*.md",
+      "!dist/app/win-unpacked/**",
+      "!dist/app/builder-debug.yml",
+      "!release/**",
+      "!export/**"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/ui",
+        "to": "ui"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "adm-zip": "^0.5.17",
+    "axios": "^1.8.4",
+    "dotenv": "^16.5.0",
+    "fast-xml-parser": "^5.5.10",
+    "fastify": "^5.3.3",
+    "sql.js": "^1.12.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.1.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^41.1.1",
+    "electron-builder": "^25.1.8",
+    "vitest": "^3.1.1",
+    "wait-on": "^8.0.3"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "pbiviz-semantica-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Power BI custom visual that renders Semantica primitives (Phase 5+) or legacy HTML strings (pre-Phase 5). Used by Semantica's Power BI Mode publish flow.",
+  "scripts": {
+    "copy:primitives": "node scripts/copy-primitives.js",
+    "prepackage": "npm run copy:primitives",
+    "prestart": "npm run copy:primitives",
+    "package": "pbiviz package",
+    "start": "pbiviz start",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "echarts": "6.0.0",
+    "powerbi-visuals-api": "~5.3.0"
+  },
+  "devDependencies": {
+    "less": "^4.2.0",
+    "powerbi-visuals-tools": "^5.6.0",
+    "typescript": "^5.3.0"
+  }
+}

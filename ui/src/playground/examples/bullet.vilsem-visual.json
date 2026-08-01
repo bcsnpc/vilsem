@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "id": "bullet",
+    "name": "Bullet",
+    "description": "A single measure (latest value) against a target line and poor/good/max qualitative bands. Bind 1 measure; set target + band params.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🎯"
+  },
+  "slots": {
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "target", "type": "number", "default": 100 },
+    { "name": "poor",   "type": "number", "default": 60 },
+    { "name": "good",   "type": "number", "default": 120 },
+    { "name": "max",    "type": "number", "default": 150 }
+  ],
+  "template": {
+    "grid": { "left": 14, "right": 18, "top": 28, "bottom": 26 },
+    "xAxis": {
+      "type": "value",
+      "min": 0,
+      "max": "$param.max",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "splitLine": { "show": false },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": [" "],
+      "axisTick": { "show": false },
+      "axisLine": { "show": false },
+      "axisLabel": { "show": false }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "data": ["$slot.value.last"],
+        "barWidth": 14,
+        "z": 3,
+        "itemStyle": { "color": "$theme.palette.0" },
+        "markLine": {
+          "symbol": "none",
+          "z": 5,
+          "data": [ { "xAxis": "$param.target" } ],
+          "lineStyle": { "color": "$theme.textPrimary", "width": 2 },
+          "label": { "show": false }
+        },
+        "markArea": {
+          "silent": true,
+          "z": 1,
+          "itemStyle": { "opacity": 0.14 },
+          "data": [
+            [ { "xAxis": 0, "itemStyle": { "color": "#EF4444" } }, { "xAxis": "$param.poor" } ],
+            [ { "xAxis": "$param.poor", "itemStyle": { "color": "#F59E0B" } }, { "xAxis": "$param.good" } ],
+            [ { "xAxis": "$param.good", "itemStyle": { "color": "#22C55E" } }, { "xAxis": "$param.max" } ]
+          ]
+        }
+      }
+    ]
+  },
+  "themeBindings": {
+    "palette": "$theme.palette",
+    "text": "$theme.textPrimary"
+  }
+}

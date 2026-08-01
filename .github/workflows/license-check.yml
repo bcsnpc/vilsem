@@ -1,0 +1,81 @@
+name: License gate
+
+# Fails the build if any PRODUCTION dependency (root package and the ui/ package,
+# which is bundled into the shipped renderer) carries a license that is not on the
+# permissive allow-list below.
+#
+# Why a custom checker instead of `license-checker --onlyAllow`:
+#   Some packages hide a non-permissive license behind metadata the tooling only
+#   *guesses* at. For example mapbox-gl declares "SEE LICENSE IN LICENSE.txt" and
+#   license-checker reports it as "MIT*" (the trailing * = guessed) even though its
+#   LICENSE.txt is the proprietary Mapbox TOS. So we FAIL on any guessed ("*"),
+#   "Custom", "UNKNOWN", or "SEE LICENSE" result and require an exact permissive
+#   SPDX match for everything else.
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  license-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Write the license checker
+        run: |
+          cat > "$RUNNER_TEMP/check-licenses.js" <<'EOF'
+          // Usage: node check-licenses.js <license-checker.json> <scope-label>
+          const fs = require('fs');
+          const [ , , jsonPath, scope ] = process.argv;
+          const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+
+          // Exactly the permissive set approved for this project.
+          const ALLOW = new Set([
+            'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC',
+            '0BSD', 'CC0-1.0', 'Unlicense', 'Python-2.0',
+          ]);
+
+          const bad = [];
+          for (const [pkg, info] of Object.entries(data)) {
+            const raw = Array.isArray(info.licenses) ? info.licenses.join(' AND ') : String(info.licenses || '');
+
+            // Reject anything the tooling could not resolve to a concrete SPDX id.
+            if (/UNKNOWN|Custom|SEE LICENSE|\*/i.test(raw)) { bad.push([pkg, raw]); continue; }
+
+            // Compound expressions: OR -> any part permissive; AND/comma -> all parts.
+            const norm = raw.replace(/[()]/g, '');
+            if (/ OR /.test(norm)) {
+              if (!norm.split(/ OR /).map(s => s.trim()).some(p => ALLOW.has(p))) bad.push([pkg, raw]);
+            } else {
+              const parts = norm.split(/ AND |,/).map(s => s.trim()).filter(Boolean);
+              if (!parts.length || !parts.every(p => ALLOW.has(p))) bad.push([pkg, raw]);
+            }
+          }
+
+          if (bad.length) {
+            console.error(`\n[${scope}] Non-permissive / unverified production licenses:`);
+            for (const [p, l] of bad) console.error(`  - ${p}  =>  ${l}`);
+            console.error(`\nAllowed: ${[...ALLOW].join(', ')}`);
+            process.exit(1);
+          }
+          console.log(`[${scope}] OK — ${Object.keys(data).length} production packages, all permissive.`);
+          EOF
+
+      - name: Check root production licenses
+        run: |
+          npm ci
+          npx --yes license-checker --production --excludePrivatePackages --json > "$RUNNER_TEMP/root.json"
+          node "$RUNNER_TEMP/check-licenses.js" "$RUNNER_TEMP/root.json" root
+
+      - name: Check ui/ production licenses
+        run: |
+          cd ui
+          npm ci
+          npx --yes license-checker --production --excludePrivatePackages --json > "$RUNNER_TEMP/ui.json"
+          node "$RUNNER_TEMP/check-licenses.js" "$RUNNER_TEMP/ui.json" ui

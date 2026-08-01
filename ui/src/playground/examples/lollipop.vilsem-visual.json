@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "id": "lollipop",
+    "name": "Lollipop",
+    "description": "A category ranking as thin stems with a dot at each value. Bind 1 dimension + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🍭"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 30 } },
+    "value":    { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "dotSize", "type": "number", "default": 14 }
+  ],
+  "template": {
+    "grid": { "left": 8, "right": 16, "top": 18, "bottom": 26, "containLabel": true },
+    "xAxis": {
+      "type": "category",
+      "data": "$slot.category.categories",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9, "interval": 0, "overflow": "truncate", "width": 60 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } },
+      "axisTick": { "show": false }
+    },
+    "yAxis": {
+      "type": "value",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "axisLine": { "show": false },
+      "axisTick": { "show": false },
+      "splitLine": { "show": true, "lineStyle": { "color": "$theme.gridStroke", "type": "dashed" } }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "data": "$slot.value.values",
+        "barWidth": 2,
+        "z": 1,
+        "silent": true,
+        "itemStyle": { "color": "$theme.palette.0", "opacity": 0.55 }
+      },
+      {
+        "type": "scatter",
+        "data": "$slot.value.pairs",
+        "symbolSize": "$param.dotSize",
+        "z": 2,
+        "itemStyle": { "color": "$theme.palette.0" },
+        "label": {
+          "show": true,
+          "position": "top",
+          "color": "$theme.textPrimary",
+          "fontSize": 9,
+          "fontWeight": 600,
+          "formatterTemplate": "{value:thousands}"
+        }
+      }
+    ]
+  },
+  "themeBindings": {
+    "palette": "$theme.palette",
+    "text": "$theme.textPrimary"
+  }
+}

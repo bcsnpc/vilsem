@@ -1,0 +1,468 @@
+// Playground Spike — the heart of the spike.
+//
+// instantiateVisual: a SINGLE PURE FUNCTION that turns a `.vilsem-visual`
+// template + normalized rows + param values + theme into a resolved ECharts
+// `option` object (exactly what EChartsCanvas consumes).
+//
+// Declarative only. Templates never carry JavaScript. The one place ECharts
+// needs a function — label/tooltip formatters — is expressed as a whitelisted
+// DSL string (`formatterTemplate`) and the function is built HERE, in our code,
+// from that whitelist. Nothing from the template is ever eval'd.
+//
+// Token grammar (resolved by resolveToken, never eval):
+//   $slot.<name>.categories       category labels for the slot's rows
+//   $slot.<name>.values           primary measure values (numbers)
+//   $slot.<name>.series.<i>       the i-th measure's values (multi-measure slot)
+//   $slot.<name>.pairs            [[cat, val], …] convenience for scatter/lollipop
+//   $param.<name>                 a param value (after defaults + coercion)
+//   $theme.palette / .palette.<i> / .font / .textMuted / .gridStroke / .accent
+//
+// Formatter DSL (only inside a `formatterTemplate` string):
+//   {value} {value:thousands} {value:percent} {name} {seriesName}
+
+import { pal, MULTI_COLORS } from '../appspec/shared/palettes.js'
+
+// ── numeric formatting (deterministic, no Intl dependency) ──────────────────
+function fmtThousands(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return String(v ?? '')
+  const rounded = Math.round(n * 100) / 100
+  const neg = rounded < 0
+  const [intPart, fracRaw] = Math.abs(rounded).toString().split('.')
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return (neg ? '-' : '') + grouped + (fracRaw ? '.' + fracRaw : '')
+}
+function fmtPercent(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return String(v ?? '')
+  const pct = Math.round(n * 1000) / 10
+  return `${pct}%`
+}
+function numberOrNull(v) {
+  if (v == null || v === '') return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
+// ── slot-count helper — how many measure fields a slot consumes ─────────────
+// The current data shape provides at most 3 measures (_val,_val2,_val3), so a
+// range slot shapes for its `max`; the binding panel enforces the `min`.
+export function slotCount(count) {
+  if (count == null) return 1
+  if (typeof count === 'number') return Math.max(1, Math.floor(count))
+  if (typeof count === 'object') return Math.max(1, Math.floor(count.max ?? count.min ?? 1))
+  return 1
+}
+
+// ── shapeValues — the full accessor set for a single numeric array ──────────
+// Shared by measure slots and by `calculate` transform outputs so both expose
+// the same tokens ($…​.values / .pairs / .pairsSwapped / .cells / .pieData / scalars).
+// Min/max date (YYYY-MM-DD) across category labels — ISO dates sort lexically, so
+// string min/max is chronological. Feeds a calendar's `range` so it auto-fits the
+// data instead of a guessed year. [] when there are no date-like categories.
+export function computeDateRange(cats) {
+  const dates = (Array.isArray(cats) ? cats : []).filter(v => typeof v === 'string' && /^\d{4}-\d{2}/.test(v))
+  if (!dates.length) return []
+  let lo = dates[0], hi = dates[0]
+  for (const d of dates) { if (d < lo) lo = d; if (d > hi) hi = d }
+  return [lo.slice(0, 10), hi.slice(0, 10)]
+}
+
+export function shapeValues(primary, cats) {
+  const p = Array.isArray(primary) ? primary : []
+  const c = Array.isArray(cats) ? cats : []
+  const nums = p.filter(v => typeof v === 'number' && Number.isFinite(v))
+  const last = nums.length ? nums[nums.length - 1] : null
+  const first = nums.length ? nums[0] : null
+  const sum = nums.reduce((a, b) => a + b, 0)
+  const avg = nums.length ? sum / nums.length : null
+  const delta = (last != null && first != null) ? last - first : null
+  const deltaPct = (delta != null && first) ? delta / first : null
+  return {
+    values: p,
+    series: [p],
+    categories: c,
+    pairs: p.map((v, i) => [c[i], v]),
+    pairsSwapped: p.map((v, i) => [v, c[i]]),
+    cells: p.map((v, i) => [i, 0, v]),
+    pieData: p.map((v, i) => ({ value: v, name: c[i] })),
+    dateRange: computeDateRange(c),
+    count: 1,
+    last, first, sum, avg,
+    min: nums.length ? Math.min(...nums) : null,
+    max: nums.length ? Math.max(...nums) : null,
+    delta, deltaPct,
+    lastLabel: last != null ? fmtThousands(last) : '',
+    sumLabel: fmtThousands(sum),
+    deltaLabel: delta != null ? fmtThousands(delta) : '',
+    deltaPctLabel: deltaPct != null ? fmtPercent(deltaPct) : '',
+  }
+}
+
+// ── evalExpr — a SAFE arithmetic evaluator (recursive descent, NEVER eval) ──
+// Supports + - * / %, parentheses, unary +/-, numbers, identifiers (from scope),
+// and a whitelist of math functions. Unknown identifiers → 0; divide-by-zero → 0.
+// This is what keeps the `calculate` transform declarative: no JS ever runs.
+const CALC_FUNCS = { abs: Math.abs, min: Math.min, max: Math.max, round: Math.round, floor: Math.floor, ceil: Math.ceil, sqrt: Math.sqrt }
+export function evalExpr(expr, scope = {}) {
+  const src = String(expr == null ? '' : expr)
+  let i = 0
+  const peek = () => src[i]
+  const skipWs = () => { while (i < src.length && /\s/.test(src[i])) i++ }
+  function parseExpr() { return parseAdd() }
+  function parseAdd() {
+    let left = parseMul()
+    for (;;) { skipWs(); const c = peek()
+      if (c === '+' || c === '-') { i++; const r = parseMul(); left = c === '+' ? left + r : left - r } else return left }
+  }
+  function parseMul() {
+    let left = parseUnary()
+    for (;;) { skipWs(); const c = peek()
+      if (c === '*' || c === '/' || c === '%') { i++; const r = parseUnary()
+        left = c === '*' ? left * r : (r === 0 ? 0 : (c === '/' ? left / r : left % r)) } else return left }
+  }
+  function parseUnary() { skipWs(); if (peek() === '-') { i++; return -parseUnary() } if (peek() === '+') { i++; return parseUnary() } return parsePrimary() }
+  function parsePrimary() {
+    skipWs()
+    const c = peek()
+    if (c === '(') { i++; const v = parseExpr(); skipWs(); if (peek() === ')') i++; return v }
+    if (c != null && /[0-9.]/.test(c)) { let n = ''; while (i < src.length && /[0-9.]/.test(src[i])) n += src[i++]; return Number(n) || 0 }
+    if (c != null && /[A-Za-z_]/.test(c)) {
+      let id = ''; while (i < src.length && /[A-Za-z0-9_]/.test(src[i])) id += src[i++]
+      skipWs()
+      if (peek() === '(') {
+        i++; const args = []; skipWs()
+        if (peek() !== ')') { args.push(parseExpr()); skipWs(); while (peek() === ',') { i++; args.push(parseExpr()); skipWs() } }
+        if (peek() === ')') i++
+        const fn = CALC_FUNCS[id]
+        return fn ? (Number(fn(...args)) || 0) : 0
+      }
+      const v = scope[id]
+      return (typeof v === 'number' && Number.isFinite(v)) ? v : 0
+    }
+    i++ // skip an unexpected character
+    return 0
+  }
+  const out = parseExpr()
+  return Number.isFinite(out) ? out : 0
+}
+
+// ── applyTransforms — declarative derived fields (Vega-Lite `calculate` style) ─
+// transforms: [{ calculate: "high - low", as: "span" }] → per-row arrays exposed
+// as $calc.<as>.* (same accessor set as a measure slot). Identifiers in the
+// expression resolve to that row's measure/dim value, params, or an earlier calc.
+export function applyTransforms(transforms, shaped, cats, params) {
+  const calc = {}
+  const warnings = []
+  if (!Array.isArray(transforms) || !transforms.length) return { calc, warnings }
+  const lens = Object.values(shaped).map(s => (Array.isArray(s?.values) ? s.values.length : 0))
+  const rowCount = Math.max(0, ...(cats ? [cats.length] : []), ...lens)
+  for (const t of transforms) {
+    if (!t || t.as == null || t.calculate == null) { warnings.push('transform needs { calculate, as }'); continue }
+    const out = []
+    for (let r = 0; r < rowCount; r++) {
+      const scope = { ...(params || {}) }
+      for (const [name, s] of Object.entries(shaped)) if (Array.isArray(s?.values)) scope[name] = Number(s.values[r]) || 0
+      for (const [name, s] of Object.entries(calc)) scope[name] = Number(s.values[r]) || 0 // chaining
+      out.push(evalExpr(t.calculate, scope))
+    }
+    calc[String(t.as)] = shapeValues(out, cats)
+  }
+  return { calc, warnings }
+}
+
+// ── shapeSlots — map fixed normalized rows onto named template slots ────────
+// rows: [{ _cat, _val, _val2, _val3, ... }]  (from the existing query layer)
+// Measure slots consume _val,_val2,_val3 in declaration order; dimension/time
+// slots consume the single category axis. This is the fixed-row-shape boundary
+// (documented in PLAYGROUND_SPIKE.md §5) — over-declaring measures warns, not breaks.
+export function shapeSlots(rows, slots) {
+  const warnings = []
+  const list = Array.isArray(rows) ? rows : []
+  // Next-D: up to 2 dimensions. The 1st dim/time slot → _cat, the 2nd → _cat2
+  // (both provided by normaliseTableRows when dimensions[] is bound). Measures
+  // read _vals[] first (multi-measure path), falling back to _val/_val2/_val3.
+  const cats1 = list.map(r => (r?._cat != null ? String(r._cat) : ''))
+  const cats2 = list.map(r => (r?._cat2 != null ? String(r._cat2) : ''))
+  const uniq1 = [...new Set(cats1)]
+  const uniq2 = [...new Set(cats2.filter(v => v !== ''))]
+  const measureFields = ['_val', '_val2', '_val3']
+  const measureAt = (r, idx) => (Array.isArray(r?._vals) && r._vals.length > idx)
+    ? numberOrNull(r._vals[idx])
+    : (idx < 3 ? numberOrNull(r?.[measureFields[idx]]) : null)
+
+  let measCursor = 0
+  let dimCursor = 0
+  const shaped = {}
+
+  for (const [name, slot] of Object.entries(slots || {})) {
+    const kind = slot?.kind
+    if (kind === 'measure') {
+      const n = slotCount(slot?.count)
+      const series = []
+      for (let k = 0; k < n; k++) {
+        const idx = measCursor++
+        if (idx >= 3 && !list.some(r => Array.isArray(r?._vals) && r._vals.length > idx)) {
+          warnings.push(`slot "${name}"[${k}]: measure ${idx + 1} exceeds what the bound data provides — bind fewer measures or more fields.`)
+          series.push([])
+          continue
+        }
+        series.push(list.map(r => measureAt(r, idx)))
+      }
+      const primary = series[0] || []
+      // matrix: [xIndex, yIndex, value] triples for a 2-D heatmap (dim1 × dim2).
+      const matrix = list.map((r, i) => [uniq1.indexOf(cats1[i]), Math.max(0, uniq2.indexOf(cats2[i])), primary[i]])
+      shaped[name] = { ...shapeValues(primary, cats1), series, count: series.length, matrix }
+    } else if (kind === 'dimension' || kind === 'time') {
+      const which = dimCursor++
+      const perRow = which === 0 ? cats1 : cats2
+      const uniq = which === 0 ? uniq1 : uniq2
+      // .categories is the UNIQUE axis list (identical to per-row for single-dim
+      // groupBy); .values keeps the per-row labels for pairing.
+      shaped[name] = { categories: uniq, values: perRow, series: [perRow], pairs: [], count: 1, dateRange: computeDateRange(uniq) }
+      const maxCard = slot?.constraints?.maxCardinality
+      if (maxCard != null && uniq.length > maxCard) {
+        warnings.push(`slot "${name}": ${uniq.length} categories exceeds advisory maxCardinality ${maxCard}.`)
+      }
+    } else {
+      warnings.push(`slot "${name}": unknown kind "${kind}" (expected measure|dimension|time).`)
+      shaped[name] = { categories: cats1, values: [], series: [], pairs: [], count: 0 }
+    }
+  }
+  return { shaped, warnings }
+}
+
+// ── resolveParams — merge declared defaults with provided values + coerce ───
+export function resolveParams(paramDefs, provided) {
+  const out = {}
+  for (const p of paramDefs || []) {
+    if (!p?.name) continue
+    const has = provided && Object.prototype.hasOwnProperty.call(provided, p.name)
+    let value = has ? provided[p.name] : p.default
+    if (p.type === 'number' && value != null && value !== '') {
+      const n = Number(value)
+      value = Number.isFinite(n) ? n : (p.default ?? 0)
+    } else if (p.type === 'boolean') {
+      value = Boolean(value)
+    }
+    out[p.name] = value
+  }
+  return out
+}
+
+// ── token resolution ────────────────────────────────────────────────────────
+function getPath(obj, keys) {
+  let node = obj
+  for (const k of keys) {
+    if (node == null) return undefined
+    node = node[k] // string numeric keys index arrays fine ('0' → arr[0])
+  }
+  return node
+}
+
+export function resolveToken(token, ctx) {
+  const path = String(token).slice(1).split('.') // drop leading $
+  const root = path[0]
+  if (root === 'slot') {
+    const slot = ctx.slots?.[path[1]]
+    if (slot === undefined) throw new Error(`unknown slot "${path[1]}" in token "${token}"`)
+    return getPath(slot, path.slice(2))
+  }
+  if (root === 'calc') {
+    const c = ctx.calc?.[path[1]]
+    if (c === undefined) throw new Error(`unknown calc "${path[1]}" in token "${token}" — declare it in template.transforms`)
+    return getPath(c, path.slice(2))
+  }
+  if (root === 'param') return getPath(ctx.params, path.slice(1))
+  if (root === 'theme') return getPath(ctx.theme, path.slice(1))
+  throw new Error(`unknown token root "$${root}" in "${token}" (expected slot|calc|param|theme)`)
+}
+
+// ── whitelist formatter DSL → real function (built in OUR code, no eval) ─────
+export function makeFormatter(tpl) {
+  const template = String(tpl)
+  return function formatter(p) {
+    return template.replace(/\{([^}]+)\}/g, (_, expr) => {
+      const [rawKey, fmt] = expr.split(':')
+      // Accept ECharts' native placeholders as aliases — models reach for them
+      // by instinct: {c}=value, {b}=name/category, {a}=seriesName, {d}=percent (pie share).
+      const key = rawKey === 'c' ? 'value' : rawKey === 'b' ? 'name' : rawKey === 'a' ? 'seriesName'
+        : (rawKey === 'd' || rawKey === 'percent') ? 'percent' : rawKey
+      if (key === 'name') return p?.name ?? ''
+      if (key === 'seriesName') return p?.seriesName ?? ''
+      if (key === 'percent') return p?.percent != null ? String(p.percent) : '' // pie slice share-of-total
+      if (key === 'value') {
+        const v = Array.isArray(p?.value) ? p.value[p.value.length - 1] : p?.value
+        if (fmt === 'thousands') return fmtThousands(v)
+        if (fmt === 'percent') return fmtPercent(v)
+        return v == null ? '' : String(v)
+      }
+      return `{${expr}}` // unknown key → leave literal (never eval)
+    })
+  }
+}
+
+// ── deep walk: replace whole-token strings + convert formatterTemplate keys ──
+export function deepResolve(node, ctx, warnings) {
+  if (typeof node === 'string') {
+    if (node.length > 1 && node[0] === '$') {
+      try {
+        const v = resolveToken(node, ctx)
+        if (v === undefined) { warnings.push(`token "${node}" resolved to undefined`); return null }
+        return v
+      } catch (e) {
+        warnings.push(e.message)
+        return null
+      }
+    }
+    return node
+  }
+  if (Array.isArray(node)) return node.map(n => deepResolve(n, ctx, warnings))
+  if (node && typeof node === 'object') {
+    const out = {}
+    for (const [k, v] of Object.entries(node)) {
+      if (k === 'formatterTemplate' && typeof v === 'string') {
+        out.formatter = makeFormatter(v)
+        continue
+      }
+      out[k] = deepResolve(v, ctx, warnings)
+    }
+    return out
+  }
+  return node
+}
+
+// ── theme context: normalized tokens + palette array the DSL reads ──────────
+export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteOverride) {
+  const p = pal(colorScheme)
+  const base = [p.start, p.mid, ...MULTI_COLORS.filter(c => c !== p.start && c !== p.mid)]
+  // Per-section colours (config.sectionColors) override the scheme palette so each
+  // bar / slice / category can be coloured individually.
+  const override = Array.isArray(paletteOverride) ? paletteOverride.filter(Boolean) : []
+  const palette = override.length ? override : base
+  return {
+    palette,
+    accent: palette[0] || p.start,
+    // Font is customizable per-instance (the inspector's Text tab writes it); the
+    // template consumes it via $theme.font. Falls back to the app's default stack.
+    font: fontFamily ? `${fontFamily}, system-ui, sans-serif` : "'Inter', system-ui, -apple-system, sans-serif",
+    textPrimary: tokens.textPrimary || 'rgba(255,255,255,0.92)',
+    textMuted: tokens.textMuted || 'rgba(255,255,255,0.4)',
+    background: tokens.canvasBg || 'transparent', // models reach for $theme.background
+    gridStroke: tokens.gridStroke || 'rgba(255,255,255,0.035)',
+    gridStrokeOn: tokens.gridStrokeOn || 'rgba(255,255,255,0.08)',
+    axisLine: tokens.axisLine || 'rgba(255,255,255,0.08)',
+  }
+}
+
+// ── the pure entry point ─────────────────────────────────────────────────────
+// { template, rows, params, theme } → { option, warnings }
+export function instantiateVisual({ template, rows = [], params = {}, theme } = {}) {
+  const warnings = []
+  const { shaped, warnings: slotWarns } = shapeSlots(rows, template?.slots || {})
+  warnings.push(...slotWarns)
+  const paramValues = resolveParams(template?.params || [], params)
+  const cats = (Array.isArray(rows) ? rows : []).map(r => (r?._cat != null ? String(r._cat) : ''))
+  const { calc, warnings: tWarns } = applyTransforms(template?.transforms, shaped, cats, paramValues)
+  warnings.push(...tWarns)
+  const ctx = { slots: shaped, calc, params: paramValues, theme: theme || {} }
+  const option = deepResolve(template?.template || {}, ctx, warnings)
+  return { option, warnings }
+}
+
+// ── map a template's params → the inspector's schema-field shape ────────────
+// Lets a custom visual on the canvas be tuned through the SAME schema-driven
+// VisualInspector as a built-in: number→number, color→color, boolean→toggle,
+// select→select, else text. Writes land in visual.config → resolveParams reads them.
+export function paramsToSchema(template) {
+  return (template?.params || []).filter(p => p && p.name).map(p => {
+    const base = { key: p.name, label: p.name, default: p.default, group: 'Custom visual' }
+    switch (p.type) {
+      case 'number':  return { ...base, type: 'number', min: 0, max: 100000, step: 1 }
+      case 'color':   return { ...base, type: 'color' }
+      case 'boolean': return { ...base, type: 'boolean' }
+      case 'select':  return { ...base, type: 'select', options: p.options || [] }
+      default:        return { ...base, type: 'text' }
+    }
+  })
+}
+
+// ── static validation for the playground editor (pure, no rows needed) ──────
+export function collectTokens(node, acc = []) {
+  if (typeof node === 'string') {
+    if (node.length > 1 && node[0] === '$') acc.push(node)
+  } else if (Array.isArray(node)) {
+    node.forEach(n => collectTokens(n, acc))
+  } else if (node && typeof node === 'object') {
+    for (const v of Object.values(node)) collectTokens(v, acc)
+  }
+  return acc
+}
+
+export function validateTemplate(template) {
+  const errors = []
+  const warnings = []
+  if (!template || typeof template !== 'object') { errors.push('template must be a JSON object'); return { errors, warnings } }
+  if (!template.meta || !template.meta.id) errors.push('meta.id is required')
+  if (!template.meta || !template.meta.name) warnings.push('meta.name is recommended')
+
+  const slots = template.slots || {}
+  if (typeof slots !== 'object' || Array.isArray(slots)) errors.push('slots must be an object keyed by slot name')
+  for (const [name, slot] of Object.entries(slots)) {
+    if (!['measure', 'dimension', 'time'].includes(slot?.kind)) {
+      errors.push(`slot "${name}": kind must be measure|dimension|time`)
+    }
+  }
+  const measureSlots = Object.values(slots).filter(s => s?.kind === 'measure')
+  const dimSlots = Object.values(slots).filter(s => s?.kind === 'dimension' || s?.kind === 'time')
+  // Hard row-shape constraints (the fixed {_cat,_val×3} shape). Errors so the
+  // editor lint AND the AI retry loop both reject violations.
+  if (measureSlots.length === 0) {
+    errors.push('at least one measure slot is required — measure-less visuals are unsupported in this build')
+  }
+  if (dimSlots.length > 2) {
+    errors.push(`at most two dimension/time slots are supported (found ${dimSlots.length}); the 1st maps to $slot.<d>.categories, the 2nd to a second axis / heatmap y`)
+  }
+  const totalMeasures = measureSlots.reduce((sum, s) => sum + slotCount(s?.count), 0)
+  if (totalMeasures > 3) {
+    warnings.push(`template declares ${totalMeasures} measures; the current data shape supports at most 3 — extra measures render empty.`)
+  }
+
+  if (!template.template || typeof template.template !== 'object') {
+    errors.push('template.template (the ECharts skeleton) is required')
+  }
+
+  // transforms (optional): each { calculate: <expression string>, as: <name> }.
+  const transformNames = new Set()
+  if (template.transforms != null) {
+    if (!Array.isArray(template.transforms)) {
+      errors.push('template.transforms must be an array of { calculate, as }')
+    } else {
+      for (const t of template.transforms) {
+        if (!t || typeof t.calculate !== 'string' || !t.as) errors.push('each transform needs a string "calculate" and an "as" name')
+        else transformNames.add(String(t.as))
+      }
+    }
+  }
+
+  for (const tok of collectTokens(template.template || {})) {
+    // A token must be a plain dotted path. Reject expressions / ternaries /
+    // arithmetic (the engine never evaluates them — they'd resolve to undefined).
+    if (!/^\$(slot|calc|param|theme)(\.[A-Za-z0-9_]+)+$/.test(tok)) {
+      errors.push(`token "${tok}" is not a plain path — no expressions, comparisons, ternaries, arithmetic, or spaces are allowed. Use $slot.x.y / $calc.x / $param.x / $theme.x, and a visualMap for conditional colour.`)
+      continue
+    }
+    const path = tok.slice(1).split('.')
+    if (path[0] === 'slot') {
+      if (!slots[path[1]]) errors.push(`token "${tok}" references undeclared slot "${path[1]}"`)
+    } else if (path[0] === 'calc') {
+      if (!transformNames.has(path[1])) errors.push(`token "${tok}" references undeclared calc "${path[1]}" — add it to template.transforms`)
+    } else if (path[0] === 'param') {
+      const declared = (template.params || []).some(p => p.name === path[1])
+      if (!declared) warnings.push(`token "${tok}" references undeclared param "${path[1]}"`)
+    } else if (path[0] !== 'theme') {
+      errors.push(`token "${tok}" has unknown root "$${path[0]}" (expected slot|calc|param|theme)`)
+    }
+  }
+  return { errors, warnings }
+}

@@ -1,0 +1,121 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Semantica app-chrome design tokens.
+   Light & airy editorial system. Light is the default; dark via [data-theme].
+   These tokens style the APP CHROME only — the dashboard canvas/charts keep
+   their own tokens in appspec/getThemeTokens.ts (product output, untouched).
+   Switch theme with: document.documentElement.dataset.theme = 'light' | 'dark'
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surfaces & elevation */
+  --surface-base:    #FBFBFD;   /* app background */
+  --surface-raised:  #FFFFFF;   /* cards, panels */
+  --surface-overlay: #FFFFFF;   /* modals, popovers */
+  --surface-sunken:  #F3F4F8;   /* inputs, insets */
+  --surface-hover:   rgba(17, 24, 39, 0.04);
+  --surface-active:  rgba(17, 24, 39, 0.07);
+  --scrim:           rgba(17, 24, 39, 0.36);
+
+  /* Text hierarchy */
+  --text-primary:    #1A1D29;
+  --text-secondary:  #545B6E;
+  --text-muted:      #878D9D;
+  --text-faint:      #B7BCC8;
+  --text-on-accent:  #FFFFFF;
+
+  /* Borders */
+  --border-subtle:   rgba(17, 24, 39, 0.06);
+  --border-default:  rgba(17, 24, 39, 0.10);
+  --border-strong:   rgba(17, 24, 39, 0.16);
+
+  /* Accent (calm periwinkle indigo) */
+  --accent:          #5B5BD6;
+  --accent-hover:    #4B4BC4;
+  --accent-active:   #3F3FB0;
+  --accent-subtle:   #ECEDFB;   /* tinted background */
+  --accent-border:   rgba(91, 91, 214, 0.35);
+  --accent-contrast: #FFFFFF;
+  --accent-canvas:   #14B8A6;   /* teal — product/publish actions */
+  --accent-canvas-hover: #0EA5A4;
+
+  /* Semantic */
+  --success:         #16A34A;  --success-subtle: #DCFCE7;
+  --warning:         #C2780C;  --warning-subtle: #FCEFCD;
+  --danger:          #DC2626;  --danger-subtle:  #FCE3E3;
+  --info:            #2563EB;  --info-subtle:    #DBEAFE;
+
+  /* Radii */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+  --radius-pill: 999px;
+
+  /* Spacing (4px base) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+  /* Shadows (soft / editorial) */
+  --shadow-sm:    0 1px 2px rgba(17,24,39,0.04), 0 1px 3px rgba(17,24,39,0.06);
+  --shadow-md:    0 4px 14px rgba(17,24,39,0.08);
+  --shadow-lg:    0 14px 36px rgba(17,24,39,0.12);
+  --shadow-modal: 0 28px 68px rgba(17,24,39,0.22);
+  --ring-focus:   0 0 0 3px var(--accent-border);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', 'Inter', 'Segoe UI', sans-serif;
+  --font-sans:    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-mono:    'Consolas', 'Menlo', monospace;
+
+  --fs-display: 34px;
+  --fs-h1:      26px;
+  --fs-h2:      20px;
+  --fs-h3:      16px;
+  --fs-body:    14px;
+  --fs-sm:      12px;
+  --fs-caption: 11px;
+  --fs-micro:   10px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+}
+
+:root[data-theme="dark"] {
+  --surface-base:    #0E0F13;
+  --surface-raised:  #16181F;
+  --surface-overlay: #1B1E26;
+  --surface-sunken:  #0A0B0E;
+  --surface-hover:   rgba(255, 255, 255, 0.05);
+  --surface-active:  rgba(255, 255, 255, 0.08);
+  --scrim:           rgba(0, 0, 0, 0.62);
+
+  --text-primary:    rgba(255, 255, 255, 0.92);
+  --text-secondary:  rgba(255, 255, 255, 0.64);
+  --text-muted:      rgba(255, 255, 255, 0.42);
+  --text-faint:      rgba(255, 255, 255, 0.22);
+  --text-on-accent:  #FFFFFF;
+
+  --border-subtle:   rgba(255, 255, 255, 0.06);
+  --border-default:  rgba(255, 255, 255, 0.10);
+  --border-strong:   rgba(255, 255, 255, 0.18);
+
+  --accent:          #818CF8;
+  --accent-hover:    #9AA3FF;
+  --accent-active:   #6E78EA;
+  --accent-subtle:   rgba(129, 140, 248, 0.14);
+  --accent-border:   rgba(129, 140, 248, 0.40);
+  --accent-contrast: #0E0F13;
+
+  --success:         #34D399;  --success-subtle: rgba(52,211,153,0.14);
+  --warning:         #FBBF24;  --warning-subtle: rgba(251,191,36,0.14);
+  --danger:          #F87171;  --danger-subtle:  rgba(248,113,113,0.14);
+  --info:            #60A5FA;  --info-subtle:    rgba(96,165,250,0.14);
+
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:    0 6px 18px rgba(0,0,0,0.45);
+  --shadow-lg:    0 18px 44px rgba(0,0,0,0.55);
+  --shadow-modal: 0 30px 72px rgba(0,0,0,0.65);
+}

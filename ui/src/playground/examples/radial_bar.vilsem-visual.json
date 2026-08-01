@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "id": "radial_bar",
+    "name": "Radial Bar",
+    "description": "Bars arranged around a polar center, one per category, length by a measure. Bind 1 dimension + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "⭕"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 24 } },
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "barWidth", "type": "number", "default": 14 }
+  ],
+  "template": {
+    "polar": { "radius": ["18%", "78%"] },
+    "tooltip": { "trigger": "item" },
+    "angleAxis": {
+      "type": "category",
+      "data": "$slot.category.categories",
+      "startAngle": 90,
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } },
+      "axisTick": { "show": false }
+    },
+    "radiusAxis": {
+      "type": "value",
+      "axisLabel": { "show": false },
+      "axisLine": { "show": false },
+      "splitLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "series": [
+      {
+        "type": "bar",
+        "coordinateSystem": "polar",
+        "colorBy": "data",
+        "data": "$slot.value.values",
+        "barWidth": "$param.barWidth",
+        "label": { "show": true, "position": "middle", "color": "$theme.textPrimary", "fontSize": 9, "formatterTemplate": "{value:thousands}" }
+      }
+    ]
+  },
+  "themeBindings": { "palette": "$theme.palette" }
+}

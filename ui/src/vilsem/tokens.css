@@ -1,0 +1,119 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   vilsem — "Slate Instrument" design tokens (dark-only).
+   Extracted from the interactive prototype (Design mock from markdown/).
+   Direction: cool graphite, engineered, restrained. IBM Plex Sans/Mono.
+   Accent #58AECB is reserved for PRIMARY ACTIONS + SELECTION only.
+   Amber #D9A03C is the DRAFT / PENDING signal only — never decoration.
+
+   Applied incrementally: wrap a migrated screen's root in `.vilsem-root` to
+   re-skin it (and any design-system component inside it) to Slate. Screens not
+   yet migrated keep the previous editorial tokens. When the whole app is
+   migrated, `.vilsem-root` moves to the app root.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Raw Slate palette (primitives; prefer the semantic tokens below) ── */
+  --v-bg-0:        #0E1013;  /* app base / deepest */
+  --v-bg-1:        #12151A;  /* canvas / sunken */
+  --v-bg-2:        #14171C;
+  --v-surface:     #161B22;  /* panels, cards */
+  --v-surface-2:   #181C22;  /* raised */
+  --v-surface-3:   #1B1F25;  /* overlay / hover */
+  --v-surface-4:   #21262E;  /* active / selected row */
+
+  --v-border-subtle: #21262E;
+  --v-border:        #262C36;
+  --v-border-strong: #333B47;
+  --v-border-2:      #3C4552;
+
+  --v-text:        #E8ECF1;  /* primary */
+  --v-text-2:      #C4CBD5;  /* secondary */
+  --v-text-muted:  #8B95A3;
+  --v-text-faint:  #5F6975;
+
+  --v-accent:        #58AECB;  /* primary actions + selection ONLY */
+  --v-accent-hover:  #7FBFD9;
+  --v-accent-quiet:  rgba(88, 174, 203, 0.14);
+  --v-accent-border: rgba(88, 174, 203, 0.40);
+  --v-on-accent:     #0E1013;
+
+  --v-amber:       #D9A03C;  /* DRAFT / pending signal ONLY */
+  --v-amber-quiet: rgba(217, 160, 60, 0.15);
+
+  --v-success:     #57B98A;  --v-success-2: #8FD6B2;
+  --v-danger:      #E0656E;
+  --v-warn:        #D9A03C;
+
+  /* Radii — sharp instrument, not rounded-everything */
+  --v-r-1: 2px;  --v-r: 3px;  --v-r-2: 4px;  --v-r-3: 6px;
+
+  /* Spacing (4px base) */
+  --v-s-1: 4px; --v-s-2: 8px; --v-s-3: 12px; --v-s-4: 16px; --v-s-5: 20px; --v-s-6: 24px; --v-s-8: 32px;
+
+  /* Type */
+  --v-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --v-mono: 'IBM Plex Mono', 'Cascadia Mono', Consolas, monospace;
+  --v-fs-micro: 9px; --v-fs-10: 10px; --v-fs-11: 11px; --v-fs-12: 12px;
+  --v-fs-body:  13px; --v-fs-14: 14px; --v-fs-h3: 15px; --v-fs-h2: 19px; --v-fs-h1: 22px;
+
+  /* Motion */
+  --v-ease: cubic-bezier(0.2, 0, 0, 1);
+  --v-dur:  120ms;
+
+  /* Elevation (subtle — instrument, not floaty) */
+  --v-shadow:       0 2px 8px rgba(0, 0, 0, 0.45);
+  --v-shadow-modal: 0 18px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Map the existing design-system variable names to Slate, scoped. ──
+   Any screen/component wrapped in `.vilsem-root` re-skins to Slate without
+   changing component code (they already read these var names). */
+.vilsem-root {
+  --surface-base:    var(--v-bg-0);
+  --surface-raised:  var(--v-surface);
+  --surface-overlay: var(--v-surface-3);
+  --surface-sunken:  var(--v-bg-1);
+  --surface-hover:   rgba(255, 255, 255, 0.04);
+  --surface-active:  rgba(255, 255, 255, 0.07);
+  --scrim:           rgba(0, 0, 0, 0.6);
+
+  --text-primary:    var(--v-text);
+  --text-secondary:  var(--v-text-2);
+  --text-muted:      var(--v-text-muted);
+  --text-faint:      var(--v-text-faint);
+  --text-on-accent:  var(--v-on-accent);
+
+  --border-subtle:   var(--v-border-subtle);
+  --border-default:  var(--v-border);
+  --border-strong:   var(--v-border-strong);
+
+  --accent:          var(--v-accent);
+  --accent-hover:    var(--v-accent-hover);
+  --accent-active:   var(--v-accent-hover);
+  --accent-subtle:   var(--v-accent-quiet);
+  --accent-border:   var(--v-accent-border);
+  --accent-contrast: var(--v-on-accent);
+  --accent-canvas:   var(--v-accent);
+  --accent-canvas-hover: var(--v-accent-hover);
+
+  --success: var(--v-success);  --success-subtle: rgba(87,185,138,0.14);
+  --warning: var(--v-warn);     --warning-subtle: var(--v-amber-quiet);
+  --danger:  var(--v-danger);   --danger-subtle:  rgba(224,101,110,0.14);
+  --info:    var(--v-accent);   --info-subtle:    var(--v-accent-quiet);
+
+  --radius-xs: 2px; --radius-sm: 2px; --radius-md: 3px; --radius-lg: 4px; --radius-xl: 6px; --radius-pill: 999px;
+
+  --font-display: var(--v-font);
+  --font-sans:    var(--v-font);
+  --font-mono:    var(--v-mono);
+
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:    var(--v-shadow);
+  --shadow-lg:    0 12px 32px rgba(0,0,0,0.55);
+  --shadow-modal: var(--v-shadow-modal);
+  --ring-focus:   0 0 0 2px var(--v-accent-border);
+
+  color: var(--v-text);
+  background: var(--v-bg-0);
+  font-family: var(--v-font);
+}

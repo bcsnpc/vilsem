@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "id": "heatmap_2d",
+    "name": "Heatmap (2D)",
+    "description": "A measure across two dimensions as a coloured grid. Bind 2 dimensions (x, y) + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🟦"
+  },
+  "slots": {
+    "xDim": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 40 } },
+    "yDim": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 40 } },
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "minColor", "type": "color", "default": "#12303A" },
+    { "name": "maxColor", "type": "color", "default": "#58AECB" }
+  ],
+  "template": {
+    "grid": { "left": 8, "right": 8, "top": 12, "bottom": 62, "containLabel": true },
+    "tooltip": { "trigger": "item" },
+    "xAxis": {
+      "type": "category",
+      "data": "$slot.xDim.categories",
+      "splitArea": { "show": true },
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9, "rotate": 40 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": "$slot.yDim.categories",
+      "splitArea": { "show": true },
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "visualMap": {
+      "type": "continuous",
+      "min": "$slot.value.min",
+      "max": "$slot.value.max",
+      "calculable": true,
+      "orient": "horizontal",
+      "left": "center",
+      "bottom": 10,
+      "inRange": { "color": ["$param.minColor", "$param.maxColor"] },
+      "textStyle": { "color": "$theme.textMuted", "fontSize": 9 }
+    },
+    "series": [
+      {
+        "type": "heatmap",
+        "data": "$slot.value.matrix",
+        "label": { "show": false },
+        "itemStyle": { "borderColor": "$theme.background", "borderWidth": 1 }
+      }
+    ]
+  },
+  "themeBindings": {}
+}

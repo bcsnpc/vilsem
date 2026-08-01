@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "id": "pictogram",
+    "name": "Pictogram",
+    "description": "Repeated icons whose count/height encodes a measure per category (isotype). Bind 1 dimension + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "👥"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 12 } },
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "symbol", "type": "string", "default": "circle" }
+  ],
+  "template": {
+    "grid": { "left": 8, "right": 16, "top": 12, "bottom": 26, "containLabel": true },
+    "tooltip": { "trigger": "item" },
+    "xAxis": {
+      "type": "category",
+      "data": "$slot.category.categories",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } },
+      "axisTick": { "show": false }
+    },
+    "yAxis": {
+      "type": "value",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "splitLine": { "show": false }
+    },
+    "series": [
+      {
+        "type": "pictorialBar",
+        "colorBy": "data",
+        "data": "$slot.value.values",
+        "symbol": "$param.symbol",
+        "symbolRepeat": true,
+        "symbolSize": ["60%", "12%"],
+        "symbolClip": true,
+        "label": { "show": true, "position": "top", "color": "$theme.textMuted", "fontSize": 9, "formatterTemplate": "{value:thousands}" }
+      }
+    ]
+  },
+  "themeBindings": { "palette": "$theme.palette" }
+}

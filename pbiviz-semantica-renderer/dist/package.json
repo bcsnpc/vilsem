@@ -1,0 +1,17 @@
+{
+		"version": "4.7.0.0",
+		"author": {"name":"Semantica","email":"support@semantica.app"},
+		"resources": [
+			{
+				"resourceId": "rId0",
+				"sourceType": 5,
+				"file": "resources/semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D.pbiviz.json"
+			}
+		],
+		"visual": {"name":"semanticaRenderer","displayName":"Semantica Renderer","guid":"semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D","visualClassName":"Visual","version":"4.7.0.0","description":"Renders Semantica visuals inside Power BI via the same primitive composition runtime as the Semantica web canvas. v4 adds direct ECharts rendering driven by a primitive spec property; v3 HTML/bar render paths are retained for backward compatibility with reports published pre-v4. v4.1 adds native slope + lollipop rendering and vertical column orientation. v4.7 adds the animated bar race (interaction · playback) with Play/scrub over a time axis.","supportUrl":"https://semantica.app","gitHubUrl":"https://github.com/semantica-app/pbiviz-semantica-renderer"},
+		"metadata": {
+			"pbivizjson": {
+				"resourceId": "rId0"
+			}
+		}
+	}

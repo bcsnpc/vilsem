@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App-chrome design system (dual-theme tokens + components) is imported from
+   main.jsx — CSS @import must precede all other rules, so it can't live here
+   after the @tailwind directives. */
+
+/* ── Brand color tokens ────────────────────────────────── */
+:root {
+  --navy:        #0F2A4A;
+  --navy-light:  #1A3A5C;
+  --blue:        #185FA5;
+  --blue-light:  #E6F1FB;
+  --green:       #1D9E75;
+  --amber:       #BA7517;
+  --red:         #A32D2D;
+  --white:       #FFFFFF;
+  --gray-50:     #F8F9FA;
+  --gray-100:    #F2F2F2;
+  --gray-400:    #9CA3AF;
+  --gray-700:    #374151;
+  --gray-900:    #111827;
+
+  /* Inter is the primary typeface — loaded via Google Fonts <link> in ui/index.html.
+     Must match the font stack used by the PBI Semantica Renderer custom visual
+     (pbiviz-semantica-renderer/style/visual.less) so editor ↔ published report render identically. */
+  --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+/* ── Base ──────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--surface-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Brand utilities ───────────────────────────────────── */
+.bg-navy        { background-color: var(--navy); }
+.bg-navy-light  { background-color: var(--navy-light); }
+.bg-blue        { background-color: var(--blue); }
+.bg-blue-light  { background-color: var(--blue-light); }
+.bg-green       { background-color: var(--green); }
+.bg-page        { background-color: var(--gray-50); }
+
+.text-navy      { color: var(--navy); }
+.text-blue      { color: var(--blue); }
+.text-green     { color: var(--green); }
+.text-amber     { color: var(--amber); }
+.text-red       { color: var(--red); }
+.text-muted     { color: var(--gray-400); }
+.text-body      { color: var(--gray-700); }
+.text-heading   { color: var(--gray-900); }
+
+.border-blue    { border-color: var(--blue); }
+
+/* ── Titlebar drag area ────────────────────────────────── */
+.titlebar-drag  { -webkit-app-region: drag; }
+.no-drag        { -webkit-app-region: no-drag; }
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 3px; }
+
+/* ── Transitions ───────────────────────────────────────── */
+.transition-all { transition: all 0.15s ease; }
+
+/* ── Code blocks ───────────────────────────────────────── */
+.code-block {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Menlo', monospace;
+  font-size: 12px;
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  white-space: pre;
+  line-height: 1.6;
+}
+
+/* ── Spinner ───────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--blue-light);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Pulse dot ─────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }

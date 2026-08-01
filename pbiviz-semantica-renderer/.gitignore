@@ -1,0 +1,9 @@
+.tmp/
+node_modules/
+webpack.statistics*.html
+
+# Phase 5.1: primitives + shared helpers are copied from ui/src/ at build time
+# by scripts/copy-primitives.js. Source of truth lives in ui/src/; the copies
+# in pbiviz/src/ are ignored to prevent stale edits and merge headaches.
+src/primitives/
+src/appspec/

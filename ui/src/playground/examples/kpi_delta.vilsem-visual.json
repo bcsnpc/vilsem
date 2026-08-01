@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "id": "kpi_delta",
+    "name": "KPI + Delta",
+    "description": "The latest value as a big number with the percent change since the first period. Bind 1 measure + a time field.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🔢"
+  },
+  "slots": {
+    "value": { "kind": "measure", "count": 1 },
+    "time": { "kind": "time", "count": 1, "constraints": { "maxCardinality": 400 } }
+  },
+  "params": [
+    { "name": "caption", "type": "string", "default": "since first period" }
+  ],
+  "template": {
+    "graphic": {
+      "elements": [
+        { "type": "text", "left": 18, "top": 16, "style": { "text": "$slot.value.lastLabel", "fill": "$theme.textPrimary", "fontSize": 32, "fontWeight": 700, "fontFamily": "$theme.font" } },
+        { "type": "text", "left": 18, "top": 60, "style": { "text": "$slot.value.deltaPctLabel", "fill": "$theme.accent", "fontSize": 15, "fontWeight": 600, "fontFamily": "$theme.font" } },
+        { "type": "text", "left": 78, "top": 62, "style": { "text": "$param.caption", "fill": "$theme.textMuted", "fontSize": 11, "fontFamily": "$theme.font" } }
+      ]
+    }
+  },
+  "themeBindings": {}
+}

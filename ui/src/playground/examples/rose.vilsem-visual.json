@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "id": "rose",
+    "name": "Nightingale Rose",
+    "description": "Polar petals, one per category, area sized by a measure. Bind 1 dimension + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🌹"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 16 } },
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "innerRadius", "type": "string", "default": "18%" },
+    { "name": "outerRadius", "type": "string", "default": "80%" }
+  ],
+  "template": {
+    "tooltip": { "trigger": "item", "formatterTemplate": "{name}: {d}%" },
+    "legend": { "type": "scroll", "bottom": 0, "textStyle": { "color": "$theme.textMuted", "fontSize": 10 } },
+    "series": [
+      {
+        "type": "pie",
+        "roseType": "area",
+        "radius": ["$param.innerRadius", "$param.outerRadius"],
+        "center": ["50%", "46%"],
+        "data": "$slot.value.pieData",
+        "itemStyle": { "borderColor": "$theme.background", "borderWidth": 1 },
+        "label": { "color": "$theme.textPrimary", "fontSize": 10, "formatterTemplate": "{name}: {d}%" }
+      }
+    ]
+  },
+  "themeBindings": { "palette": "$theme.palette" }
+}

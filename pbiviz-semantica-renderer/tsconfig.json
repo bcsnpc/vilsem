@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "target": "es2017",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "lib": ["es2017", "dom"],
+    "sourceMap": true,
+    "declaration": false,
+    "experimentalDecorators": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "rootDir": "./",
+    "outDir": "./.tmp/build/"
+  },
+  "files": [
+    "./src/visual.ts"
+  ]
+}

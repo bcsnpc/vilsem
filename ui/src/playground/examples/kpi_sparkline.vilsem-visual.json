@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "id": "kpi_sparkline",
+    "name": "KPI + Sparkline",
+    "description": "Latest value as a big number with a trend sparkline underneath. Bind 1 measure + a time field.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "📈"
+  },
+  "slots": {
+    "value": { "kind": "measure", "count": 1 },
+    "time":  { "kind": "time", "count": 1, "constraints": { "maxCardinality": 400 } }
+  },
+  "params": [
+    { "name": "caption", "type": "string", "default": "vs. period" }
+  ],
+  "template": {
+    "grid": { "left": 0, "right": 0, "top": "60%", "bottom": 4 },
+    "title": {
+      "text": "$slot.value.lastLabel",
+      "subtext": "$param.caption",
+      "left": 16,
+      "top": 14,
+      "textStyle": { "fontSize": 30, "fontWeight": 700, "color": "$theme.textPrimary", "fontFamily": "$theme.font" },
+      "subtextStyle": { "fontSize": 11, "color": "$theme.textMuted", "fontFamily": "$theme.font" }
+    },
+    "xAxis": { "type": "category", "data": "$slot.time.categories", "show": false, "boundaryGap": false },
+    "yAxis": { "type": "value", "show": false, "scale": true },
+    "tooltip": { "trigger": "axis" },
+    "series": [
+      {
+        "type": "line",
+        "data": "$slot.value.values",
+        "smooth": true,
+        "symbol": "none",
+        "lineStyle": { "color": "$theme.palette.0", "width": 2 },
+        "areaStyle": { "color": "$theme.palette.0", "opacity": 0.12 }
+      }
+    ]
+  },
+  "themeBindings": {
+    "palette": "$theme.palette",
+    "font": "$theme.font",
+    "text": "$theme.textPrimary"
+  }
+}

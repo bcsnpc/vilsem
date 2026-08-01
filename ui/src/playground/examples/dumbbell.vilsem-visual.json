@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "id": "dumbbell",
+    "name": "Dumbbell",
+    "description": "A start and an end measure per category, shown as two dots. Bind 1 dimension + 2 measures.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🏋️"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 20 } },
+    "start": { "kind": "measure", "count": 1 },
+    "end": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "dotSize", "type": "number", "default": 12 }
+  ],
+  "transforms": [
+    { "calculate": "min(start, end)", "as": "connBase" },
+    { "calculate": "abs(end - start)", "as": "connSpan" }
+  ],
+  "template": {
+    "grid": { "left": 8, "right": 24, "top": 10, "bottom": 30, "containLabel": true },
+    "tooltip": { "trigger": "item" },
+    "legend": { "bottom": 0, "data": ["Start", "End"], "textStyle": { "color": "$theme.textMuted", "fontSize": 10 } },
+    "xAxis": {
+      "type": "value",
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "splitLine": { "lineStyle": { "color": "$theme.gridStroke" } }
+    },
+    "yAxis": {
+      "type": "category",
+      "data": "$slot.category.categories",
+      "inverse": true,
+      "axisLabel": { "color": "$theme.textMuted", "fontSize": 9 },
+      "axisLine": { "lineStyle": { "color": "$theme.gridStroke" } },
+      "axisTick": { "show": false }
+    },
+    "series": [
+      { "type": "bar", "stack": "conn", "data": "$calc.connBase.values", "itemStyle": { "color": "transparent" }, "silent": true, "barWidth": 3, "z": 1 },
+      { "type": "bar", "stack": "conn", "data": "$calc.connSpan.values", "itemStyle": { "color": "$theme.gridStrokeOn" }, "silent": true, "barWidth": 3, "z": 1 },
+      { "name": "Start", "type": "scatter", "data": "$slot.start.pairsSwapped", "symbolSize": "$param.dotSize", "itemStyle": { "color": "$theme.palette.1" }, "z": 3 },
+      { "name": "End", "type": "scatter", "data": "$slot.end.pairsSwapped", "symbolSize": "$param.dotSize", "itemStyle": { "color": "$theme.palette.0" }, "z": 3 }
+    ]
+  },
+  "themeBindings": { "palette": "$theme.palette" }
+}

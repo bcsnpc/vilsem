@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "id": "donut",
+    "name": "Donut",
+    "description": "Proportion of a measure split by category. Bind 1 dimension + 1 measure.",
+    "author": "vilsem",
+    "version": "1.0.0",
+    "icon": "🍩"
+  },
+  "slots": {
+    "category": { "kind": "dimension", "count": 1, "constraints": { "maxCardinality": 12 } },
+    "value": { "kind": "measure", "count": 1 }
+  },
+  "params": [
+    { "name": "innerRadius", "type": "string", "default": "45%" },
+    { "name": "outerRadius", "type": "string", "default": "72%" }
+  ],
+  "template": {
+    "tooltip": { "trigger": "item", "formatterTemplate": "{name}: {d}%" },
+    "legend": { "type": "scroll", "bottom": 0, "textStyle": { "color": "$theme.textMuted", "fontSize": 10 } },
+    "series": [
+      {
+        "type": "pie",
+        "radius": ["$param.innerRadius", "$param.outerRadius"],
+        "center": ["50%", "46%"],
+        "avoidLabelOverlap": true,
+        "data": "$slot.value.pieData",
+        "itemStyle": { "borderColor": "$theme.background", "borderWidth": 2 },
+        "label": { "color": "$theme.textPrimary", "fontSize": 10, "formatterTemplate": "{name}: {d}%" }
+      }
+    ]
+  },
+  "themeBindings": { "palette": "$theme.palette" }
+}

@@ -1,0 +1,43 @@
+appId: io.semantica.app
+productName: Semantica
+copyright: Copyright © 2026 Semantica
+
+directories:
+  output: dist/app
+  buildResources: build
+
+files:
+  - electron/**/*
+  - dist/ui/**/*
+  - src/**/*
+  - node_modules/**/*
+  - .env
+  - package.json
+
+extraResources:
+  - from: node_modules/sql.js/dist/sql-wasm.wasm
+    to: sql-wasm.wasm
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  icon: build/icon.icns
+  category: public.app-category.developer-tools
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
