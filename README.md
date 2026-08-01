@@ -18,37 +18,36 @@ Fabric, and the Power BI custom visual.
 
 > ⚠️ **Beta.** This is an early public beta — expect rough edges and breaking changes.
 
-## Requirements
+## Install (users)
 
-- Node.js ≥ 20 and npm
-- A Microsoft Fabric / Power BI semantic model you can query
-- An LLM API key (Anthropic, OpenAI, Gemini, or Groq) — set in the app's AI settings.
-  The app uses **cloud LLM providers**; no local model is bundled.
+1. Download the latest installer from the **[Releases](../../releases)** page and run it.
+2. Launch vilsem and **sign in with your Microsoft account** when prompted — that's how it
+   connects to your Fabric / Power BI semantic models. No config files to edit.
+3. Add an **LLM API key** (Anthropic, OpenAI, Gemini, or Groq) in the app's AI settings.
+   vilsem uses cloud LLM providers; no local model is bundled.
 
-## Quick start
+You need access to a Microsoft Fabric / Power BI semantic model, and the **Execute
+Queries REST API** enabled for it (a tenant setting your admin controls).
+
+## Develop / build from source (contributors)
+
+Requirements: Node.js ≥ 20 and npm.
 
 ```bash
+git clone https://github.com/bcsnpc/vilsem.git
+cd vilsem
 npm install
 cd ui && npm install && cd ..
 
-# copy the env template and fill in your Fabric connection
-cp .env.example .env
-
-# dev (hot-reload UI + Electron)
-npm run electron:dev
+npm run electron:dev   # hot-reload dev (UI + Electron)
+npm run build          # package a Windows NSIS installer into release/
+npm test               # vitest
 ```
 
-## Build the desktop app
-
-```bash
-npm run build        # builds the UI, then packages a Windows NSIS installer into release/
-```
-
-## Tests
-
-```bash
-npm test             # vitest
-```
+**Auth modes.** By default vilsem uses **interactive Microsoft sign-in** — nothing to
+configure. A **service-principal** mode is available for advanced/headless setups: copy
+`.env.example` to `.env` and fill in your app registration + workspace/dataset details.
+Most users never need this.
 
 ## Repository layout
 
