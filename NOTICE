@@ -3,8 +3,8 @@ Copyright 2026 Chiranjeevi Bhogireddy
 
 Repository: https://github.com/bcsnpc/semantic_app
 
-This product is licensed under the Apache License, Version 2.0 (see the LICENSE
-file). It includes third-party software under the terms of their respective
+This product is licensed under the MIT License (see the LICENSE file). It
+includes third-party software under the terms of their respective
 licenses, all of which are permissive (MIT, BSD-2-Clause, BSD-3-Clause, ISC,
 0BSD, Unlicense, or Apache-2.0). The attributions below are required by those
 licenses; the full dependency list and license texts can be regenerated with

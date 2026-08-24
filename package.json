@@ -3,7 +3,7 @@
   "version": "1.0.0-beta.1",
   "description": "vilsem — Microsoft Fabric desktop query engine",
   "author": "vilsem",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "main": "electron/main.js",
   "scripts": {
     "start": "node src/app.js",

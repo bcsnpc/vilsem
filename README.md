@@ -4,7 +4,7 @@
 > publish to the web, Power BI, and Fabric from a single App Spec.
 
 ![version](https://img.shields.io/badge/version-1.0.0--beta.1-blue)
-![license](https://img.shields.io/badge/license-Apache--2.0-green)
+![license](https://img.shields.io/badge/license-MIT-green)
 ![platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![status](https://img.shields.io/badge/status-public%20beta-orange)
 
@@ -58,7 +58,7 @@ bump, heatmap, sunburst, ranked lists, multi-dimension tables — and more.
 | Destination | How |
 |---|---|
 | **Web export** | Self-contained web app: a Fastify server + a `window.semantica` HTTP shim feeding the real vilsem renderer. |
-| **Power BI** | A custom `.pbiviz` visual (in `pbiviz-semantica-renderer/`) that composes ECharts client-side from a categorical dataView — drill and bar race included. Measures merge into a shared `_SemanticaGenerated` table without clobbering existing report measures. |
+| **Power BI** | A custom `.pbiviz` visual (in `pbiviz-semantica-renderer/`) that composes ECharts client-side from a categorical dataView — drill and bar race included. Measures merge into a shared `_SemanticaGenerated` table without clobbering existing report measures. You can also **export any single visual as a self-contained `.pbiviz`** from the inspector, then import it into an existing report (per-report or organization-wide) and bind it to your own model fields. |
 | **Microsoft Fabric** | Deployed as a **Fabric App** via the Rayfin CLI (feature-flagged). Runs the identical renderer, re-piping `window.semantica` to the Fabric semantic-model SDK, so the full dashboard — visuals, drill, interactions — shows in Fabric with in-app sign-in. |
 
 ### 🧩 Also
@@ -162,5 +162,6 @@ into production dependencies.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
-Copyright 2026 Chiranjeevi Bhogireddy.
+MIT License — see [LICENSE](LICENSE). Third-party attributions (including Apache
+ECharts, whose license requires it) are in [NOTICE](NOTICE).
+Copyright © 2026 Chiranjeevi Bhogireddy.
