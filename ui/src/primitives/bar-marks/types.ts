@@ -38,4 +38,5 @@ export interface BarMarksProps {
   secondaryMeasureName?: string
   secondaryColor?: string                // empty/unset → falls back to scheme `p.mid`
   stacked?: boolean
+  categoryColors?: Record<string, string> // per-category-name colour overrides (by _cat)
 }

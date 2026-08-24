@@ -12,7 +12,7 @@
  * This is a pure transform — no IO, no side effects.
  */
 
-import { DEFAULT_PAGE_SIZE, PAGE_SIZE_PRESETS, PAGE_SIZE_LIMITS } from '../appspec/schema.js'
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_PRESETS, PAGE_SIZE_LIMITS, OBJECT_TYPES } from '../appspec/schema.js'
 
 function clampDim(v, min, max) {
   if (!Number.isFinite(v)) return null
@@ -103,8 +103,10 @@ function mapSinglePage(appSpec, rawVisuals, rawSlicers, pageMeta, pageIdPrefix =
 
   const pageVisuals = []
   for (const v of visuals) {
-    // Skip nav_button — it has no measures and doesn't render in PBI
-    if (v.type === 'nav_button') continue
+    // Skip nav_button + canvas objects (text/shape/image/divider) — non-data elements
+    // that don't render in PBI yet. Excluding them keeps the publish clean (no empty
+    // entries); full PBI object rendering (baked HTML) is a follow-up.
+    if (v.type === 'nav_button' || OBJECT_TYPES.has(v.type)) continue
     const gx = Number(v.position?.x) || 0
     const gy = Number(v.position?.y) || 0
     const gw = Number(v.position?.w) || 3
@@ -186,7 +188,13 @@ function mapSinglePage(appSpec, rawVisuals, rawSlicers, pageMeta, pageIdPrefix =
   }
 
   const contentBottom = computeContentBottom(pageVisuals)
-  const pageHeight    = Math.max(contentBottom + chromePad, page.height || 720)
+  // Honor the chosen page height exactly (parity with the canvas page size); only the
+  // 'auto' preset (or an unset height) grows to fit content. Previously max()'d the two,
+  // so a fixed-height page silently grew past the size the user picked.
+  const isAutoHeight  = page.preset === 'auto' || page.height == null
+  const pageHeight    = isAutoHeight
+    ? Math.max(contentBottom + chromePad, 320)
+    : page.height
 
   return {
     id:      pageMeta?.id   || 'page_1',

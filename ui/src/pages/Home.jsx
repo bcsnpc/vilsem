@@ -182,7 +182,8 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
               <div style={{ font: '400 12px var(--v-font)', color: 'var(--v-text-muted)', lineHeight: 1.5 }}>Build a new dashboard from a semantic model — export as a web package or publish.</div>
               <ArrowRight size={16} style={{ position: 'absolute', top: 18, right: 18, color: 'var(--v-text-faint)' }} />
             </button>
-            {/* VILSEM_STUB: S13/S14 design-audit / before-after (v2) — routes to existing restyler */}
+            {/* "Improve an existing report" hidden for v1-beta (restyler route kept in App.jsx). */}
+            {false && (
             <button onClick={onRestyleReport || (() => {})} style={{ ...actionCard(), opacity: onRestyleReport ? 1 : 0.85 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--v-border-strong)'; e.currentTarget.style.background = 'var(--v-surface-2)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-border)'; e.currentTarget.style.background = 'var(--v-surface)' }}>
@@ -191,6 +192,7 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
               <div style={{ font: '600 15px var(--v-font)', color: 'var(--v-text)', marginBottom: 5 }}>Improve an existing report</div>
               <div style={{ font: '400 12px var(--v-font)', color: 'var(--v-text-muted)', lineHeight: 1.5 }}>Audit design, apply a brand, fix alignment &amp; clutter — review every change first.</div>
             </button>
+            )}
           </div>
 
           {/* Recent */}

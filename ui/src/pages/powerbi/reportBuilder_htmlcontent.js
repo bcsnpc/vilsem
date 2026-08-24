@@ -37,6 +37,12 @@ const SCHEMA = {
 // manually-configured reference report — I originally had a typo 6865).
 const HTML_CONTENT_VISUAL_GUID = 'htmlContent443BE3AD55E043BF878BED274D3A6855'
 
+// Semantica Renderer — our OWN custom visual (embedded binary). Used by the
+// injector's real-renderer path so injected chart/primitive visuals render as
+// live ECharts (reading objects.semantica.primitiveSpec) instead of the static
+// HTML-Content visual. Must match pbiviz-semantica-renderer/pbiviz.json.
+const SEMANTICA_RENDERER_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
+
 // Role name is "content" (lowercase). Also verified from the reference
 // extract. Neither "values" nor "Values" matched; the correct name is "content".
 const HTML_CONTENT_ROLE_NAME = 'content'
@@ -297,6 +303,12 @@ function buildVisualJson(visual, ctx) {
   const primitiveSpec = specsByVisualId?.[visual.id]               // JSON string → chart mode
   const isPrimitive   = !!primitiveSpec
 
+  // Injector real-renderer path: chart/primitive visuals render via our embedded
+  // Semantica Renderer (reads primitiveSpec) when ctx.rendererGuid is provided.
+  // Otherwise — and for every baked-HTML visual — fall back to HTML-Content.
+  // publishHtmlContentFlow never sets rendererGuid, so it is unaffected.
+  const visualTypeGuid = (isPrimitive && ctx?.rendererGuid) ? ctx.rendererGuid : HTML_CONTENT_VISUAL_GUID
+
   const w = num(visual.width,  420)
   const h = num(visual.height, 280)
   const x = num(visual.x, 0)
@@ -350,7 +362,7 @@ function buildVisualJson(visual, ctx) {
     name:    visualIdSlug(visual.id),
     position: { x, y, z, width: w, height: h, tabOrder: z },
     visual: {
-      visualType: HTML_CONTENT_VISUAL_GUID,
+      visualType: visualTypeGuid,
       ...(queryBlock ? { query: queryBlock } : {}),
       drillFilterOtherVisuals: true,
       objects,
@@ -568,6 +580,19 @@ function ensureHtmlContentRegistered(reportJson) {
   return reportJson
 }
 
+// Register our embedded custom-visual GUID in publicCustomVisuals (idempotent).
+// Paired with dropping the CustomVisuals/<guid>/ binary parts into the report.
+function ensureSemanticaRendererRegistered(reportJson, guid) {
+  if (!guid) return reportJson
+  if (!Array.isArray(reportJson.publicCustomVisuals)) {
+    reportJson.publicCustomVisuals = []
+  }
+  if (!reportJson.publicCustomVisuals.includes(guid)) {
+    reportJson.publicCustomVisuals.push(guid)
+  }
+  return reportJson
+}
+
 // ── Reusable exports (consumed by the PBI Injector) ─────────────────────────
 //
 // The injector builds 1-2 visuals against an EXISTING report rather than
@@ -580,12 +605,14 @@ export {
   buildVisualJson,
   buildSlicerJson,
   ensureHtmlContentRegistered,
+  ensureSemanticaRendererRegistered,
   isReportJsonPath,
   visualIdSlug,
   pageDirName,
   safeParse,
   HTML_CONTENT_VISUAL_GUID,
   HTML_CONTENT_ROLE_NAME,
+  SEMANTICA_RENDERER_GUID,
   SEMANTICA_GENERATED_TABLE,
   SCHEMA,
 }

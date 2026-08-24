@@ -225,7 +225,7 @@ The JSON must match the schema below exactly.
   "visuals": [
     {
       "id": "visual_1",
-      "type": "kpi|bar|stacked_bar|grouped_bar|column|line|area|stacked_area|donut|pie|gauge|radar|scatter|bubble|treemap|funnel|sankey|table|waterfall|lollipop|bullet|progress|heatmap|ranked_list|stat_card|metric_tile|sparkline_kpi|slope|bump|chord|sunburst|narrative|waffle|bar_race",
+      "type": "kpi|bar|stacked_bar|grouped_bar|column|line|area|stacked_area|donut|pie|gauge|radar|scatter|bubble|treemap|funnel|sankey|table|waterfall|lollipop|bullet|progress|heatmap|ranked_list|stat_card|metric_tile|sparkline_kpi|slope|bump|chord|sunburst|narrative|waffle|bar_race|nav_button|text_box|shape|image|divider",
       "position": { "x": 0, "y": 0, "w": 3, "h": 3 },
       "data": {
         "measures": ["exact measure name from model", "optional second measure for stacked_bar"],
@@ -331,6 +331,24 @@ Text/Insight:
   narrative: AI-generated text insight box. Auto-generates from data. Good for executive summaries.
   table: Data table with ranked rows. Supports multiple dimension columns and multiple measures. See TABLE RULES.
 </visual_type_guide>
+
+<navigation_and_objects>
+MULTI-PAGE APPS: for multi-section dashboards return "pages": [ { "id": "page_1", "name": "Overview", "visuals": [...], "slicers": [...] }, ... ] INSTEAD of top-level visuals/slicers. Each page has its own visuals/slicers with grid positions restarting at y:0. Name pages clearly — the names show in the navigation. Add "nav": { "position": "sidebar" } (or "topbar" | "none") at the spec ROOT to control the nav shell (sidebar is a good default). Mark a page "hidden": true when it is used ONLY as a popup (it stays out of the nav but a button can still open it).
+
+NAV BUTTONS — type "nav_button" (no data/measures). config:
+  { "label": "View details →", "navTarget": "page|modal|url|filter", "variant": "primary|secondary|outline|ghost", "size": "sm|md|lg", "color": "#3B82F6", "icon": "→", "fullWidth": false }
+  - navTarget "page": add "targetPageId" (another page's id) → navigates there.
+  - navTarget "modal": add "modalPageId" (usually a hidden page's id) → opens it as an in-app popup.
+  - navTarget "url": add "url".
+  - navTarget "filter": a quick-filter / reset button. Add "filterMode": "toggle|set|clear"; for toggle/set also "filterColumn": "Table[Column]" and "filterValue"; "clear" resets all filters (a "Reset" button).
+  Default size w:2 h:1.
+
+CANVAS OBJECTS — decoration with NO data block (no measures/groupBy):
+  text_box: { "text": "Section heading", "fontSize": 22, "fontWeight": 700, "align": "left", "color": "#F1F5F9" }. Great for section headers/labels. Heading size w:6 h:1.
+  shape: { "shape": "rectangle|rounded|ellipse|triangle|diamond|star|arrow|line", "fillColor": "rgba(94,234,212,0.14)", "borderColor": null, "borderWidth": 0 }. Decorative background/accent. w:3 h:2.
+  image: { "imageUrl": "https://…", "fit": "contain" }. w:3 h:3.
+  divider: { "orientation": "horizontal|vertical", "thickness": 2, "color": null }. w:12 h:1.
+</navigation_and_objects>
 
 <strict_size_rules>
 DEFAULT SIZES (compact, professional):

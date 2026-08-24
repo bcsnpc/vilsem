@@ -52,6 +52,8 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
     strokeWidth     = 0,
     showLegend      = true,
     legendPosition  = 'right',
+    legendColor,
+    legendFontSize,
     maxLegendItems  = 6,
     showLabels      = false,
     labelStyle      = 'percent',
@@ -62,6 +64,7 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
     animEnabled     = true,
     prefix          = null,
     suffix          = null,
+    categoryColors,
   } = props
 
   const rows = ctx.data.rows as Array<{ _cat?: unknown; _val?: unknown }>
@@ -123,10 +126,16 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
   }
 
   // ── Mode 2: Multi-segment donut/pie ────────────────────────────────────────
-  const data = rows.map(r => ({
-    name:  String(r._cat ?? ''),
-    value: Math.abs(Number(r._val ?? 0)),
-  }))
+  const data = rows.map(r => {
+    const name = String(r._cat ?? '')
+    const catColor = categoryColors ? categoryColors[name] : undefined
+    return {
+      name,
+      value: Math.abs(Number(r._val ?? 0)),
+      // Per-category override wins over the ordered `color: palette` on the series.
+      ...(catColor ? { itemStyle: { color: catColor } } : {}),
+    }
+  })
 
   const total = data.reduce((s, d) => s + d.value, 0)
 
@@ -174,7 +183,7 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
         orient: isBottomLegend ? 'horizontal' : 'vertical',
         ...(isBottomLegend ? { bottom: 4, left: 'center' } : { right: 8, top: 'middle' }),
         data: legendData,
-        textStyle: { color: t.echartsLegendText, fontSize: 11 },
+        textStyle: { color: legendColor || t.echartsLegendText, fontSize: legendFontSize || 11 },
         itemWidth: 10,
         itemHeight: 10,
         itemGap: 6,

@@ -21,7 +21,7 @@ const PRIMITIVES_DST = path.resolve(__dirname, '..', 'src', 'primitives')
 // we mirror the same folder structure inside pbiviz/src/.
 const SHARED_SRC = path.resolve(__dirname, '..', '..', 'ui', 'src', 'appspec', 'shared')
 const SHARED_DST = path.resolve(__dirname, '..', 'src', 'appspec', 'shared')
-const SHARED_FILES = ['palettes.js', 'formatters.js', 'drill.js', 'expandBarOption.js']
+const SHARED_FILES = ['palettes.js', 'formatters.js', 'drill.js', 'expandBarOption.js', 'chrome.js', 'applyTooltipConfig.js']
 
 // contract.ts also pulls a type from ../appspec/getThemeTokens — type-only
 // import but TS needs the file to resolve. Mirror it alongside the shared/ dir.

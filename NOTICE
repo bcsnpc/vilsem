@@ -42,6 +42,25 @@ Microsoft Phi-4-mini-instruct (GGUF model weights)  —  MIT License
   https://huggingface.co/microsoft/Phi-4-mini-instruct
 
 ================================================================================
+Fonts — SIL Open Font License 1.1
+================================================================================
+
+vilsem offers these font families (loaded from Google Fonts on the web/app, and a
+subset embedded in the Power BI custom visual for parity). All are licensed under
+the SIL Open Font License, Version 1.1 (https://openfontlicense.org), © their
+respective authors:
+
+  Inter, DM Sans, Space Grotesk, Plus Jakarta Sans, Manrope, Sora, Outfit,
+  Urbanist, Libre Franklin, IBM Plex Sans, Poppins, Montserrat, Work Sans,
+  Nunito Sans, Nunito, Rubik, Figtree, Lexend, Archivo, Public Sans,
+  Red Hat Display, Onest, Playfair Display, DM Serif Display, Fraunces,
+  Source Serif 4, Merriweather, JetBrains Mono, IBM Plex Mono, Space Mono.
+
+The OFL requires the license to travel with redistributed font files; the copies
+embedded in pbiviz-semantica-renderer are covered by this notice. No visible
+attribution is required for use.
+
+================================================================================
 General
 ================================================================================
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { VISUAL_MAP, getCardChromeStyle } from './AppSpecRenderer.jsx'
 import { getThemeTokens } from './getThemeTokens.ts'
+import { isObjectType, isBareVisual } from './schema.js'
 import AxisSwitchPills, { getEffectiveGroupBy } from './AxisSwitchPills.jsx'
 import { normaliseRows, normaliseTableRows, resolveRowKey, getScalarValue } from './shared/row-normalize.js'
 import { setPreview } from '../vilsem/dataPreviewStore.js'
@@ -128,6 +129,7 @@ export default function CanvasEditor({
   onSpecChange,
   onBindField,
   onCreateFromField,
+  onConfigChange,      // (id, patch) → merge patch into a visual's config (in-place edits)
   selectedId,
   onSelect,
   theme = 'dark',
@@ -135,6 +137,7 @@ export default function CanvasEditor({
 }) {
   const containerRef = useRef(null)
   const [containerW, setContainerW] = useState(900)
+  const [editingId, setEditingId] = useState(null)   // object being in-place edited (drag suspended)
   const [dragState, setDragState] = useState(null) // { id, type:'move'|'resize', startMouse, startPx }
   const [liveOffset, setLiveOffset] = useState(null) // { id, left, top, width, height } during drag
   const [visualData, setVisualData] = useState({})
@@ -217,7 +220,13 @@ export default function CanvasEditor({
     let cancelled = false
     const load = async () => {
       for (const v of spec.visuals) {
-        if (!v.data?.measures?.length) continue
+        if (!v.data?.measures?.length) {
+          // Measures removed → clear stale value + reset the fetch guard so re-adding
+          // a measure refetches (instead of showing the previous measure's data).
+          setVisualData(d => (d[v.id] == null ? d : { ...d, [v.id]: null }))
+          fetchedAxisRef.current[v.id] = ''
+          continue
+        }
         const override = axisOverrides[v.id]
         // Drill state: expand-in-place uses a 2-dim query; replace deepens the
         // groupBy + adds ancestor filters. Both re-fetch via the drill-tagged key.
@@ -234,8 +243,11 @@ export default function CanvasEditor({
         const playTag = v.type === 'bar_race'
           ? `|play:${v.config?.playAxis || (v.data?.frameBy?.table ? `${v.data.frameBy.table}[${v.data.frameBy.column}]` : '')}`
           : ''
-        const axisKey = `${effectiveGroupBy?.table || ''}|${effectiveGroupBy?.column || ''}|drill:${drillTag}${playTag}`
-        if (fetchedAxisRef.current[v.id] === axisKey) continue // same axis/drill as last fetch
+        // Include orderBy + limit so changing the Query panel (Order / Row limit) busts
+        // the dedup and actually re-queries — otherwise the bars keep their old order/count.
+        const obTag = typeof v.data?.orderBy === 'string' ? v.data.orderBy : (v.data?.orderBy?.dir || '')
+        const axisKey = `${effectiveGroupBy?.table || ''}|${effectiveGroupBy?.column || ''}|drill:${drillTag}${playTag}|ob:${obTag}|lim:${v.data?.limit ?? ''}`
+        if (fetchedAxisRef.current[v.id] === axisKey) continue // same axis/drill/order/limit as last fetch
         const measures = v.data.measures
         const groupBy = effectiveGroupBy
         // Build filters object the same way AppSpecRenderer does — spec stores
@@ -398,8 +410,10 @@ export default function CanvasEditor({
   useEffect(() => {
     if (!dragState) return
     const onMove = (e) => {
-      const dx = e.clientX - dragState.startMouse.x
-      const dy = e.clientY - dragState.startMouse.y
+      // Screen-pixel deltas → canvas-layout deltas: divide by the display zoom so a
+      // scaled canvas still drags/resizes 1:1 with the cursor.
+      const dx = (e.clientX - dragState.startMouse.x) / (zoom || 1)
+      const dy = (e.clientY - dragState.startMouse.y) / (zoom || 1)
       if (dragState.type === 'move') {
         setLiveOffset({
           id: dragState.id,
@@ -434,7 +448,7 @@ export default function CanvasEditor({
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
     }
-  }, [dragState, liveOffset, containerW, onSpecChange])
+  }, [dragState, liveOffset, containerW, onSpecChange, zoom])
 
   const isDark = theme === 'dark'
 
@@ -458,7 +472,10 @@ export default function CanvasEditor({
         const f = JSON.parse(e.dataTransfer.getData('application/x-vilsem-field') || e.dataTransfer.getData('text/plain') || '{}')
         if (!f.kind) return
         const rect = containerRef.current?.getBoundingClientRect()
-        const px = { left: (e.clientX - (rect?.left || 0)), top: (e.clientY - (rect?.top || 0)), width: 4 * (colW + GAP), height: 3 * (ROW_H + GAP) }
+        // getBoundingClientRect is post-transform (scaled), so convert the drop point
+        // back into canvas-layout coords by dividing the offset by zoom.
+        const z = zoom || 1
+        const px = { left: (e.clientX - (rect?.left || 0)) / z, top: (e.clientY - (rect?.top || 0)) / z, width: 4 * (colW + GAP), height: 3 * (ROW_H + GAP) }
         onCreateFromField(f, pxToGrid(px, containerW))
       } catch { /* ignore malformed drops */ }
     } : undefined}
@@ -487,6 +504,7 @@ export default function CanvasEditor({
         const isSlicer = item._kind === 'slicer'
         const colorVal = getColor(item.config?.colorScheme)
         const isKpi = item.type === 'kpi'
+        const isObject = isBareVisual(item.type)   // objects + nav button — bare render, full-surface handle
 
         return (
           <div
@@ -517,26 +535,34 @@ export default function CanvasEditor({
           >
             <div style={{
               width: '100%', height: '100%',
-              ...getCardChromeStyle({
-                config: item.config, colorVal,
-                T: getThemeTokens(isDark ? 'dark' : 'light'),
-                isKpi: KPI_TYPES.has(item.type),
-                isSelected,
-              }),
-              borderRadius: isSlicer ? 10 : (item.config?.borderRadius ?? 14),
+              // Canvas objects render bare (no data-card chrome); just a selection ring in
+              // edit mode so they're still pickable.
+              ...(isObject
+                ? { outline: isSelected ? '2px solid #818CF8' : 'none', outlineOffset: 1, borderRadius: item.config?.borderRadius ?? 0 }
+                : {
+                    ...getCardChromeStyle({
+                      config: item.config, colorVal,
+                      T: getThemeTokens(isDark ? 'dark' : 'light'),
+                      isKpi: KPI_TYPES.has(item.type),
+                      isSelected,
+                    }),
+                    borderRadius: isSlicer ? 10 : (item.config?.borderRadius ?? 14),
+                  }),
               overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
               position: 'relative',
               cursor: isDragging ? 'grabbing' : 'pointer',
             }}>
-              {/* Drag handle — KPI/slicer only. Chart drag is wired on the
-                  header div below; the header's zIndex:4 blocks this overlay. */}
-              {(isKpi || isSlicer) && (
+              {/* Drag handle — KPI/slicer/object get a full-surface handle (no chart
+                  header to grab). Chart drag is wired on the header div below. */}
+              {(isKpi || isSlicer || isObject) && editingId !== item.id && (
                 <div
                   onPointerDown={(e) => handlePointerDown(e, item.id, 'move')}
+                  onDoubleClick={item.type === 'text_box' ? (e) => { e.stopPropagation(); onSelect(item.id); setEditingId(item.id) } : undefined}
+                  title={item.type === 'text_box' ? 'Double-click to edit text' : undefined}
                   style={{
                     position: 'absolute', top: 0, left: 0, right: 0,
-                    height: isSlicer ? '100%' : 28,
+                    height: (isSlicer || isObject) ? '100%' : 28,
                     zIndex: 3, cursor: isDragging ? 'grabbing' : 'grab',
                   }}
                 />
@@ -545,7 +571,7 @@ export default function CanvasEditor({
               {/* Left accent — honors config.showAccentStrip (default true).
                   zIndex 3 + pointerEvents none so it paints above the drag
                   handle overlay (also zIndex 3) that covers the top 28/36px. */}
-              {!isSlicer && item.config?.showAccentStrip !== false && (
+              {!isSlicer && !isObject && item.config?.showAccentStrip !== false && !item.config?.flat && (
                 <div style={{
                   position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
                   borderRadius: '14px 0 0 14px',
@@ -607,6 +633,13 @@ export default function CanvasEditor({
                   _onBarClick: (cat) => handleBarClick(item, cat),
                   _expand: expandConfigFor(item),
                   _selectedCat: panelState[item.id]?.value ?? undefined,
+                  // In-place editing (text box): CanvasEditor toggles editingId (double-
+                  // click the handle); while editing the drag handle hides so the
+                  // contentEditable is interactive. Live measure tokens react to filters.
+                  _editable: isObjectType(item.type),
+                  _editing: editingId === item.id,
+                  _onConfigPatch: onConfigChange ? (patch) => onConfigChange(item.id, patch) : undefined,
+                  _stopEditing: () => setEditingId(null),
                 }
                 if (isKpi) {
                   return (
@@ -619,7 +652,7 @@ export default function CanvasEditor({
                 }
                 return (
                   <>
-                    {(item.config?.title || item.config?.label || hasAxisOpts) && (
+                    {((item.config?.showTitle !== false && (item.config?.title || item.config?.label)) || hasAxisOpts) && (
                       <div
                         onPointerDown={(e) => handlePointerDown(e, item.id, 'move')}
                         style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, gap: 8, zIndex: 4, position: 'relative', cursor: isDragging ? 'grabbing' : 'grab' }}>

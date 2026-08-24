@@ -13,6 +13,7 @@
  */
 
 const { ipcMain } = require('electron/main')
+const { dialog, BrowserWindow } = require('electron')
 const axios       = require('axios')
 const { getToken, forceRefresh } = require('../../src/auth/auth')
 const { rateLimitedCall }        = require('../../src/queue/limiter')
@@ -797,8 +798,69 @@ async function getAccessTokenForEmbed() {
   }
 }
 
+// ── Export a single visual as a self-contained .pbiviz ──────────────────────
+// Repackages the bundled semanticaRenderer template with (a) the visual's
+// primitiveSpec BAKED into the placeholder token, (b) a UNIQUE guid so several
+// exports can coexist in one report, and (c) the visual's title as displayName.
+// Saved via a native dialog. The user imports it into Power BI (per-report or as
+// an Organizational visual) and binds the fields; PBI queries the model and the
+// baked spec draws the chart.
+async function exportVisualPackage({ spec, title, fileBase } = {}) {
+  try {
+    if (!spec || typeof spec !== 'string') return { success: false, message: 'spec (JSON string) is required' }
+    const distDir = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+    const files = fs.readdirSync(distDir).filter((f) => f.endsWith('.pbiviz') && f.startsWith('semanticaRenderer'))
+    if (!files.length) return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
+    const latest = files.map((f) => ({ f, m: fs.statSync(path.join(distDir, f)).mtimeMs })).sort((a, b) => b.m - a.m)[0].f
+
+    const OLD_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
+    const newGuid  = 'vilsem' + cryptoRandomUuid().replace(/-/g, '')
+    const displayName = String(title || 'Vilsem visual').slice(0, 50)
+
+    const zip = new AdmZip(path.join(distDir, latest))
+
+    // 1. Resource pbiviz.json — bake the spec, swap the guid everywhere, set displayName.
+    const resEntry = zip.getEntries().find((e) => /\.pbiviz\.json$/.test(e.entryName))
+    if (!resEntry) return { success: false, message: 'resource pbiviz.json not found in template' }
+    const obj = JSON.parse(resEntry.getData().toString('utf8'))
+    if (!obj.content || typeof obj.content.js !== 'string') return { success: false, message: 'template content.js missing' }
+    const before = (obj.content.js.match(/__SEMANTICA_BAKED_SPEC__/g) || []).length
+    obj.content.js = obj.content.js.replace(/["']__SEMANTICA_BAKED_SPEC__["']/, JSON.stringify(spec))
+    const after = (obj.content.js.match(/__SEMANTICA_BAKED_SPEC__/g) || []).length
+    if (before === 0 || after !== 0) return { success: false, message: 'baked-spec placeholder missing/not replaced — rebuild the .pbiviz template' }
+    let resStr = JSON.stringify(obj).split(OLD_GUID).join(newGuid)
+    const obj2 = JSON.parse(resStr)
+    if (obj2.visual) obj2.visual.displayName = displayName
+    resStr = JSON.stringify(obj2)
+    zip.deleteFile(resEntry.entryName)
+    zip.addFile(`resources/${newGuid}.pbiviz.json`, Buffer.from(resStr, 'utf8'))
+
+    // 2. package.json — swap the guid, set displayName.
+    const pkgEntry = zip.getEntries().find((e) => /(^|\/)package\.json$/.test(e.entryName))
+    const pkg = JSON.parse(pkgEntry.getData().toString('utf8').split(OLD_GUID).join(newGuid))
+    if (pkg.visual) pkg.visual.displayName = displayName
+    zip.updateFile(pkgEntry.entryName, Buffer.from(JSON.stringify(pkg, null, 2), 'utf8'))
+
+    // 3. Save via a native dialog.
+    const defaultName = (String(fileBase || displayName).replace(/[^a-zA-Z0-9]+/g, '') || 'vilsemVisual') + '.pbiviz'
+    const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    const res = await dialog.showSaveDialog(win, {
+      title: 'Export visual as a Power BI .pbiviz',
+      defaultPath: defaultName,
+      filters: [{ name: 'Power BI custom visual', extensions: ['pbiviz'] }],
+    })
+    if (res.canceled || !res.filePath) return { success: false, canceled: true }
+    fs.writeFileSync(res.filePath, zip.toBuffer())
+    console.log('[powerbi] exported visual package:', res.filePath, '(guid', newGuid + ')')
+    return { success: true, path: res.filePath, guid: newGuid, displayName }
+  } catch (e) {
+    return { success: false, message: e?.message || String(e) }
+  }
+}
+
 function register() {
   ipcMain.handle('pbi-get-access-token',            ()      => getAccessTokenForEmbed())
+  ipcMain.handle('pbi-export-visual-package',       (_e, p) => exportVisualPackage(p || {}))
   ipcMain.handle('pbi-list-reports',                (_e, p) => listReports(p || {}))
   ipcMain.handle('pbi-get-report-definition-v2',    (_e, p) => getReportDefinitionV2(p || {}))
   ipcMain.handle('pbi-update-report-definition',    (_e, p) => updateReportDefinition(p || {}))

@@ -7,6 +7,7 @@ export interface TreemapMarksProps {
   borderWidth?: number
   borderRadius?: number
   customColors?: string[]
+  categoryColors?: Record<string, string>  // per-tile colour overrides (by category name)
   animEnabled?: boolean
   prefix?: string | null
   suffix?: string | null

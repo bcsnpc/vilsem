@@ -121,6 +121,7 @@ contextBridge.exposeInMainWorld('semantica', {
   pbiCreateBlankReport:       (p) => ipcRenderer.invoke('pbi-create-blank-report',      p),
   pbiGetBundledPbiviz:        ()  => ipcRenderer.invoke('pbi-get-bundled-pbiviz'),
   pbiGetCustomVisualParts:    ()  => ipcRenderer.invoke('pbi-get-custom-visual-parts'),
+  pbiExportVisualPackage:     (p) => ipcRenderer.invoke('pbi-export-visual-package',   p),
 
   // ── HTML Content (XMLA-measure) publish path — standalone from main pbi ──
   pbismGetDefinition:         (p) => ipcRenderer.invoke('pbism-get-definition',    p),

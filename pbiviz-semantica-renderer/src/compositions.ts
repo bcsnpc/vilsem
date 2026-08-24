@@ -137,11 +137,20 @@ function composeBarLike(rows: Row[], config: any, theme: any, variant: 'bar' | '
     barProps.secondaryMeasureName = config.secondaryMeasureName
     barProps.secondaryColor = secondaryColor
     barProps.stacked = stacked
+  } else {
+    // Per-category colours apply to single-series bar/column (parity with web canvas).
+    barProps.categoryColors = config.categoryColors
   }
 
   const tooltipProps: any = {
     prefix: config.prefix, suffix: config.suffix, measureName: config.measureName,
     accentColor: p.text || p.start,
+    // Tooltip content controls — parity with the web canvas.
+    showTitle: config.tooltipShowTitle !== false,
+    titleText: config.tooltipTitle || undefined,
+    showName: config.tooltipShowName !== false,
+    showValue: config.tooltipShowValue !== false,
+    showSwatch: config.tooltipShowSwatch !== false,
   }
   if (isMulti) {
     tooltipProps.trigger = 'axis'
@@ -156,7 +165,16 @@ function composeBarLike(rows: Row[], config: any, theme: any, variant: 'bar' | '
                  : LinearAxis({ axis: 'y', dataMin, dataMax, show: showYAxis } as any, ctx),
     BarMarks(barProps, ctx),
     Tooltip(tooltipProps, ctx),
-    Legend({ show: isMulti ? hasSecondary : false } as any, ctx),
+    Legend({
+      show: config.showLegend !== false && isMulti && hasSecondary,
+      position: config.legendPosition || 'top',
+      items: hasSecondary ? [
+        { name: config.measureName || 'Value', color: p.start },
+        { name: config.secondaryMeasureName || 'Secondary', color: secondaryColor },
+      ] : [],
+      color: config.legendColor,
+      fontSize: config.legendFontSize,
+    } as any, ctx),
   ]
   if (showGrid) {
     const splitLine = {
@@ -221,6 +239,7 @@ function composeDonut(rows: Row[], config: any, theme: any, isPie: boolean): any
       customColors: cfg.customColors, strokeColor: cfg.strokeColor ?? 'transparent',
       strokeWidth: cfg.strokeWidth ?? 0,
       showLegend: cfg.showLegend ?? true, legendPosition: cfg.legendPosition ?? 'right',
+      legendColor: cfg.legendColor, legendFontSize: cfg.legendFontSize,
       maxLegendItems: cfg.maxLegendItems ?? 6,
       showLabels: cfg.showLabels ?? false, labelStyle: cfg.labelStyle ?? 'percent',
       showCenterText: cfg.showCenterText ?? true, centerColor: cfg.centerColor || undefined,
@@ -228,6 +247,7 @@ function composeDonut(rows: Row[], config: any, theme: any, isPie: boolean): any
       maxValue: cfg.maxValue ?? 100,
       animEnabled: cfg.animationEnabled !== false,
       prefix: cfg.prefix, suffix: cfg.suffix,
+      categoryColors: cfg.categoryColors,
     } as any, makeCtx(rows, theme)),
   ])
 }
@@ -263,6 +283,7 @@ function composeTreemap(rows: Row[], config: any, theme: any): any {
       labelColor: config.labelColor ?? '#FFFFFF', valueColor: config.valueColor ?? '#94A3B8',
       labelFontSize: config.labelFontSize ?? 10, valueFontSize: config.valueFontSize ?? 9,
       padding: config.padding ?? 0,
+      categoryColors: config.categoryColors,
     } as any, makeCtx(rows, theme)),
   ])
 }

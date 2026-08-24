@@ -15,6 +15,8 @@ export interface PieMarksProps {
   // Legend
   showLegend?: boolean
   legendPosition?: 'right' | 'bottom'
+  legendColor?: string
+  legendFontSize?: number
   maxLegendItems?: number       // truncate to first N (overflow scrolls)
 
   // Labels (multi-segment mode only — on-slice labels)
@@ -35,4 +37,5 @@ export interface PieMarksProps {
   // Value formatting (for tooltip / labels / center text)
   prefix?: string | null
   suffix?: string | null
+  categoryColors?: Record<string, string>  // per-slice colour overrides (by category name)
 }

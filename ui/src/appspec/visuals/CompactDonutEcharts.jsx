@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, PieMarks } from '../../primitives/index'
 
@@ -39,6 +40,8 @@ export default function CompactDonutEcharts({ rows, config, loading, error }) {
       // Legend
       showLegend:     config.showLegend     ?? true,
       legendPosition: config.legendPosition ?? 'right',
+      legendColor:    config.legendColor,
+      legendFontSize: config.legendFontSize,
       maxLegendItems: config.maxLegendItems ?? 6,
       // Labels
       showLabels:     config.showLabels     ?? false,
@@ -53,12 +56,13 @@ export default function CompactDonutEcharts({ rows, config, loading, error }) {
       // Format
       prefix:         config.prefix,
       suffix:         config.suffix,
+      categoryColors: config.categoryColors,
     }, ctx),
   ])
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

@@ -19,6 +19,11 @@ export const VISUAL_PALETTE = [
   { type: 'stacked_area',label: 'Stacked Area', w: 6, h: 4 },
   { type: 'lollipop',    label: 'Lollipop',     w: 6, h: 4 },
   { type: 'radar',       label: 'Radar',        w: 5, h: 4 },
+  { type: 'bar_race',    label: 'Bar Race',     w: 6, h: 5 },
+  // NOTE: canvas objects (text_box/shape/image/divider/nav_button) are deliberately
+  // NOT offered in the injector — they don't inject into a PBI report (they're
+  // dropped by mapAppSpecToPages), so exposing them would silently lose content.
+  // They return only once inject supports a PBI-native / degrade path for them.
 ]
 
 // ── Page accessors ──────────────────────────────────────────────────────────
@@ -126,13 +131,20 @@ export function makeEditSpec(spec, pageId, setSpec) {
   return function editSpec(mutateFn) {
     if (!spec) return
     const activeId = pageId || getPages(spec)[0]?.id
+    let nextRoot = null
     const pages = getPages(spec).map(p => {
       if (p.id !== activeId) return p
       const flat = JSON.parse(JSON.stringify({ ...spec, visuals: p.visuals || [], slicers: p.slicers || [] }))
       mutateFn(flat)
+      // Capture root-level mutations (layout / nav / theme / title …) the mutator
+      // made on the flat view — not only the page's visuals/slicers. Mirrors
+      // AppGenerator's editSpec so nav position/accent and layout.freeform persist
+      // on multi-page specs instead of being silently dropped.
+      const { visuals, slicers, pages: _pages, ...root } = flat
+      nextRoot = root
       return { ...p, visuals: flat.visuals, slicers: flat.slicers }
     })
-    setSpec({ ...spec, pages, visuals: undefined, slicers: undefined })
+    setSpec({ ...(nextRoot || spec), pages, visuals: undefined, slicers: undefined })
   }
 }
 

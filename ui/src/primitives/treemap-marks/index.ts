@@ -46,6 +46,7 @@ export const TreemapMarks: Primitive<TreemapMarksProps> = (props, ctx) => {
     labelFontSize = 10,
     valueFontSize = 9,
     padding       = 0,
+    categoryColors,
   } = props
 
   const rows = ctx.data.rows as Array<{ _cat?: unknown; _val?: unknown }>
@@ -59,7 +60,9 @@ export const TreemapMarks: Primitive<TreemapMarksProps> = (props, ctx) => {
   const data = rows.map((r, i) => {
     const value = Number(r._val ?? 0)
     const size = Math.abs(value)
-    const cellColor = colorMode === 'multi' ? palette[i % palette.length] : p.start
+    const catName = String(r._cat ?? '')
+    const catColor = categoryColors ? categoryColors[catName] : undefined
+    const cellColor = catColor || (colorMode === 'multi' ? palette[i % palette.length] : p.start)
     const opacity = colorMode === 'gradient' ? 0.4 + (size / maxSize) * 0.5 : 0.8
     return {
       name: String(r._cat ?? ''),

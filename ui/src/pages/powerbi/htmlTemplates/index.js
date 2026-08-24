@@ -38,6 +38,18 @@ const TEMPLATE_MAP = {
   radar:       renderRadarHtml,
   scatter:     renderScatterHtml,
   treemap:     renderTreemapHtml,
+  // Bar-family → bar renderer (category + measure); a static snapshot of the data.
+  grouped_bar: renderBarHtml,
+  lollipop:    renderBarHtml,
+  waterfall:   renderBarHtml,
+  bar_race:    renderBarHtml,        // animated live; static snapshot of the bound data
+  // Line-family → line renderer (branches on visual.type for area fills etc.).
+  stacked_area: renderLineHtml,
+  bump:        renderLineHtml,
+  slope:       renderLineHtml,
+  // Part-to-whole / scatter-family.
+  pie:         renderDonutHtml,      // donut renderer draws a full pie when no hole
+  bubble:      renderScatterHtml,
 }
 
 /**

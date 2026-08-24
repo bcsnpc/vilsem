@@ -6,7 +6,19 @@ export const VISUAL_TYPES = [
   'table', 'waterfall', 'lollipop', 'bullet', 'progress', 'heatmap', 'ranked_list',
   'stat_card', 'metric_tile', 'sparkline_kpi', 'slope', 'bump', 'chord', 'sunburst',
   'narrative', 'insight', 'waffle', 'bar_race', 'nav_button',
+  // Canvas objects — non-data authorable elements (no measures, no card chrome).
+  'text_box', 'shape', 'image', 'divider',
 ]
+
+// Canvas object types — authorable elements that carry no data (no measures/query) and
+// render without the data-card chrome. Used to relax validation + skip the data fetch and
+// the card wrapper across render paths and the PBI publish path.
+export const OBJECT_TYPES = new Set(['text_box', 'shape', 'image', 'divider'])
+export const isObjectType = (type) => OBJECT_TYPES.has(type)
+
+// Types that render "bare" (no data-card chrome) and take a full-surface drag handle:
+// the canvas objects plus the nav button (a web-style button, not a boxed visual).
+export const isBareVisual = (type) => OBJECT_TYPES.has(type) || type === 'nav_button'
 
 export const SLICER_TYPES = ['dropdown', 'buttons', 'date_range']
 
@@ -66,18 +78,49 @@ function validateVisuals(visuals, prefix, errors, warnings) {
       if (typeof h !== 'number' || h < 1) errors.push(`${p}: position.h must be >= 1`)
       if (x + w > 12) warnings.push(`${p}: visual extends beyond 12-column grid (x=${x}, w=${w})`)
     }
-    if (!v.data || typeof v.data !== 'object') {
-      errors.push(`${p}: missing data block`)
-    } else {
-      const noMeasuresOk = v.type === 'table' || v.type === 'nav_button'
-      if (!Array.isArray(v.data.measures) || v.data.measures.length === 0) {
-        if (!noMeasuresOk) errors.push(`${p}: data.measures must be a non-empty array`)
+    // Canvas objects + nav buttons carry no data at all — skip the data-block/measures checks.
+    if (!isBareVisual(v.type)) {
+      if (!v.data || typeof v.data !== 'object') {
+        errors.push(`${p}: missing data block`)
+      } else {
+        const noMeasuresOk = v.type === 'table' || v.type === 'nav_button'
+        if (!Array.isArray(v.data.measures) || v.data.measures.length === 0) {
+          if (!noMeasuresOk) errors.push(`${p}: data.measures must be a non-empty array`)
+        }
       }
     }
     if (!v.config || typeof v.config !== 'object') {
       warnings.push(`${p}: missing config block — defaults will be used`)
     }
   })
+}
+
+/**
+ * Fill in ids/names the model left out (pages, visuals, slicers), so a spec that's
+ * otherwise valid isn't rejected for a missing id. Mutates in place and returns the spec.
+ * Call before validateAppSpec on any model-generated spec.
+ */
+export function ensureSpecIds(spec) {
+  if (!spec || typeof spec !== 'object') return spec
+  let n = 0
+  const uid = (prefix) => `${prefix}_${Date.now().toString(36)}_${n++}`
+  const fixItems = (arr, kind) => {
+    if (!Array.isArray(arr)) return
+    for (const v of arr) { if (v && typeof v === 'object' && !v.id) v.id = uid(kind) }
+  }
+  if (Array.isArray(spec.pages)) {
+    spec.pages.forEach((p, i) => {
+      if (p && typeof p === 'object') {
+        if (!p.id) p.id = `page_${i + 1}`
+        if (!p.name) p.name = `Page ${i + 1}`
+        fixItems(p.visuals, 'v')
+        fixItems(p.slicers, 'sl')
+      }
+    })
+  }
+  fixItems(spec.visuals, 'v')
+  fixItems(spec.slicers, 'sl')
+  return spec
 }
 
 /**

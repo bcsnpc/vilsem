@@ -4,6 +4,7 @@ import AxisSwitchPills, { getEffectiveGroupBy } from './AxisSwitchPills.jsx'
 import getThemeTokens from './getThemeTokens'
 import './shared/animations.css'
 import { getColorValue } from './shared/palettes.js'
+import { isObjectType, isBareVisual } from './schema.js'
 import { getCardChromeStyle } from './shared/chrome.js'
 import { getCardAnimation, getHoverHandlers } from './shared/animation.js'
 import { getSourceSelectedCat, buildAppliedFiltersForVisual } from './shared/filters.js'
@@ -26,7 +27,7 @@ export { getCardChromeStyle, VISUAL_MAP }
 
 // ── Main renderer ─────────────────────────────────────────────────────────────
 
-export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, theme = 'dark', editMode = false, selectedVisualId = null, onSelectVisual = null, onLayoutChange = null, onNavigatePage = null }) {
+export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, theme = 'dark', editMode = false, selectedVisualId = null, onSelectVisual = null, onLayoutChange = null, onNavigatePage = null, onOpenModal = null }) {
   const T = useMemo(() => getThemeTokens(theme), [theme])
   // Pass 1: normalize all visuals (filters no-measure visuals, places slicers/KPIs/charts)
   const preNormalizedSpec = useMemo(() => normalizeLayout(spec), [spec])
@@ -129,7 +130,12 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
 
   // ── Load visual data ────────────────────────────────────────────────────
   const loadVisualData = useCallback(async (visual, currentFilters, requestEpoch = requestEpochRef.current, groupByOverride = null, drillCtx = null) => {
-    if (!visual.data?.measures?.length) return
+    if (!visual.data?.measures?.length) {
+      // No measures (e.g. the user removed the last one) → clear any stale value so
+      // the visual goes blank instead of showing the previous measure's data.
+      setVisualData(prev => (prev[visual.id] == null ? prev : { ...prev, [visual.id]: null }))
+      return
+    }
     if (!window.semantica) return
 
     setVisualLoading(prev => ({ ...prev, [visual.id]: true }))
@@ -245,6 +251,21 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
   }, [])
 
   // ── Slicer change handler ───────────────────────────────────────────────
+  // Filter/reset buttons (web-style "bookmark"): a nav button can set a filter (toggle) or
+  // clear all filters, applied to this renderer's own filter state.
+  const applyFilterFromButton = useCallback((filter) => {
+    if (!filter || filter.mode === 'clear' || !filter.column) {
+      if (!filter || filter.mode === 'clear') { setGlobalFilters({}); setFilterSources({}) }
+      return
+    }
+    setGlobalFilters(prev => {
+      const next = { ...prev }
+      if (filter.mode === 'toggle' && String(next[filter.column]) === String(filter.value)) delete next[filter.column]
+      else next[filter.column] = filter.value
+      return next
+    })
+  }, [])
+
   const handleSlicerChange = useCallback((slicer, value) => {
     const dim = slicer.dimension
     if (!dim?.table || !dim?.column) return
@@ -676,6 +697,8 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                 _onBarClick: (cat) => handleBarClick(v, cat),
                 _expand: expandConfigFor(v),
                 _onNavigatePage: onNavigatePage,
+                _onOpenModal: onOpenModal,
+                _onApplyFilter: applyFilterFromButton,
                 _dimensionLabels: Array.isArray(v.data?.dimensions)
                   ? v.data.dimensions.map(d => d.column)
                   : (v.data?.groupBy?.column ? [v.data.groupBy.column] : []),
@@ -691,7 +714,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                 <div key={v.id} onClick={onSelectVisual ? (e) => { e.stopPropagation(); onSelectVisual(v.id) } : undefined}>
                   <div style={{
                     height: '100%',
-                    ...getCardChromeStyle({ config: v.config, colorVal, T, isKpi, isSelected }),
+                    ...(isBareVisual(v.type) ? {} : getCardChromeStyle({ config: v.config, colorVal, T, isKpi, isSelected })),
                     overflow: 'hidden',
                     display: 'flex', flexDirection: 'column',
                     position: 'relative', cursor: 'pointer',
@@ -711,7 +734,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                     </div>
                     {/* Left accent — zIndex 3 so it sits above the drag handle
                         overlay (zIndex 2) that covers the top 24/36px of the card */}
-                    {v.config?.showAccentStrip !== false && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal), zIndex: 3, pointerEvents: 'none' }} />}
+                    {v.config?.showAccentStrip !== false && !v.config?.flat && !isBareVisual(v.type) && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal), zIndex: 3, pointerEvents: 'none' }} />}
 
                     {/* Chart header (non-KPI only) */}
                     {!isKpi && headerH > 0 && (
@@ -818,6 +841,8 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                 _onBarClick: (cat) => handleBarClick(v, cat),
                 _expand: expandConfigFor(v),
                 _onNavigatePage: onNavigatePage,
+                _onOpenModal: onOpenModal,
+                _onApplyFilter: applyFilterFromButton,
                 // Playground Spike: custom-visual template (view / standalone-export path).
                 _customTemplate: v.type === 'custom'
                   ? (spec?.customVisuals?.[v.customTemplateId] || v.customTemplate || null)
@@ -831,14 +856,14 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
               return (
                 <div key={v.id} style={{
                   position: 'absolute', left: leftPx, top: topPx, width: widthPx, height: heightPx,
-                  ...getCardChromeStyle({ config: v.config, colorVal, T, isKpi }),
+                  ...(isBareVisual(v.type) ? {} : getCardChromeStyle({ config: v.config, colorVal, T, isKpi })),
                   overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
                 }}>
                   {/* Left accent strip — matches GridLayout edit mode + section view mode + PBI DAX */}
-                  {v.config?.showAccentStrip !== false && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal) }} />}
-                  {!isKpiContent && (v.config?.title || v.config?.label || hasAxisOpts) && (
+                  {v.config?.showAccentStrip !== false && !v.config?.flat && !isBareVisual(v.type) && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal) }} />}
+                  {!isKpiContent && ((v.config?.showTitle !== false && (v.config?.title || v.config?.label)) || hasAxisOpts) && (
                     <div style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${T.headerBorder}`, gap: 8, position: 'relative', zIndex: 2 }}>
-                      {v.config?.showAccentStrip !== false && <div style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 2.5, borderRadius: 2, background: T.accentBgFn(colorVal) }} />}
+                      {v.config?.showAccentStrip !== false && !v.config?.flat && !isBareVisual(v.type) && <div style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 2.5, borderRadius: 2, background: T.accentBgFn(colorVal) }} />}
                       <span style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {v.config?.title || v.config?.label || ''}
                       </span>
@@ -965,6 +990,8 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                     _onBarClick: (cat) => handleBarClick(v, cat),
                 _expand: expandConfigFor(v),
                     _onNavigatePage: onNavigatePage,
+                _onOpenModal: onOpenModal,
+                _onApplyFilter: applyFilterFromButton,
                   }
 
                   return (
@@ -973,7 +1000,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                       {...hoverH}
                       style={{
                       gridColumn: `${colStart + 1} / span ${colSpan}`,
-                      ...getCardChromeStyle({ config: v.config, colorVal, T, isKpi, isSelected }),
+                      ...(isBareVisual(v.type) ? {} : getCardChromeStyle({ config: v.config, colorVal, T, isKpi, isSelected })),
                       cursor: editMode ? 'pointer' : 'default',
                       transition: 'box-shadow 0.25s, border 0.15s, transform 0.25s',
                       ...getCardAnimation(v.config),
@@ -985,7 +1012,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                       minWidth: 0,
                       position: 'relative',
                     }}>
-                      {v.config?.showAccentStrip !== false && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal), zIndex: 1 }} />}
+                      {v.config?.showAccentStrip !== false && !v.config?.flat && !isBareVisual(v.type) && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '14px 0 0 14px', background: isKpi ? T.kpiAccentFn(colorVal) : T.accentBgFn(colorVal), zIndex: 1 }} />}
                       {isKpi ? (
                         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                           <Component
@@ -997,7 +1024,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                         </div>
                       ) : (
                         <>
-                          {(v.config?.title || v.config?.label) && (
+                          {(v.config?.showTitle !== false && (v.config?.title || v.config?.label)) && (
                             <div style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${T.headerBorder}`, gap: 8, position: 'relative' }}>
                               <span style={{ fontSize: v.config?.titleFontSize || 12, fontWeight: 600, color: v.config?.titleColor || T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: v.config?.titleFontFamily || 'inherit' }}>
                                 {v.config?.title || v.config?.label || ''}

@@ -9,7 +9,7 @@ export const schema: PrimitiveFieldDef[] = []
 // CompactBar doesn't use a legend (single series), but this primitive is used
 // by Phase 4 multi-series visuals (stacked bar, grouped bar, line+area, etc).
 export const Legend: Primitive<LegendPrimitiveProps> = (props, ctx) => {
-  const { show, position = 'top', items = [] } = props
+  const { show, position = 'top', items = [], color, fontSize } = props
   const { theme: t } = ctx
 
   const shouldShow = show ?? items.length > 0
@@ -30,7 +30,7 @@ export const Legend: Primitive<LegendPrimitiveProps> = (props, ctx) => {
       legend: {
         show: true,
         ...positionMap[position],
-        textStyle: { color: t.textMuted, fontSize: 11 },
+        textStyle: { color: color || t.textMuted, fontSize: fontSize || 11 },
         data: items.map(item =>
           item.color ? { name: item.name, itemStyle: { color: item.color } } : item.name
         ),

@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, LineMarks } from '../../primitives/index'
 import { resolveGrain, sortRowsForAxis, formatAxisLabel } from '../shared/formatters.js'
@@ -72,7 +73,7 @@ export default function CompactLineEcharts({ rows, config, loading, error, group
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

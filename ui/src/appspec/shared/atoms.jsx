@@ -57,7 +57,7 @@ export function EmptyState({ label, error }) {
   )
 }
 
-export function SparklineSvg({ data, width = 60, height = 20, color = '#14B8A6', showArea = true, id = 'spark' }) {
+export function SparklineSvg({ data, width = 60, height = 20, color = '#14B8A6', showArea = true, id = 'spark', strokeWidth = 1.5 }) {
   if (!data?.length || data.length < 2) return null
   const w = typeof width === 'number' ? width : 100
   const h = typeof height === 'number' ? height : 20
@@ -80,7 +80,7 @@ export function SparklineSvg({ data, width = 60, height = 20, color = '#14B8A6',
         </linearGradient>
       </defs>
       {showArea && <polygon points={`1,${h - 1} ${pts} ${w - 1},${h - 1}`} fill={`url(#${gradId})`} />}
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   )
 }

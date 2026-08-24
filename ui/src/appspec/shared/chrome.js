@@ -77,6 +77,20 @@ export function getCardChromeStyle({ config, colorVal, T, isKpi, isSelected = fa
         }
   }
 
+  // Accent strip = the coloured top edge every card gets by default. Turning it off
+  // (showAccentStrip:false) OR flattening replaces it with the card's plain border, so a
+  // card without an accent looks consistent across every visual type.
+  if (cfg.showAccentStrip === false || cfg.flat) {
+    base = { ...base, borderTop: base.border || `1px solid ${T.CARD_BORDER}` }
+  }
+
+  // Flatten — clean embedded look: drop the shadow (radius handled below). Keeps the
+  // border so the card still reads as a distinct surface. Applied before selection so
+  // the edit-time selection ring still shows on a flattened card.
+  if (cfg.flat) {
+    base = { ...base, boxShadow: 'none' }
+  }
+
   if (isSelected) {
     base = {
       ...base,
@@ -86,5 +100,5 @@ export function getCardChromeStyle({ config, colorVal, T, isKpi, isSelected = fa
     }
   }
 
-  return { ...base, opacity: cardOpacity, borderRadius }
+  return { ...base, opacity: cardOpacity, borderRadius: cfg.flat ? 0 : borderRadius }
 }

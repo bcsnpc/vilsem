@@ -3,6 +3,7 @@ import { pal, gridLineColor } from '../shared/palettes.js'
 import { BAR_SCROLL_THRESHOLD } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import { buildExpandBarOption } from '../shared/expandBarOption.js'
 import getThemeTokens from '../getThemeTokens'
 import {
@@ -135,11 +136,25 @@ export default function CompactStackedBarEcharts({ rows, config, loading, error 
         // Explicit base colors so the tooltip swatches stay full-alpha and match
         // their respective series, rather than fading with rankOpacity.
         seriesColors: hasSecondary ? [p.start, secondaryColor] : [p.start],
+        showTitle: config.tooltipShowTitle !== false,
+        titleText: config.tooltipTitle || undefined,
+        showName: config.tooltipShowName !== false,
+        showValue: config.tooltipShowValue !== false,
+        showSwatch: config.tooltipShowSwatch !== false,
       }, ctx),
 
-      // Native ECharts legend at the bottom — useful for stacked bars so users
-      // can match colors to measure names. Uses series names emitted by BarMarks.
-      Legend({ show: hasSecondary }, ctx),
+      // Native ECharts legend — useful for stacked bars so users can match colours
+      // to measure names. Uses the two measure names + their series colours.
+      Legend({
+        show: config.showLegend !== false && hasSecondary,
+        position: config.legendPosition || 'top',
+        items: [
+          { name: config.measureName || 'Value', color: p.start },
+          { name: config.secondaryMeasureName || 'Secondary', color: secondaryColor },
+        ],
+        color: config.legendColor,
+        fontSize: config.legendFontSize,
+      }, ctx),
     ]
 
     if (showGrid) {
@@ -184,7 +199,7 @@ export default function CompactStackedBarEcharts({ rows, config, loading, error 
 
   return (
     <div style={{ height: '100%', overflow: 'hidden', borderRadius: 12 }}>
-      <EChartsCanvas option={option} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

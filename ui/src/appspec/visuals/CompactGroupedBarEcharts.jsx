@@ -3,6 +3,7 @@ import { pal, gridLineColor } from '../shared/palettes.js'
 import { BAR_SCROLL_THRESHOLD } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import { buildExpandBarOption } from '../shared/expandBarOption.js'
 import getThemeTokens from '../getThemeTokens'
 import {
@@ -141,9 +142,23 @@ export default function CompactGroupedBarEcharts({ rows, config, loading, error 
         measureName: config.measureName,
         accentColor: p.text || p.start,
         seriesColors: hasSecondary ? [p.start, secondaryColor] : [p.start],
+        showTitle: config.tooltipShowTitle !== false,
+        titleText: config.tooltipTitle || undefined,
+        showName: config.tooltipShowName !== false,
+        showValue: config.tooltipShowValue !== false,
+        showSwatch: config.tooltipShowSwatch !== false,
       }, ctx),
 
-      Legend({ show: hasSecondary }, ctx),
+      Legend({
+        show: config.showLegend !== false && hasSecondary,
+        position: config.legendPosition || 'top',
+        items: [
+          { name: config.measureName || 'Value', color: p.start },
+          { name: config.secondaryMeasureName || 'Secondary', color: secondaryColor },
+        ],
+        color: config.legendColor,
+        fontSize: config.legendFontSize,
+      }, ctx),
     ]
 
     if (showGrid) {
@@ -191,7 +206,7 @@ export default function CompactGroupedBarEcharts({ rows, config, loading, error 
 
   return (
     <div style={{ height: '100%', overflow: 'hidden', borderRadius: 12 }}>
-      <EChartsCanvas option={option} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

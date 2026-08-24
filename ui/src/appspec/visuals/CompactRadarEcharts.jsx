@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback, useRef } from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, RadarMarks } from '../../primitives/index'
 import { fmtVal } from '../shared/formatters.js'
@@ -125,7 +126,7 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, minHeight: 0 }}>
         <EChartsCanvas
-          option={option}
+          option={applyTooltipConfig(option, config)}
           onClick={config._onBarClick ? handleClick : undefined}
           onChartReady={handleChartReady}
         />

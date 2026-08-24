@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import AppSpecRenderer from '../appspec/AppSpecRenderer.jsx'
+import AppNavShell from '../appspec/shared/AppNavShell.jsx'
+import PageModal from '../appspec/shared/PageModal.jsx'
 import 'react-grid-layout/css/styles.css'
 
 // ── Shared standalone shell ───────────────────────────────────────────────────
@@ -27,6 +29,7 @@ export default function StandaloneApp({ initialSpec = null, specUrl = '/app-spec
   const [error,         setError]         = useState(null)
   const [theme,         setTheme]         = useState(initialSpec?.theme?.mode === 'light' ? 'light' : 'dark')
   const [currentPageId, setCurrentPageId] = useState(initialSpec ? (getPages(initialSpec)[0]?.id || null) : null)
+  const [modalPageId,   setModalPageId]   = useState(null)   // Phase 8b in-app popup
 
   useEffect(() => {
     if (initialSpec) return // spec supplied by host — no fetch
@@ -100,60 +103,41 @@ export default function StandaloneApp({ initialSpec = null, specUrl = '/app-spec
         </button>
       </div>
 
-      {/* Page tabs — only shown when there are multiple pages */}
-      {pages.length > 1 && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 2, padding: '0 20px',
-          height: 36, flexShrink: 0, overflowX: 'auto',
-          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-          borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #E2E8F0',
-        }}>
-          {pages.map(page => {
-            const isActive = page.id === currentPageId
+      {/* Body: nav shell (sidebar/topbar) for multi-page apps + dashboard. Single-page
+          specs render the dashboard directly (AppNavShell passes children through). */}
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <AppNavShell pages={pages} currentPageId={currentPageId} onNavigate={setCurrentPageId} theme={theme} nav={spec.nav}>
+          {(() => {
+            const presets = { '16:9':[1280,720], '16:10':[1280,800], '4:3':[1024,768], 'tall':[1280,1920], 'square':[1024,1024], 'auto':[1280,null], 'custom':[spec.layout?.pageWidth || 1280, spec.layout?.pageHeight || 720] }
+            const presetKey = spec.layout?.pagePreset || '16:9'
+            const [pw, ph]  = presets[presetKey] || [1280, 720]
+            const pageW = Number(spec.layout?.pageWidth) || pw || 1280
+            const pageH = Number(spec.layout?.pageHeight) || ph
             return (
-              <button
-                key={page.id}
-                onClick={() => setCurrentPageId(page.id)}
-                style={{
-                  padding: '0 14px', height: 28, borderRadius: '4px 4px 0 0',
-                  background: isActive ? (isDark ? '#1E293B' : '#FFFFFF') : 'transparent',
-                  border: isActive ? (isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0') : '1px solid transparent',
-                  borderBottom: isActive ? (isDark ? '1px solid #0b0b12' : '1px solid #F1F5F9') : '1px solid transparent',
-                  color: isActive ? (isDark ? '#F1F5F9' : '#1E293B') : (isDark ? '#475569' : '#94A3B8'),
-                  fontSize: 12, fontWeight: isActive ? 600 : 400,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  whiteSpace: 'nowrap', userSelect: 'none',
-                  transition: 'all 0.1s',
-                }}
-              >
-                {page.name}
-              </button>
+              <div style={{ height: '100%', overflow: 'auto', display: 'flex', justifyContent: 'center', padding: '16px 24px' }}>
+                <div style={{ width: '100%', maxWidth: pageW, minHeight: pageH || 'auto' }}>
+                  <AppSpecRenderer
+                    spec={activePageSpec}
+                    availableMeasures={availableMeasures}
+                    canvasWidth={pageW - 40}
+                    theme={theme}
+                    onNavigatePage={setCurrentPageId}
+                    onOpenModal={setModalPageId}
+                  />
+                </div>
+              </div>
             )
-          })}
-        </div>
-      )}
-
-      {/* Dashboard */}
-      {(() => {
-        const presets = { '16:9':[1280,720], '16:10':[1280,800], '4:3':[1024,768], 'tall':[1280,1920], 'square':[1024,1024], 'auto':[1280,null], 'custom':[spec.layout?.pageWidth || 1280, spec.layout?.pageHeight || 720] }
-        const presetKey = spec.layout?.pagePreset || '16:9'
-        const [pw, ph]  = presets[presetKey] || [1280, 720]
-        const pageW = Number(spec.layout?.pageWidth) || pw || 1280
-        const pageH = Number(spec.layout?.pageHeight) || ph
-        return (
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: '16px 24px' }}>
-            <div style={{ width: '100%', maxWidth: pageW, minHeight: pageH || 'auto' }}>
-              <AppSpecRenderer
-                spec={activePageSpec}
-                availableMeasures={availableMeasures}
-                canvasWidth={pageW - 40}
-                theme={theme}
-                onNavigatePage={setCurrentPageId}
-              />
-            </div>
-          </div>
-        )
-      })()}
+          })()}
+        </AppNavShell>
+      </div>
+      <PageModal
+        spec={spec}
+        page={pages.find(p => p.id === modalPageId)}
+        theme={theme}
+        onClose={() => setModalPageId(null)}
+        onNavigatePage={(id) => { setCurrentPageId(id); setModalPageId(null) }}
+        onOpenModal={setModalPageId}
+      />
     </div>
   )
 }

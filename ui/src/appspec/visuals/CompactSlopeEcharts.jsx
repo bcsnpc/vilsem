@@ -3,6 +3,7 @@ import { MULTI_COLORS } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 
 // Slope chart customization schema — surfaced by the schema-driven VisualInspector.
@@ -84,7 +85,7 @@ export default function CompactSlopeEcharts({ rows, config, loading, error }) {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

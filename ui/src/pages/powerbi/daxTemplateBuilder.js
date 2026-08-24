@@ -117,7 +117,7 @@ export function buildKpiDax(visual, theme = 'dark') {
   const scheme   = getScheme(config.colorScheme || visual.colorScheme)
   const measure  = visual.measures?.[0] || ''
   const measure2 = visual.measures?.[1] || null
-  const rawTitle = config.title || config.label || visual.title || measure
+  const rawTitle = config.showTitle === false ? '' : (config.title || config.label || visual.title || measure)
   const title    = (rawTitle && String(rawTitle).toLowerCase() !== 'kpi') ? rawTitle : measure
   const subtitle = config.subtitle || ''
   const prefix   = cleanAffix(config.prefix)
@@ -147,7 +147,10 @@ export function buildKpiDax(visual, theme = 'dark') {
   const titleWeight    = config.titleFontWeight ?? 500
   // Matches CompactKpi's `titleColor = config.titleColor || t.textMuted`
   const titleColor     = config.titleColor || t.textMuted
-  const titleFont      = config.titleFontFamily || 'inherit'
+  // Explicit Inter (embedded in the .pbiviz) rather than 'inherit' — in the Power BI
+  // HTML visual, 'inherit' resolves to the iframe's serif default, so the title fell
+  // back to serif. The web inherits Inter from the app root; this matches it.
+  const titleFont      = config.titleFontFamily || "Inter, 'Segoe UI', sans-serif"
   const titlePosition  = config.titlePosition || 'below'
   const titleUppercase = config.titleUppercase ? 'uppercase' : 'none'
   const showGlow       = config.showGlow !== false
@@ -348,7 +351,7 @@ export function buildGaugeDax(visual, theme = 'dark') {
   const isDark  = theme !== 'light'
   const scheme  = getScheme(config.colorScheme || visual.colorScheme)
   const measure = visual.measures?.[0] || ''
-  const title   = config.title || config.label || measure
+  const title   = config.showTitle === false ? '' : (config.title || config.label || measure)
   const prefix  = config.prefix || ''
   const suffix  = config.suffix || ''
   const c       = scheme.start
@@ -386,7 +389,7 @@ export function buildBarDax(visual, theme = 'dark') {
   const t         = getThemeTokens(isDark ? 'dark' : 'light')
   const scheme    = getScheme(config.colorScheme || visual.colorScheme)
   const measure   = visual.measures?.[0] || ''
-  const rawTitle  = config.title || config.label || measure
+  const rawTitle  = config.showTitle === false ? '' : (config.title || config.label || measure)
   const dim       = parseDim(visual.dimension)
   const limit     = visual.limit || visual.data?.limit || 50
   const orderDir  = (visual.orderBy || visual.data?.orderBy || 'desc').toString().toUpperCase()
@@ -441,7 +444,7 @@ export function buildBarDax(visual, theme = 'dark') {
   const suffix         = cleanAffix(config.suffix)
 
   // Typography
-  const titleFont      = config.titleFontFamily || 'inherit'
+  const titleFont      = config.titleFontFamily || "Inter, 'Segoe UI', sans-serif" // explicit (PBI HTML 'inherit' → serif fallback)
   const titleSize      = typeof config.titleFontSize === 'number' ? `${config.titleFontSize}px` : (config.titleFontSize || '12px')
   const titleWeight    = config.titleFontWeight ?? 600
   const titleColor     = config.titleColor || t.textPrimary
@@ -761,7 +764,7 @@ export function buildStackedBarDax(visual, theme = 'dark') {
   const measures = visual.measures || []
   const m1       = measures[0] || ''
   const m2       = measures[1] || m1
-  const title    = config.title || config.label || m1
+  const title    = config.showTitle === false ? '' : (config.title || config.label || m1)
   const dim      = parseDim(visual.dimension)
   const limit    = visual.limit || 10
   const c        = scheme.start
@@ -820,7 +823,7 @@ export function buildTableDax(visual, theme = 'dark') {
   const isDark   = theme !== 'light'
   const scheme   = getScheme(config.colorScheme || visual.colorScheme)
   const measure  = visual.measures?.[0] || ''
-  const title    = config.title || config.label || 'Table'
+  const title    = config.showTitle === false ? '' : (config.title || config.label || 'Table')
   const dim      = parseDim(visual.dimension)
   const limit    = visual.limit || 10
   const c        = scheme.start

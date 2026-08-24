@@ -3,6 +3,7 @@ import { pal, gridLineColor } from '../shared/palettes.js'
 import { BAR_SCROLL_THRESHOLD } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { buildExpandBarOption } from '../shared/expandBarOption.js'
 import {
@@ -54,7 +55,9 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
   const option = useMemo(() => {
     const chartRows = [...(rows || [])]
       .filter(r => r?._cat != null && r?._val != null)
-      .slice(0, config.limit || 50)
+      // The query already applies data.limit (the "Row limit" control); this is just a
+      // safety cap. Keep it high so a Row limit above 50 isn't silently truncated here.
+      .slice(0, config.limit || 1000)
 
     if (!chartRows.length) return null
 
@@ -122,6 +125,7 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
         measureName: config.measureName,
         scrollThreshold: BAR_SCROLL_THRESHOLD,
         refLines,
+        categoryColors: config.categoryColors,
       }, ctx),
 
       Tooltip({
@@ -129,6 +133,11 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
         suffix: config.suffix,
         measureName: config.measureName,
         accentColor: p.text || p.start,
+        showTitle: config.tooltipShowTitle !== false,
+        titleText: config.tooltipTitle || undefined,
+        showName: config.tooltipShowName !== false,
+        showValue: config.tooltipShowValue !== false,
+        showSwatch: config.tooltipShowSwatch !== false,
       }, ctx),
 
       Legend({ show: false }, ctx),
@@ -194,6 +203,8 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
     config.suffix,
     config.measureName,
     config.dataLabelColor,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(config.categoryColors),
   ])
 
   const handleClick = useCallback((params) => {
@@ -213,7 +224,7 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
   return (
     <div style={{ height: '100%', overflow: 'hidden', borderRadius: 12 }}>
       <EChartsCanvas
-        option={option}
+        option={applyTooltipConfig(option, config)}
         onClick={config._onBarClick ? handleClick : undefined}
       />
     </div>

@@ -4,9 +4,12 @@ import CanvasEditor from '../appspec/CanvasEditor.jsx'
 import { setCanvasState, clearCanvasState } from '../vilsem/canvasStore.js'
 import { FieldsPanel } from '../vilsem/Panels.jsx'
 import VisualInspector from '../appspec/VisualInspector.jsx'
-import { validateAppSpec } from '../appspec/schema.js'
+import { validateAppSpec, ensureSpecIds } from '../appspec/schema.js'
 import { publishHtmlContentFlow } from './powerbi/publishHtmlContentFlow.js'
 import { FLAGS } from '../appspec/shared/feature-flags.js'         // Deploy-to-Fabric spike (flag)
+import AppNavShell, { NAV_WIDTH, NAV_HEIGHT } from '../appspec/shared/AppNavShell.jsx'  // Phase 8 nav shell
+import PageModal from '../appspec/shared/PageModal.jsx'  // Phase 8b in-app popup
+import { FONTS, googleFontsHref } from '../appspec/shared/fonts.js' // single font source (30 families)
 import FabricDeployDialog from './fabric/FabricDeployDialog.jsx'   // Deploy-to-Fabric spike (isolated UI)
 import { publishCustomVisualFlow } from './powerbi/publishCustomVisualFlow.js'
 import { mapAppSpecToPages, filterRenderablePages } from './AppSpecToPowerBI.js'
@@ -19,7 +22,7 @@ import { Chip, StatusDot, Spinner, ProgressBar } from '../ui/Feedback.jsx'
 import { Modal } from '../ui/Modal.jsx'
 import { useToast } from '../ui/Toast.jsx'
 import { useTheme } from '../ui/theme.js'
-import { ArrowLeft, ArrowUp, Pencil, Play, Sun, Moon, Save, Download, Upload, Plus, Sparkles, ChevronRight, ChevronLeft, Filter, AlertTriangle, CircleCheck } from '../ui/icons.js'
+import { ArrowLeft, ArrowUp, Pencil, Play, Sun, Moon, Save, Download, Upload, Plus, Sparkles, ChevronRight, ChevronLeft, Filter, AlertTriangle, CircleCheck, X } from '../ui/icons.js'
 
 const PROVIDERS = [
   { id: 'anthropic', label: 'Anthropic',      statusKey: 'claude',  color: 'var(--v-amber)' },
@@ -29,10 +32,7 @@ const PROVIDERS = [
 ]
 
 // ── Premium free fonts ───────────────────────────────────────────────────────
-const PREMIUM_FONTS = [
-  'Inter', 'DM Sans', 'Space Grotesk', 'Plus Jakarta Sans', 'Manrope',
-  'Sora', 'Outfit', 'Urbanist', 'Libre Franklin', 'IBM Plex Sans',
-]
+const PREMIUM_FONTS = FONTS // single source: ui/src/appspec/shared/fonts.js
 
 const COLOR_SCHEMES = [
   { id: 'teal',   color: '#14B8A6' },
@@ -208,6 +208,22 @@ function MiniChart({ type = 'bar' }) {
         <polygon points="24,6.5 29.2,10.3 27,16.5 21,16.5 18.8,10.3" fill={Q} stroke={A} strokeWidth="1.5" strokeLinejoin="round" />
       </>
     ),
+    text_box: (
+      <>
+        <text x="24" y="16" textAnchor="middle" style={{ fontFamily: 'var(--v-font)', fontSize: 13, fontWeight: 700, fill: A }}>T</text>
+        <rect x="14" y="19" width="20" height="1.5" rx="0.75" fill={M} />
+      </>
+    ),
+    shape: (<rect x="13" y="5" width="22" height="14" rx="3" fill={Q} stroke={A} strokeWidth="1.5" />),
+    image: (
+      <>
+        <rect x="13" y="5" width="22" height="14" rx="2" fill="none" stroke={M} strokeWidth="1.5" />
+        <circle cx="19" cy="10" r="2" fill={A} />
+        <path d="M14 18 L21 12 L26 16 L30 12 L34 16.5" fill="none" stroke={A} strokeWidth="1.5" strokeLinejoin="round" />
+      </>
+    ),
+    divider: (<rect x="8" y="11" width="32" height="2" rx="1" fill={A} />),
+    nav_button: (<rect x="12" y="8" width="24" height="8" rx="4" fill={A} />),
   }
   return (
     <svg width="48" height="24" viewBox="0 0 48 24" style={{ display: 'block' }} aria-hidden>
@@ -280,6 +296,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [selectedVisualId, setSelectedVisualId] = useState(null)
   const [presentMode, setPresentMode]         = useState(false)
+  const [modalPageId, setModalPageId]         = useState(null)   // Phase 8b — in-app popup page
   const [canvasZoom, setCanvasZoom]           = useState(1)     // canvas display scale (drag stays accurate — CanvasEditor divides deltas by zoom)
   const [autoFitCanvas, setAutoFitCanvas]     = useState(true)  // scale-to-fit the viewport until the user zooms manually
   const [snapOn, setSnapOn]                   = useState(true)  // show the alignment grid guides behind visuals
@@ -345,11 +362,45 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     return () => window.removeEventListener('keydown', handler)
   }, [presentMode])
 
+  // Track the viewport so present mode can scale the page to fit the screen (slide model).
+  const [viewport, setViewport] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1280,
+    h: typeof window !== 'undefined' ? window.innerHeight : 720,
+  }))
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // Ctrl/Cmd + scroll zooms the edit canvas (like the ± buttons). Window-level non-passive
+  // listener (so preventDefault works) that only acts when the cursor is over the canvas —
+  // robust against the canvas div mounting/remounting.
+  useEffect(() => {
+    const onWheel = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return
+      const el = canvasScrollRef.current
+      if (!el || !el.contains(e.target)) return
+      e.preventDefault()
+      setAutoFitCanvas(false)
+      setCanvasZoom(z => Math.min(2, Math.max(0.25, Math.round((z - Math.sign(e.deltaY) * 0.08) * 100) / 100)))
+    }
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => window.removeEventListener('wheel', onWheel)
+  }, [])
+
   // Publish canvas state to the shell's left-rail panes (Layers).
   useEffect(() => {
     setCanvasState({ spec: generatedSpec, currentPageId, selectedId: selectedVisualId, onSelect: setSelectedVisualId })
   }, [generatedSpec, currentPageId, selectedVisualId])
   useEffect(() => () => clearCanvasState(), [])
+
+  // Selecting a visual surfaces the Inspector tab (and opens the pane if collapsed);
+  // deselecting drops the pane off the now-gone Inspector tab back to Prompt.
+  useEffect(() => {
+    if (selectedVisualId) { setRightTab('inspector'); setChatCollapsed(false) }
+    else setRightTab(t => (t === 'inspector' ? 'prompt' : t))
+  }, [selectedVisualId])
 
   // Load premium Google Fonts
   useEffect(() => {
@@ -357,7 +408,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     if (document.getElementById(id)) return
     const link = document.createElement('link')
     link.id = id; link.rel = 'stylesheet'
-    link.href = `https://fonts.googleapis.com/css2?family=${PREMIUM_FONTS.map(f => `${f.replace(/ /g, '+')}:wght@400;600;700`).join('&family=')}&display=swap`
+    link.href = googleFontsHref()
     document.head.appendChild(link)
   }, [])
 
@@ -503,6 +554,12 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     { type: 'lollipop',    label: 'Lollipop',     w: 6, h: 4 },
     { type: 'radar',       label: 'Radar',        w: 5, h: 4 },
     { type: 'bar_race',    label: 'Bar Race',     w: 6, h: 5 },
+    // Canvas objects — non-data authorable elements
+    { type: 'text_box',    label: 'Text',         w: 3, h: 1 },
+    { type: 'shape',       label: 'Shape',        w: 3, h: 2 },
+    { type: 'image',       label: 'Image',        w: 3, h: 3 },
+    { type: 'divider',     label: 'Divider',      w: 6, h: 1 },
+    { type: 'nav_button',  label: 'Button',       w: 2, h: 1 },
   ]
 
   // ── Multi-page helpers ────────────────────────────────────────────────────
@@ -517,8 +574,13 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
   }
   function ensurePages(spec) {
     if (!spec) return spec
-    if (Array.isArray(spec.pages) && spec.pages.length > 0) return spec
-    return { ...spec, pages: [{ id: 'page_1', name: spec.title || 'Page 1', visuals: spec.visuals || [], slicers: spec.slicers || [] }], visuals: undefined, slicers: undefined }
+    // Always normalise to pages[] AND strip the flat top-level visuals/slicers so a
+    // legacy flat spec never ends up with BOTH shapes (the dual-source-of-truth that
+    // could desync page reads and blank the app on "+ page").
+    const pages = (Array.isArray(spec.pages) && spec.pages.length > 0)
+      ? spec.pages
+      : [{ id: 'page_1', name: spec.title || 'Page 1', visuals: spec.visuals || [], slicers: spec.slicers || [] }]
+    return { ...spec, pages, visuals: undefined, slicers: undefined }
   }
   function mergePageResult(fullSpec, pageId, resultSpec) {
     const pages = getPages(fullSpec).map(p =>
@@ -548,6 +610,12 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
   function renamePage(pageId, newName) {
     if (!generatedSpec || !newName?.trim()) return
     const pages = getPages(generatedSpec).map(p => p.id === pageId ? { ...p, name: newName.trim() } : p)
+    setGeneratedSpec({ ...generatedSpec, pages })
+  }
+  // Hide a page from the nav shell (still openable as a popup); toggle back to show it.
+  function togglePageHidden(pageId) {
+    if (!generatedSpec) return
+    const pages = getPages(generatedSpec).map(p => p.id === pageId ? { ...p, hidden: !p.hidden } : p)
     setGeneratedSpec({ ...generatedSpec, pages })
   }
 
@@ -713,6 +781,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
       const spec = result?.spec
       if (!spec) throw new Error('No spec returned from AI')
 
+      ensureSpecIds(spec)   // fill in ids/names the model left out before validating
       const validation = validateAppSpec(spec)
       if (!validation.valid) throw new Error(validation.errors[0] || 'Generated spec failed validation')
       setDescription('')
@@ -827,6 +896,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
         throw new Error('Patch would remove all visuals. Change rejected.')
       }
 
+      ensureSpecIds(updatedPageSpec)
       const validation = validateAppSpec(updatedPageSpec)
       if (!validation.valid) throw new Error(validation.errors[0] || 'Patched spec failed validation')
       refineOk = true
@@ -1114,14 +1184,18 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     if (Array.isArray(generatedSpec.pages) && generatedSpec.pages.length > 0) {
       const activeId = currentPageId || generatedSpec.pages[0]?.id
       let nextLayout = generatedSpec.layout   // capture layout mutations (e.g. freeform:true on drag)
+      let nextRoot = null                     // capture root-level mutations (nav, title, theme, …)
       const pages = generatedSpec.pages.map(p => {
         if (p.id !== activeId) return p
         const flatView = JSON.parse(JSON.stringify({ ...generatedSpec, visuals: p.visuals || [], slicers: p.slicers || [] }))
         mutateFn(flatView)
         nextLayout = flatView.layout
+        // Everything except the per-page arrays is a spec-root field (e.g. nav) — keep it.
+        const { visuals: _v, slicers: _s, pages: _p, ...root } = flatView
+        nextRoot = root
         return { ...p, visuals: flatView.visuals, slicers: flatView.slicers }
       })
-      setGeneratedSpec({ ...generatedSpec, layout: nextLayout, pages })
+      setGeneratedSpec({ ...generatedSpec, ...(nextRoot || {}), layout: nextLayout, pages })
     } else {
       const next = JSON.parse(JSON.stringify(generatedSpec))
       mutateFn(next)
@@ -1173,7 +1247,9 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     return (
       <div className="ag-present-root" style={{
         position: 'fixed', inset: 0, zIndex: 9000,
-        background: canvasTheme === 'dark' ? '#0b0b12' : '#F1F5F9',
+        // Neutral "desk" behind the page — distinctly lighter than the dark dashboard so
+        // the page reads as a lifted panel, not blended into the background.
+        background: canvasTheme === 'dark' ? '#1e1f28' : '#E9ECF1',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
         {/* Floating toolbar — fades on inactivity */}
@@ -1198,19 +1274,68 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
           <Button variant="danger" size="sm" onClick={() => setPresentMode(false)}>Exit</Button>
         </div>
 
-        {/* Full-screen dashboard */}
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: '60px 24px 24px' }}>
-          <div style={{ width: '100%', maxWidth: 1200 }}>
-            <AppSpecRenderer
-              key={`asr-present-${echartsBarOn}`}
-              spec={_activePageSpec}
-              availableMeasures={measures}
-              canvasWidth={Math.min(canvasWidth || 1200, 1200)}
-              theme={canvasTheme}
-              onNavigatePage={setCurrentPageId}
-            />
-          </div>
-        </div>
+        {/* Full-screen dashboard — fit the page to the width and scroll vertically (web-app
+            model), so content taller than the page height is reachable instead of clipped.
+            CSS zoom scales layout + render together so the scroll height is correct. */}
+        {(() => {
+          const pages = getPages(generatedSpec)
+          const navPos = pages.filter(p => !p.hidden).length >= 2 ? (generatedSpec.nav?.position || 'sidebar') : 'none'
+          const navW = navPos === 'sidebar' ? NAV_WIDTH : 0
+          const layout = generatedSpec.layout || {}
+          const presets = { '16:9':[1280,720], '16:10':[1280,800], '4:3':[1024,768], 'tall':[1280,1920], 'square':[1024,1024], 'auto':[1280,null], 'custom':[layout.pageWidth || 1280, layout.pageHeight || 720] }
+          const [pw, ph] = presets[layout.pagePreset || '16:9'] || [1280, 720]
+          const pageW = Number(layout.pageWidth)  || pw || 1280
+          const pageH = Number(layout.pageHeight) || ph   // may be null for 'auto'
+          const padX = 48
+          const availW = Math.max(320, viewport.w - navW - padX)
+          // Fit to width; never blow a narrow page up beyond 1.6×.
+          const scale = Math.min(availW / pageW, 1.6)
+          return (
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <AppNavShell
+                pages={pages}
+                currentPageId={currentPageId}
+                onNavigate={setCurrentPageId}
+                theme={canvasTheme}
+                title={(appTitle && appTitle !== 'Untitled App') ? appTitle : generatedSpec.title}
+                nav={generatedSpec.nav}
+              >
+                <div style={{ height: '100%', overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: navPos !== 'none' ? '24px' : '52px 24px 24px' }}>
+                  {/* CSS zoom scales the box AND its layout height, so it scrolls when the
+                      content runs taller than the viewport. */}
+                  <div style={{
+                    width: pageW, zoom: scale, flexShrink: 0,
+                    minHeight: pageH || undefined,
+                    background: canvasTheme === 'dark' ? '#0b0b12' : '#FFFFFF',
+                    borderRadius: 10,
+                    boxShadow: canvasTheme === 'dark' ? '0 12px 48px rgba(0,0,0,0.55)' : '0 12px 48px rgba(15,23,42,0.14)',
+                    border: canvasTheme === 'dark' ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(15,23,42,0.08)',
+                    overflow: 'hidden',
+                  }}>
+                    <AppSpecRenderer
+                      key={`asr-present-${echartsBarOn}`}
+                      spec={_activePageSpec}
+                      availableMeasures={measures}
+                      canvasWidth={pageW}
+                      theme={canvasTheme}
+                      onNavigatePage={setCurrentPageId}
+                      onOpenModal={setModalPageId}
+                    />
+                  </div>
+                </div>
+              </AppNavShell>
+              <PageModal
+                spec={generatedSpec}
+                page={getPages(generatedSpec).find(p => p.id === modalPageId)}
+                theme={canvasTheme}
+                availableMeasures={measures}
+                onClose={() => setModalPageId(null)}
+                onNavigatePage={(id) => { setCurrentPageId(id); setModalPageId(null) }}
+                onOpenModal={setModalPageId}
+              />
+            </div>
+          )
+        })()}
 
 
         <style>{`
@@ -1334,7 +1459,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
 
           {/* Prompt | Library tabs (mockup S6) + collapse chevron */}
           <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid var(--v-border)', alignItems: 'stretch' }}>
-            {['prompt', 'library'].map(t => (
+            {(selectedVisual ? ['prompt', 'library', 'inspector'] : ['prompt', 'library']).map(t => (
               <button key={t} onClick={() => setRightTab(t)} style={{
                 flex: 1, padding: '9px 0', border: 'none', background: 'transparent', cursor: 'pointer',
                 font: '600 12px var(--v-font)', textTransform: 'capitalize',
@@ -1347,6 +1472,41 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
               color: 'var(--v-text-muted)', display: 'flex', alignItems: 'center',
             }}><ChevronRight size={15} /></button>
           </div>
+
+          {/* Inspector overlay — 3rd tab; the same VisualInspector, embedded inline in
+              the pane (no longer a floating panel over the canvas). */}
+          {rightTab === 'inspector' && selectedVisual && (
+            <VisualInspector
+              embedded
+              visual={selectedVisual}
+              customTemplate={selectedVisual?.type === 'custom' ? generatedSpec?.customVisuals?.[selectedVisual.customTemplateId] : null}
+              isDark
+              pages={getPages(generatedSpec)}
+              canvasTheme={canvasTheme}
+              editSpec={editSpec}
+              selectedVisualId={selectedVisualId}
+              onClose={() => setSelectedVisualId(null)}
+              onDelete={() => {
+                editSpec(s => {
+                  if ((s.slicers || []).some(sl => sl.id === selectedVisualId)) {
+                    s.slicers = s.slicers.filter(sl => sl.id !== selectedVisualId)
+                  } else {
+                    s.visuals = s.visuals.filter(v => v.id !== selectedVisualId)
+                  }
+                })
+                setSelectedVisualId(null)
+              }}
+              onDuplicate={() => editSpec(s => {
+                const orig = s.visuals.find(vi => vi.id === selectedVisualId)
+                if (!orig) return
+                const copy = JSON.parse(JSON.stringify(orig))
+                copy.id = `${orig.id}_copy_${Date.now().toString(36)}`
+                copy.position = { ...copy.position, x: (copy.position?.x ?? 0) + 1, y: (copy.position?.y ?? 0) + 1 }
+                s.visuals.push(copy)
+              })}
+              onAiRefine={async (prompt) => refineSpec({ prompt, scopedVisualId: selectedVisualId })}
+            />
+          )}
 
           {/* Library overlay — chart gallery; click a tile to add it to the canvas */}
           {rightTab === 'library' && (
@@ -1710,7 +1870,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                       const isActive = page.id === currentPageId
                       return (
                         <div key={page.id} onClick={() => { setCurrentPageId(page.id); setSelectedVisualId(null) }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '0 8px 0 12px', height: 26, borderRadius: 'var(--radius-sm)', background: isActive ? 'var(--accent-subtle)' : 'transparent', color: isActive ? 'var(--accent)' : 'var(--text-muted)', fontSize: 'var(--fs-sm)', fontWeight: isActive ? 600 : 500, userSelect: 'none', whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.1s' }}>
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '0 8px 0 12px', height: 26, borderRadius: 'var(--radius-sm)', background: isActive ? 'var(--accent-subtle)' : 'transparent', color: isActive ? 'var(--accent)' : 'var(--text-muted)', fontSize: 'var(--fs-sm)', fontWeight: isActive ? 600 : 500, fontStyle: page.hidden ? 'italic' : 'normal', opacity: page.hidden ? 0.55 : 1, userSelect: 'none', whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.1s' }}>
                           {renamingPageId === page.id
                             ? <input autoFocus value={renameValue}
                                 onChange={e => setRenameValue(e.target.value)}
@@ -1722,6 +1882,13 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                                 {page.name}
                               </span>
                           }
+                          <span onClick={e => { e.stopPropagation(); togglePageHidden(page.id) }}
+                            title={page.hidden ? 'Hidden from nav (popup-only) — click to show' : 'Shown in nav — click to hide from nav'}
+                            style={{ display: 'inline-flex', color: page.hidden ? 'var(--accent)' : 'var(--text-faint)', marginLeft: 2, cursor: 'pointer', padding: '0 1px', lineHeight: 1 }}>
+                            {page.hidden
+                              ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                              : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>}
+                          </span>
                           {pages.length > 1 && (
                             <span onClick={e => { e.stopPropagation(); deletePage(page.id) }}
                               style={{ display: 'inline-flex', fontSize: 10, color: 'var(--text-faint)', marginLeft: 2, cursor: 'pointer', padding: '0 2px', lineHeight: 1, transition: 'color 0.1s' }}
@@ -1758,11 +1925,35 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                     <div style={tbDivider} />
                     {/* VILSEM_STUB: brand kit / capture-as-step / story composer */}
                     <button style={tbChip} onClick={() => addToast('Brand kit — coming in a later release', 'info')}>Brand: None <span style={tbBadge}>v1.1</span></button>
+                    {/* Web-app navigation (multi-page): sidebar / topbar / pills / none + accent */}
+                    <select
+                      value={generatedSpec.nav?.position || 'sidebar'}
+                      onChange={e => editSpec(s => { s.nav = { ...(s.nav || {}), position: e.target.value } })}
+                      title="Navigation shell for multi-page apps (present + export)"
+                      style={{ ...tbChip, cursor: 'pointer' }}>
+                      <option value="sidebar">Nav: Sidebar</option>
+                      <option value="topbar">Nav: Top tabs</option>
+                      <option value="pills">Nav: Top pills</option>
+                      <option value="none">Nav: None</option>
+                    </select>
+                    {(generatedSpec.nav?.position || 'sidebar') !== 'none' && (
+                      <input type="color" value={generatedSpec.nav?.accent || '#5EEAD4'}
+                        onChange={e => editSpec(s => { s.nav = { ...(s.nav || {}), accent: e.target.value } })}
+                        title="Nav accent colour"
+                        style={{ width: 26, height: 26, padding: 0, border: '1px solid var(--v-border)', borderRadius: 'var(--v-r)', background: 'transparent', cursor: 'pointer', flexShrink: 0 }} />
+                    )}
                     <button style={tbChip} onClick={() => addToast('Capture as step — coming with Stories', 'info')}>Capture as step</button>
                     <button style={tbChip} onClick={() => addToast('Story composer — coming in v2', 'info')}>Create story <span style={tbBadge}>v2</span></button>
 
                     <div style={{ flex: 1 }} />
 
+                    {/* Zoom / fit — Fit scales the page to the canvas width; ± zooms manually */}
+                    <button style={tbToggle(autoFitCanvas)} onClick={() => setAutoFitCanvas(true)} title="Fit page to canvas width">Fit</button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <button style={tbChip} onClick={() => { setAutoFitCanvas(false); setCanvasZoom(z => Math.max(0.25, Math.round((z - 0.1) * 100) / 100)) }} title="Zoom out">−</button>
+                      <span style={{ font: '600 11px var(--v-mono)', color: 'var(--v-text-2)', minWidth: 42, textAlign: 'center', whiteSpace: 'nowrap' }}>{autoFitCanvas ? 'Fit' : `${Math.round(canvasZoom * 100)}%`}</span>
+                      <button style={tbChip} onClick={() => { setAutoFitCanvas(false); setCanvasZoom(z => Math.min(2, Math.round((z + 0.1) * 100) / 100)) }} title="Zoom in">＋</button>
+                    </div>
                     <button style={tbToggle(snapOn)} onClick={() => setSnapOn(s => !s)} title="Alignment grid guides">Snap {snapOn ? 'on' : 'off'}</button>
                   </div>
                 )
@@ -1779,12 +1970,20 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                     const [pw, ph]  = presets[presetKey] || [1280, 720]
                     const pageW = Number(layout.pageWidth)  || pw || 1280
                     const pageH = Number(layout.pageHeight) || ph
+                    // Fit-to-width: scale the page down when it's wider than the canvas
+                    // area; never upscale past 100%. Manual zoom (canvasZoom) overrides.
+                    const fitScale = Math.min(1, (canvasWidth - 48) / pageW)
+                    const effZoom = autoFitCanvas ? (fitScale > 0 ? fitScale : 1) : canvasZoom
                     return (
-                      <div ref={canvasScrollRef} style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+                      <div ref={canvasScrollRef} style={{ flex: 1, overflow: 'auto', padding: 16, background: canvasTheme === 'dark' ? '#1e1f28' : '#E9ECF1' }}>
                         <div style={{
                           margin: '24px auto',
                           width: pageW,
                           minHeight: pageH || 720,
+                          // CSS zoom scales layout + render together, so centring and
+                          // scrollbars stay correct (unlike transform). Drag deltas are
+                          // divided by this zoom inside CanvasEditor.
+                          zoom: effZoom,
                           background: canvasTheme === 'dark' ? '#0b0b12' : '#FFFFFF',
                           border: canvasTheme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--v-text)',
                           borderRadius: 8,
@@ -1797,6 +1996,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                         }}>
                           <CanvasEditor
                             spec={_activePageSpec}
+                            zoom={effZoom}
                             onSpecChange={(id, pos) => {
                               editSpec(s => {
                                 s.layout = { ...(s.layout || {}), freeform: true }
@@ -1841,6 +2041,10 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                               editSpec(s => { s.layout = { ...(s.layout || {}), freeform: true }; s.visuals = [...(s.visuals || []), newV] })
                               setSelectedVisualId(id)
                             }}
+                            onConfigChange={(id, patch) => editSpec(s => {
+                              const v = s.visuals.find(vi => vi.id === id)
+                              if (v) v.config = { ...(v.config || {}), ...patch }
+                            })}
                             selectedId={selectedVisualId}
                             onSelect={setSelectedVisualId}
                             theme={canvasTheme}
@@ -1850,39 +2054,9 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                     )
                   })()}
 
-                  {/* ── Tabbed inspector (Data / Style / Text / Layout / AI) —
-                       same component the injector uses; measures live under Data.
-                       Fixed to the top-right; floats over the prompt panel while a
-                       visual is selected, dismiss returns you to the prompt. ── */}
-                  {selectedVisual && (
-                    <VisualInspector
-                      visual={selectedVisual}
-                      customTemplate={selectedVisual?.type === 'custom' ? generatedSpec?.customVisuals?.[selectedVisual.customTemplateId] : null}
-                      isDark
-                      editSpec={editSpec}
-                      selectedVisualId={selectedVisualId}
-                      onClose={() => setSelectedVisualId(null)}
-                      onDelete={() => {
-                        editSpec(s => {
-                          if ((s.slicers || []).some(sl => sl.id === selectedVisualId)) {
-                            s.slicers = s.slicers.filter(sl => sl.id !== selectedVisualId)
-                          } else {
-                            s.visuals = s.visuals.filter(v => v.id !== selectedVisualId)
-                          }
-                        })
-                        setSelectedVisualId(null)
-                      }}
-                      onDuplicate={() => editSpec(s => {
-                        const orig = s.visuals.find(vi => vi.id === selectedVisualId)
-                        if (!orig) return
-                        const copy = JSON.parse(JSON.stringify(orig))
-                        copy.id = `${orig.id}_copy_${Date.now().toString(36)}`
-                        copy.position = { ...copy.position, x: (copy.position?.x ?? 0) + 1, y: (copy.position?.y ?? 0) + 1 }
-                        s.visuals.push(copy)
-                      })}
-                      onAiRefine={async (prompt) => refineSpec({ prompt, scopedVisualId: selectedVisualId })}
-                    />
-                  )}
+                  {/* ── Inspector moved: it now renders as the 3rd tab of the right
+                       pane (Prompt | Library | Inspector), embedded inline instead of
+                       floating over the canvas. See the pane block above. ── */}
 
                   {/* ── Old inline inspector — DISABLED: replaced by the tabbed
                        VisualInspector (above). Kept until verified, then removed. ── */}

@@ -8,14 +8,17 @@ import './ui/tokens.css'
 import './ui/components.css'
 import { initTheme } from './ui/theme.js'
 import { ToastProvider } from './ui/Toast.jsx'
+import AppErrorBoundary from './appspec/shared/AppErrorBoundary.jsx'
 
 // Apply the saved (or default light) chrome theme before first paint.
 initTheme()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ToastProvider>
-      <App />
-    </ToastProvider>
+    <AppErrorBoundary>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </AppErrorBoundary>
   </React.StrictMode>
 )

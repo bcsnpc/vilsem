@@ -53,6 +53,10 @@ import CompactNarrative from './CompactNarrative.jsx'
 import CompactWaffle from './CompactWaffle.jsx'
 import CompactNavButton from './CompactNavButton.jsx'
 import CompactCustom from './CompactCustom.jsx'
+import CompactTextBox from './CompactTextBox.jsx'
+import CompactShape from './CompactShape.jsx'
+import CompactImage from './CompactImage.jsx'
+import CompactDivider from './CompactDivider.jsx'
 import CompactBarRaceEcharts, { schema as barRaceSchema } from './CompactBarRaceEcharts.jsx'
 
 import { FLAGS } from '../shared/feature-flags.js'
@@ -177,6 +181,11 @@ export const VISUAL_MAP = {
   waffle: CompactWaffle,
   bar_race: CompactBarRace,
   nav_button: CompactNavButton,
+  // Canvas objects — non-data authorable elements.
+  text_box: CompactTextBox,
+  shape: CompactShape,
+  image: CompactImage,
+  divider: CompactDivider,
   // Playground Spike: one declarative-template component behind every custom
   // visual. Additive — the template rides inside spec.customVisuals, so every
   // render path (canvas, present, standalone export) resolves it identically.

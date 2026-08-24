@@ -3,14 +3,25 @@ import * as pbi from 'powerbi-client'
 import CanvasEditor from '../../appspec/CanvasEditor.jsx'
 import AppSpecRenderer from '../../appspec/AppSpecRenderer.jsx'
 import VisualInspector from '../../appspec/VisualInspector.jsx'
+import MiniChart from '../../appspec/shell/MiniChart.jsx'
+import { useCanvasZoom, computeEffZoom, EditorZoomControls } from '../../appspec/shell/CanvasZoom.jsx'
+import TemplatePicker from '../../templates/TemplatePicker.jsx'
 import { FieldsPanel } from '../../vilsem/Panels.jsx'
-import { ArrowLeft, ArrowRight, Plus, Upload } from '../../ui/icons.js'
+import { ArrowLeft, ArrowRight, ChevronRight, Upload } from '../../ui/icons.js'
 import VisualPlayground from '../../playground/VisualPlayground.jsx' // Playground Spike
 import {
   makeEditSpec, flatPageView, getCurrentPage, mergePageResult, getPages,
   addVisualToSpec, VISUAL_PALETTE,
 } from '../../appspec/specEditing.js'
 import '../../vilsem/tokens.css'
+
+// Collapsed-pane rail + collapse-chevron styles (shared by the Model and
+// Prompt/Library panes so both fold away like the new-project shell).
+const collapseBtn = { width: 22, height: 22, border: 'none', background: 'transparent', color: 'var(--v-text-faint)', font: '600 14px var(--v-font)', cursor: 'pointer', lineHeight: 1, flexShrink: 0 }
+const railText = { writingMode: 'vertical-rl', transform: 'rotate(180deg)', font: '600 10px var(--v-mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--v-text-2)', marginTop: 8 }
+function collapsedRail(border) {
+  return { width: 30, minWidth: 30, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 8, gap: 4, cursor: 'pointer', background: 'var(--v-bg-1)', [border === 'left' ? 'borderLeft' : 'borderRight']: '1px solid var(--v-border)', color: 'var(--v-text-2)' }
+}
 
 // S6 — the injector's authoring canvas. Same Model · Canvas · Prompt layout as a
 // new project: model explorer (left), the target report page shown behind with
@@ -32,14 +43,16 @@ export default function InjectorPageCanvas({
   const [prompt, setPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
-  const [zoom, setZoom] = useState(1)
-  const [autoFit, setAutoFit] = useState(true)   // scale-to-fit the viewport until the user zooms manually
   const [snapOn, setSnapOn] = useState(true)
+  const [modelCollapsed, setModelCollapsed] = useState(false)
+  const [rightCollapsed, setRightCollapsed] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
   const [promptDrop, setPromptDrop] = useState(false)
   const [presentMode, setPresentMode] = useState(false)
   const [showPlayground, setShowPlayground] = useState(false)   // Playground Spike
   const [customTemplates, setCustomTemplates] = useState([])
   const scrollRef = useRef(null)
+  const { zoom, autoFit, viewportW, zoomIn, zoomOut, fit } = useCanvasZoom(scrollRef)
 
   // Playground Spike — load dataset-scoped custom templates
   const reloadCustomTemplates = useCallback(async () => {
@@ -175,6 +188,7 @@ export default function InjectorPageCanvas({
     )
   }
 
+  const effZoom = computeEffZoom(autoFit, zoom, viewportW, pageW)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, background: 'var(--v-bg-0)' }}>
       {/* ── Toolbar ── */}
@@ -187,6 +201,7 @@ export default function InjectorPageCanvas({
 
         <div style={{ flex: 1 }} />
 
+        <EditorZoomControls zoom={zoom} autoFit={autoFit} onFit={fit} onZoomIn={zoomIn} onZoomOut={zoomOut} />
         <button style={tbToggle(snapOn)} onClick={() => setSnapOn(s => !s)}>Snap {snapOn ? 'on' : 'off'}</button>
         <button style={tbGhost} onClick={() => setShowPlayground(true)} title="Custom visual playground (spike)">⚗ Playground</button>
         <button style={tbGhost} onClick={() => { setSelectedVisualId(null); setPresentMode(true) }} disabled={visualCount === 0} title="Present (read-only)">Present</button>
@@ -208,17 +223,26 @@ export default function InjectorPageCanvas({
 
       {/* ── Body: Model · Canvas · Prompt ── */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        {/* Model pane */}
-        <div style={{ width: 240, minWidth: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--v-bg-1)', borderRight: '1px solid var(--v-border)' }}>
-          <div style={{ height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: '1px solid var(--v-border)', font: '600 11px var(--v-mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--v-text-2)' }}>Model</div>
-          <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><FieldsPanel /></div>
-        </div>
+        {/* Model pane (collapsible) */}
+        {modelCollapsed ? (
+          <div onClick={() => setModelCollapsed(false)} title="Show model" style={collapsedRail('right')}>
+            <span style={{ fontSize: 13 }}>›</span><span style={railText}>Model</span>
+          </div>
+        ) : (
+          <div style={{ width: 240, minWidth: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--v-bg-1)', borderRight: '1px solid var(--v-border)' }}>
+            <div style={{ height: 34, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: '1px solid var(--v-border)', font: '600 11px var(--v-mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--v-text-2)' }}>
+              <span style={{ flex: 1 }}>Model</span>
+              <button onClick={() => setModelCollapsed(true)} title="Collapse" style={collapseBtn}>‹</button>
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}><FieldsPanel /></div>
+          </div>
+        )}
 
         {/* Canvas */}
         <div ref={scrollRef} style={{ flex: 1, minWidth: 0, overflow: 'auto', padding: 24, background: isDark ? '#0b0b12' : 'var(--v-bg-0)', backgroundImage: 'radial-gradient(circle, rgba(140,160,180,0.10) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
           onClick={() => setSelectedVisualId(null)}>
           <div onClick={e => e.stopPropagation()} style={{
-            position: 'relative', margin: '0 auto', width: pageW, minHeight: pageH || 720,
+            position: 'relative', margin: '0 auto', width: pageW, minHeight: pageH || 720, zoom: effZoom,
             background: isDark ? '#0b0b12' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0',
             borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', padding: 16, boxSizing: 'border-box',
             backgroundImage: snapOn ? `radial-gradient(circle, ${isDark ? 'rgba(140,160,180,0.16)' : 'rgba(30,40,60,0.08)'} 1px, transparent 1px)` : undefined,
@@ -240,6 +264,7 @@ export default function InjectorPageCanvas({
             <div style={{ position: 'relative', zIndex: 1 }}>
               <CanvasEditor
                 spec={activePageSpec}
+                zoom={effZoom}
                 onSpecChange={(id, pos) => editSpec(s => {
                   s.layout = { ...(s.layout || {}), freeform: true }
                   const v = s.visuals.find(vi => vi.id === id)
@@ -273,12 +298,18 @@ export default function InjectorPageCanvas({
           </div>
         </div>
 
-        {/* Prompt / Library */}
+        {/* Prompt / Library (collapsible) */}
+        {rightCollapsed ? (
+          <div onClick={() => setRightCollapsed(false)} title="Show prompt & library" style={collapsedRail('left')}>
+            <span style={{ fontSize: 13 }}>‹</span><span style={railText}>Prompt · Library</span>
+          </div>
+        ) : (
         <div style={{ width: 320, minWidth: 320, flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0, background: 'var(--v-surface)', borderLeft: '1px solid var(--v-border)', position: 'relative' }}>
-          <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid var(--v-border)' }}>
+          <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid var(--v-border)', alignItems: 'center' }}>
             {['prompt', 'library'].map(t => (
               <button key={t} onClick={() => setRightTab(t)} style={{ flex: 1, padding: '9px 0', border: 'none', background: 'transparent', cursor: 'pointer', font: '600 12px var(--v-font)', textTransform: 'capitalize', color: rightTab === t ? 'var(--v-text)' : 'var(--v-text-muted)', borderBottom: `2px solid ${rightTab === t ? 'var(--v-accent)' : 'transparent'}` }}>{t}</button>
             ))}
+            <button onClick={() => setRightCollapsed(true)} title="Collapse" style={{ ...collapseBtn, marginRight: 6 }}>›</button>
           </div>
 
           {rightTab === 'prompt' ? (
@@ -311,6 +342,21 @@ export default function InjectorPageCanvas({
               </div>
               <div style={{ font: '400 11px var(--v-font)', color: 'var(--v-text-faint)', marginTop: 6 }}>Drag model fields into this box to pin them as context.</div>
               {genError && <div style={{ font: '400 11px var(--v-font)', color: 'var(--v-amber)', marginTop: 6 }}>⚠ {genError}</div>}
+              {/* Start from a template — MERGES onto the current page (not a full replace) */}
+              {aiStatus?.anyConfigured && (
+                <div style={{ marginTop: 14, borderTop: '1px solid var(--v-border)', paddingTop: 12 }}>
+                  <button onClick={() => setShowTemplates(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', font: '600 10px var(--v-mono)', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--v-text-2)', padding: 0 }}>
+                    <span style={{ transform: showTemplates ? 'rotate(90deg)' : 'none', transition: 'transform .1s', display: 'inline-flex' }}><ChevronRight size={14} /></span>
+                    Start from a template
+                  </button>
+                  {showTemplates && (
+                    <div style={{ marginTop: 10 }}>
+                      <TemplatePicker measures={measures} dimensions={dimensions} theme={{ mode: canvasTheme }}
+                        onApply={(tspec) => { setSpec(mergePageResult(spec, currentPageId, tspec)); setShowTemplates(false) }} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
@@ -320,7 +366,7 @@ export default function InjectorPageCanvas({
                   <button key={type} onClick={() => addFromLibrary(type, w, h)}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--v-accent-border)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-border)' }}
                     style={{ padding: '12px 10px', background: 'var(--v-surface-2)', border: '1px solid var(--v-border)', borderRadius: 'var(--v-r-2)', cursor: 'pointer', font: '500 12px var(--v-font)', color: 'var(--v-text)', textAlign: 'left', transition: 'border-color .12s' }}>
-                    <Plus size={14} style={{ color: 'var(--v-accent)', marginBottom: 6, display: 'block' }} />{label}
+                    <div style={{ marginBottom: 6 }}><MiniChart type={type} /></div>{label}
                   </button>
                 ))}
               </div>
@@ -346,6 +392,7 @@ export default function InjectorPageCanvas({
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Playground Spike — custom-visual authoring overlay */}
@@ -373,7 +420,7 @@ export default function InjectorPageCanvas({
       {/* Inspector (tabbed) */}
       {selectedVisual && (
         <VisualInspector
-          visual={selectedVisual} isDark editSpec={editSpec} selectedVisualId={selectedVisualId}
+          visual={selectedVisual} canvasTheme={canvasTheme} pages={getPages(spec)} editSpec={editSpec} selectedVisualId={selectedVisualId}
           customTemplate={selectedVisual?.type === 'custom' ? spec?.customVisuals?.[selectedVisual.customTemplateId] : null}
           onClose={() => setSelectedVisualId(null)}
           onDelete={() => { editSpec(s => { if ((s.slicers || []).some(sl => sl.id === selectedVisualId)) s.slicers = s.slicers.filter(sl => sl.id !== selectedVisualId); else s.visuals = s.visuals.filter(v => v.id !== selectedVisualId) }); setSelectedVisualId(null) }}

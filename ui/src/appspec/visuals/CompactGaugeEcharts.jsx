@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, GaugeMarks } from '../../primitives/index'
 
@@ -76,7 +77,7 @@ export default function CompactGaugeEcharts({ rows, config, loading, error }) {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

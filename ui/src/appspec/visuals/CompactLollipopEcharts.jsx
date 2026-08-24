@@ -3,6 +3,7 @@ import { pal, gridLineColor } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 
 // Lollipop customization schema — surfaced by the schema-driven VisualInspector.
@@ -35,6 +36,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
     const showGrid    = config.gridLines ?? false
     const gridColor   = gridLineColor(config, t.gridStrokeOn)
     const color       = p.start
+    const catColors   = config.categoryColors  // per-category colour overrides (by _cat)
 
     const categories = chartRows.map(r => String(r._cat))
     const vals       = chartRows.map(r => Number(r._val) || 0)
@@ -62,6 +64,17 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
     // Scatter points sit at (value, category). Orientation decides which axis is which.
     const scatterData = chartRows.map((r, i) => (isH ? [vals[i], categories[i]] : [categories[i], vals[i]]))
 
+    // Per-category colour overrides: attach an itemStyle only to items the user coloured;
+    // others keep the scheme colour. ECharts merges per-item itemStyle over the series one.
+    const stemData = vals.map((v, i) => {
+      const cc = catColors && catColors[categories[i]]
+      return cc ? { value: v, itemStyle: { color: cc, opacity: 0.55 } } : v
+    })
+    const dotData = scatterData.map((pt, i) => {
+      const cc = catColors && catColors[categories[i]]
+      return cc ? { value: pt, itemStyle: { color: cc, shadowBlur: 6, shadowColor: `${cc}66` } } : pt
+    })
+
     return {
       grid: { left: 8, right: isH ? 44 : 12, top: 14, bottom: isH ? 8 : 28, containLabel: true },
       xAxis: isH ? valAxis : catAxis,
@@ -69,7 +82,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
       series: [
         { // stems
           type: 'bar',
-          data: vals,
+          data: stemData,
           barWidth: lineWidth,
           itemStyle: { color, opacity: 0.55 },
           z: 1,
@@ -77,7 +90,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
         },
         { // dots
           type: 'scatter',
-          data: scatterData,
+          data: dotData,
           symbolSize: dotSize * 2,
           itemStyle: { color, shadowBlur: 6, shadowColor: `${color}66` },
           z: 2,
@@ -96,6 +109,8 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
     rows, t, p.start, p.text,
     config.orientation, config.dotSize, config.lineWidth, config.dataLabels, config.gridLines,
     config.limit, config.prefix, config.suffix, config.colorScheme,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(config.categoryColors),
   ])
 
   if (loading) return <LoadingShimmer />
@@ -104,7 +119,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

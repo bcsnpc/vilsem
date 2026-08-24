@@ -75,12 +75,25 @@ export default function CompactKpi({ rows, config, loading, error }) {
           if (cancelled) return
           console.log('[Sparkline]', col, '→', res?.rows?.length || 0, 'rows')
           if (res?.rows?.length > 2) {
-            const key = Object.keys(res.rows[0]).find(k => k !== col && k !== col.split('[')[1]?.replace(']',''))
-            const pts = res.rows.map(r => {
+            const colName = col.split('[')[1]?.replace(']', '')
+            const dateKey = Object.keys(res.rows[0]).find(k => k === col || k === colName)
+            const key = Object.keys(res.rows[0]).find(k => k !== dateKey)
+            // queryTable's DAX sorts by the MEASURE (ORDER BY [measure]); a sparkline is
+            // a time series, so re-sort chronologically by the axis column — otherwise the
+            // line comes out as a smooth value-sorted ramp instead of real ups-and-downs.
+            const ordered = dateKey
+              ? [...res.rows].sort((a, b) => {
+                  const av = a[dateKey], bv = b[dateKey]
+                  const at = Date.parse(av), bt = Date.parse(bv)
+                  if (!Number.isNaN(at) && !Number.isNaN(bt)) return at - bt
+                  return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+                })
+              : res.rows
+            const pts = ordered.map(r => {
               const v = r[sparkMeasure] ?? r[key] ?? Object.values(r).find(x => typeof x === 'number')
               return typeof v === 'number' ? v : null
             }).filter(v => v != null)
-            if (pts.length > 2) { console.log('[Sparkline] using', col, 'with', pts.length, 'points'); setSparkPoints(pts); return }
+            if (pts.length > 2) { console.log('[Sparkline] using', col, 'with', pts.length, 'points (chrono-sorted)'); setSparkPoints(pts); return }
           }
         } catch (e) { console.warn('[Sparkline] query failed for', col, e?.message) }
       }
@@ -118,6 +131,7 @@ export default function CompactKpi({ rows, config, loading, error }) {
   const sparklineHeight  = config.sparklineHeight ?? (sparklinePosition === 'background' ? '100%' : 24)
   const sparklineColor   = config.sparklineColor || p.start
   const sparklineShowArea = config.sparklineShowArea ?? true
+  const sparklineWeight  = config.sparklineWeight ?? 1.5   // line thickness (px), user-adjustable
   const sparkData      = sparkPoints || (rows?.length > 1 ? rows.map(r => r._val).filter(v => v != null) : null)
   const showIcon       = config.showIcon ?? false
   const icon           = config.icon || '✦'
@@ -129,7 +143,7 @@ export default function CompactKpi({ rows, config, loading, error }) {
   const effectiveValueSize = compactMode && typeof valueSize === 'number' ? Math.round(valueSize * 0.7) : valueSize
   const effectiveTitleSize = compactMode && typeof titleSize === 'number' ? Math.round(titleSize * 0.85) : titleSize
 
-  const titleEl = (config.title || config.label) && (
+  const titleEl = (config.showTitle !== false) && (config.title || config.label) && (
     <div style={{ fontSize: effectiveTitleSize, fontWeight: titleWeight, color: titleColor, textAlign: align, lineHeight: 1.3, letterSpacing: config.titleUppercase ? '0.05em' : '0.01em', maxWidth: '90%', fontFamily: titleFont, textTransform: config.titleUppercase ? 'uppercase' : 'none' }}>
       {config.title || config.label}
     </div>
@@ -170,7 +184,7 @@ export default function CompactKpi({ rows, config, loading, error }) {
               )}
               {/* Inline sparkline (next to value) */}
               {showSparkline && sparklinePosition === 'inline' && sparkData && sparkData.length > 2 && (
-                <SparklineSvg data={sparkData} width={sparklineWidth} height={sparklineHeight} color={sparklineColor} showArea={sparklineShowArea} id={config.colorScheme || 'a'} />
+                <SparklineSvg data={sparkData} width={sparklineWidth} height={sparklineHeight} color={sparklineColor} showArea={sparklineShowArea} strokeWidth={sparklineWeight} id={config.colorScheme || 'a'} />
               )}
             </div>
             {titlePosition !== 'above' && titleEl}
@@ -178,7 +192,7 @@ export default function CompactKpi({ rows, config, loading, error }) {
             {/* Below sparkline */}
             {showSparkline && sparklinePosition === 'below' && sparkData && sparkData.length > 2 && (
               <div style={{ width: '90%', maxWidth: 240, marginTop: 4 }}>
-                <SparklineSvg data={sparkData} width="100%" height={28} color={sparklineColor} showArea={sparklineShowArea} id={config.colorScheme || 'b'} />
+                <SparklineSvg data={sparkData} width="100%" height={28} color={sparklineColor} showArea={sparklineShowArea} strokeWidth={sparklineWeight} id={config.colorScheme || 'b'} />
               </div>
             )}
             {/* Progress bar (when showProgress is enabled) */}

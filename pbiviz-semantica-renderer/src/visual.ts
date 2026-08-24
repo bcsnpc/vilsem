@@ -49,6 +49,12 @@ import { composeOption } from "./compositions"
 import { shapeExpandInPlace, aggregateDrillLevel } from "./appspec/shared/drill.js"
 // @ts-ignore — plain-JS module, no type declarations
 import { buildExpandBarOption } from "./appspec/shared/expandBarOption.js"
+// Card chrome — the SAME function the web canvas uses, so cardStyle variants,
+// bgOpacity, radius and accent border render identically in Power BI.
+// @ts-ignore — plain-JS module (copied by copy-primitives), no type declarations
+import { getCardChromeStyle } from "./appspec/shared/chrome.js"
+import { applyTooltipConfig } from "./appspec/shared/applyTooltipConfig.js"
+import getThemeTokens from "./appspec/getThemeTokens"
 
 // Theme tokens — lifted from ui/src/appspec/getThemeTokens.ts and trimmed to the
 // surface the primitives actually read. PBI doesn't expose a "dark vs light" mode
@@ -122,11 +128,9 @@ function colorValFor(scheme: unknown): string {
   return SCHEME_START[String(scheme)] || SCHEME_START.teal
 }
 
-// Chrome accent gradient functions (mirrors getThemeTokens.ts accentBgFn/chartBorderTop).
+// Chrome accent gradient (mirrors getThemeTokens.ts accentBgFn). The card border-top
+// now comes from getCardChromeStyle (chrome.js), same as the web canvas.
 function accentBg(c: string): string { return `linear-gradient(180deg, ${c} 0%, ${c}50 100%)` }
-function chartBorderTopFor(c: string, isDark: boolean): string {
-  return `1.5px solid ${c}${isDark ? '2e' : '18'}`
-}
 
 export class Visual implements IVisual {
   private root: HTMLElement
@@ -291,21 +295,32 @@ export class Visual implements IVisual {
   // to the legacy render path, preserving backward compatibility).
   private readPrimitiveSpec(dv: DataView): Record<string, unknown> | null {
     const objects = dv?.metadata?.objects as Record<string, Record<string, unknown>> | undefined
-    const raw = objects?.semantica?.primitiveSpec
+    const fromReport = objects?.semantica?.primitiveSpec
+    // Prefer the report-set spec (new-project publish / inject). Otherwise fall
+    // back to a spec BAKED into this package at export time: vilsem's "Export to
+    // Power BI" repackages this .pbiviz and replaces the placeholder in
+    // bakedSpecRaw() with the exported visual's spec, so an imported .pbiviz
+    // renders that exact chart with only the fields bound (no report property).
+    const raw = (typeof fromReport === "string" && fromReport.length > 0)
+      ? fromReport
+      : this.bakedSpecRaw()
     if (typeof raw !== "string" || raw.length === 0) return null
+    // Generic (un-exported) build: the placeholder was never replaced → not JSON.
+    if (raw.indexOf("__SEMANTICA_BAKED") === 0) return null
     try {
       const parsed = JSON.parse(raw)
       return (parsed && typeof parsed === "object") ? parsed : null
     } catch (e) {
-      // The property arrived but is malformed — surface this rather than
-      // silently falling through to the legacy bar-chart fallback. Phase 5.3
-      // bug masked itself this way: spec was placed under vcObjects so PBI
-      // routed it nowhere, and the renderer happily rendered every visual
-      // as a bar chart because nothing flagged the missing dispatch.
       console.error("[Semantica] primitiveSpec JSON parse failed:", (e as Error).message, "raw:", raw.slice(0, 200))
       return null
     }
   }
+
+  // Export-baked spec. vilsem "Export to Power BI" repackages this .pbiviz and
+  // replaces the placeholder string below with the exported visual's primitiveSpec
+  // JSON. Left unreplaced in the generic build (still the placeholder), so
+  // readPrimitiveSpec falls through to normal report-driven behaviour.
+  private bakedSpecRaw(): string { return "__SEMANTICA_BAKED_SPEC__" }
 
   // ── Phase 5.2: primitive render path ──────────────────────────────────────
   // Builds an ECharts option from the spec + the dataView's raw categorical data,
@@ -340,7 +355,7 @@ export class Visual implements IVisual {
     const colorVal      = colorValFor(config.colorScheme)
     const showAccent    = config.showAccentStrip !== false
     const titleText     = String(config.title || config.label || "")
-    const hasTitle      = titleText.length > 0
+    const hasTitle      = titleText.length > 0 && config.showTitle !== false
     const titleColor    = String(config.titleColor || theme.textPrimary)
     const titleSize     = Number(config.titleFontSize || 12)
     const titleFamily   = String(config.titleFontFamily || "Inter, 'Segoe UI', sans-serif")
@@ -350,17 +365,18 @@ export class Visual implements IVisual {
     // the chart full-bleed.
     const card = document.createElement("div")
     if (!isPlain) {
-      card.style.cssText = [
-        "position:absolute", "inset:0",
-        `background:${theme.CARD_BG}`,
-        `border:1px solid ${theme.CARD_BORDER}`,
-        `border-top:${chartBorderTopFor(colorVal, isDark)}`,
-        `box-shadow:${theme.CARD_SHADOW}`,
-        "border-radius:14px",
-        "overflow:hidden",
-        "display:flex", "flex-direction:column",
-        "box-sizing:border-box",
-      ].join(";")
+      // Full card-chrome parity with the web canvas: cardStyle (minimal/filled/glass/
+      // glossy/accent/bordered), bgOpacity, borderRadius, cardOpacity — via the shared
+      // getCardChromeStyle. getThemeTokens supplies the full token set it reads.
+      const fullT = getThemeTokens(themeMode)
+      const chrome = getCardChromeStyle({ config, colorVal, T: fullT, isKpi: false })
+      Object.assign(card.style, {
+        position: "absolute", inset: "0",
+        overflow: "hidden", display: "flex", flexDirection: "column", boxSizing: "border-box",
+        ...chrome,
+        borderRadius: `${chrome.borderRadius ?? 14}px`,
+        opacity: String(chrome.opacity ?? 1),
+      })
     } else {
       card.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;box-sizing:border-box"
     }
@@ -519,6 +535,10 @@ export class Visual implements IVisual {
       fontFamily: "Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
       ...(option.textStyle || {}),
     }
+
+    // Per-visual tooltip config (show/hide + trigger) — same helper the web canvas
+    // uses, so tooltip behaviour matches on canvas, web export and PBI.
+    applyTooltipConfig(option, config as any)
 
     // Save the composed option so applyChartSelection can derive selection-
     // aware overrides without recomposing.
@@ -814,7 +834,19 @@ export class Visual implements IVisual {
     }
     const frameKeys = Array.from(byFrame.keys()).sort((a, b) =>
       a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
-    const frames = frameKeys.map(k => ({ label: k, items: byFrame.get(k)! }))
+    const baseFrames = frameKeys.map(k => ({ label: k, items: byFrame.get(k)! }))
+
+    // Cumulative mode — running total per category across the play axis (mirrors
+    // CompactBarRaceEcharts.accumulateFrames). Bars only ever grow; a category that
+    // skips a frame keeps its accumulated total.
+    const accumulate = (fs: Array<{ label: string; items: Array<{ name: string; value: number }> }>) => {
+      const running = new Map<string, number>()
+      return fs.map(f => {
+        for (const it of f.items) running.set(it.name, (running.get(it.name) || 0) + it.value)
+        return { label: f.label, items: Array.from(running.entries()).map(([name, value]) => ({ name, value })) }
+      })
+    }
+    const frames = String(config.raceMode) === "cumulative" ? accumulate(baseFrames) : baseFrames
 
     if (!frames.length) { this.renderError("No data to display", "bar_race"); return }
 
@@ -828,7 +860,10 @@ export class Visual implements IVisual {
     const colorMap: Record<string, string> = {}
     let ci = 0
     for (const f of frames) for (const it of f.items) if (!(it.name in colorMap)) colorMap[it.name] = palette[ci++ % palette.length]
-    const colorFor = (name: string) => (perCat ? (colorMap[name] || colorVal) : colorVal)
+    // Explicit per-category colours (config.categoryColors) win over the auto palette,
+    // matching the web renderer's colorFor.
+    const catColors = (config.categoryColors ?? null) as Record<string, string> | null
+    const colorFor = (name: string) => (catColors && catColors[name]) || (perCat ? (colorMap[name] || colorVal) : colorVal)
     const fmt = (n: number): string => {
       const a = Math.abs(n)
       if (a >= 1e9) return (n / 1e9).toFixed(1) + "B"

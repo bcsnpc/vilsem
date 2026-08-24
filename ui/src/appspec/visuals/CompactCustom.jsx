@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
 import { instantiateVisual, buildThemeContext } from '../../playground/instantiate.js'
@@ -76,7 +77,7 @@ export default function CompactCustom({ rows, config, loading, error }) {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

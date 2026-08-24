@@ -81,6 +81,7 @@ export const BarMarks: Primitive<BarMarksProps> = (props, ctx) => {
     secondaryMeasureName,
     secondaryColor,
     stacked = false,
+    categoryColors,
   } = props
 
   const rows = ctx.data.rows as Array<{ _cat: unknown; _val: unknown }>
@@ -111,9 +112,15 @@ export const BarMarks: Primitive<BarMarksProps> = (props, ctx) => {
       ? buildGradient(p.start, actualGradientTo, horizontal)
       : `rgba(${cr},${cg},${cb},0.80)`
 
+    // Explicit per-category colour (user-assigned by category name) wins over the
+    // palette/rank/gradient logic — but selection dimming still takes precedence.
+    const catColor = categoryColors ? categoryColors[String(row._cat)] : undefined
+
     let itemStyle: Record<string, unknown>
     if (isDimmed) {
       itemStyle = { color: p.start, opacity: 0.25, borderColor: t.axisLine, borderWidth: 1 }
+    } else if (catColor) {
+      itemStyle = { color: catColor, borderColor: t.axisLine, borderWidth: 1 }
     } else if (conditionalColor && conditionalColor.threshold != null) {
       const color = val >= conditionalColor.threshold
         ? (conditionalColor.above || p.start)

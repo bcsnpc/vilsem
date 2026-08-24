@@ -1,6 +1,7 @@
 import React from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, PointMarks } from '../../primitives/index'
 import { gridLineColor } from '../shared/palettes.js'
@@ -40,7 +41,7 @@ export default function CompactScatterEcharts({ rows, config, loading, error }) 
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={option} />
+      <EChartsCanvas option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

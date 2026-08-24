@@ -2,6 +2,7 @@
 // one with positions filled in (slicers on top, KPIs in a KPI row, charts
 // below respecting original row intent). Verbatim extract from
 // AppSpecRenderer.jsx (pre-Phase-1).
+import { isBareVisual } from '../schema.js'
 
 export function normalizeLayout(spec) {
   if (!spec?.visuals) return spec
@@ -13,10 +14,11 @@ export function normalizeLayout(spec) {
   const slicers = spec.slicers || []
   const visuals = spec.visuals || []
 
-  // Separate by type — ignore ALL AI y values, drop visuals with no measures
+  // Separate by type. Drop data visuals with no measures, but KEEP bare visuals
+  // (nav buttons + canvas objects) — they carry no data and must still render.
   const KPI_TYPES = new Set(['kpi', 'stat_card', 'metric_tile', 'sparkline_kpi', 'bullet', 'progress', 'gauge'])
   const kpis   = visuals.filter(v => KPI_TYPES.has(v.type) && v.data?.measures?.length > 0)
-  const charts = visuals.filter(v => !KPI_TYPES.has(v.type) && v.data?.measures?.length > 0)
+  const charts = visuals.filter(v => !KPI_TYPES.has(v.type) && (v.data?.measures?.length > 0 || isBareVisual(v.type)))
 
   let currentY = 0
   const placedSlicers = []

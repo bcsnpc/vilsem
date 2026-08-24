@@ -34,6 +34,7 @@ import { buildDataOnlyDax, buildPrimitiveSpecJson, isPrimitiveCovered } from '..
 import {
   buildVisualJson,
   ensureHtmlContentRegistered,
+  ensureSemanticaRendererRegistered,
   isReportJsonPath,
   visualIdSlug,
   pageDirName,
@@ -115,7 +116,13 @@ export async function injectVisualsIntoReport({
   const tertiaryMeasuresByVisualId  = {}
   const tableMeasureNamesByVisualId = {}
   const specsByVisualId             = {}  // primitiveSpec JSON per chart visual
-  const usePrimitive = format !== 'PBIR-Legacy'
+  // Injected charts use the PROVEN baked-HTML path, NOT the semanticaRenderer.
+  // Live-debug (2026-08-23) confirmed the 2026-04-17 finding: a modern-PBIR report
+  // cannot SERVE an embedded private custom visual — its binary 404s
+  // (…A3B7D.pbiviz.json), so the visual never loads (blank). New-project works only
+  // because it builds a LEGACY report, which can serve the embedded binary. There
+  // is no working PBIR equivalent, so inject stays on baked HTML (static, reliable).
+  const usePrimitive = false
   let done = 0
 
   for (const v of renderable) {
@@ -191,7 +198,29 @@ export async function injectVisualsIntoReport({
     throw new Error('pbismUpdateDefinition failed: ' + (tmdlRes?.message || 'unknown'))
   }
 
-  // ── 5. Build new visual parts + register HTML Content visual ───────────
+  // ── 4b. Real-renderer embed (PBIR only) ────────────────────────────────
+  // If any visual took the primitive/chart path, embed our custom-visual binary
+  // so injected charts render as live ECharts (reading primitiveSpec) instead of
+  // the static HTML-Content visual. Legacy reports bake HTML and need no binary.
+  // Falls back to HTML-Content if the binary can't be loaded (non-fatal).
+  let rendererGuid = null
+  let customVisualParts = []
+  if (format === 'PBIR' && Object.keys(specsByVisualId).length > 0) {
+    try {
+      const cv = await window.semantica.pbiGetCustomVisualParts()
+      if (cv?.success && cv.guid && Array.isArray(cv.parts) && cv.parts.length) {
+        rendererGuid = cv.guid
+        customVisualParts = cv.parts
+        report_(72, 'Embedding vilsem renderer…')
+      } else {
+        console.warn('[injectorFlow] custom-visual parts unavailable — charts fall back to HTML-Content:', cv?.message)
+      }
+    } catch (e) {
+      console.warn('[injectorFlow] pbiGetCustomVisualParts failed — charts fall back to HTML-Content:', e?.message)
+    }
+  }
+
+  // ── 5. Build new visual parts + register the custom visual ─────────────
   report_(75, 'Building visual JSON files…')
   const newReportParts = format === 'PBIR-Legacy'
     ? injectIntoLegacyReport({
@@ -209,6 +238,8 @@ export async function injectVisualsIntoReport({
         tertiaryMeasuresByVisualId,
         tableMeasureNamesByVisualId,
         specsByVisualId,
+        rendererGuid,
+        customVisualParts,
       })
 
   // ── 6. Push updated report ──────────────────────────────────────────────
@@ -234,15 +265,17 @@ export async function injectVisualsIntoReport({
  * Semantica visual under the target page, and ensure the HTML Content
  * custom visual is registered in report.json. Doesn't touch any other parts.
  */
-function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, measuresByVisualId, secondaryMeasuresByVisualId = {}, tertiaryMeasuresByVisualId = {}, tableMeasureNamesByVisualId = {}, specsByVisualId = {} }) {
+function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, measuresByVisualId, secondaryMeasuresByVisualId = {}, tertiaryMeasuresByVisualId = {}, tableMeasureNamesByVisualId = {}, specsByVisualId = {}, rendererGuid = null, customVisualParts = [] }) {
   const out = []
   let reportJsonHandled = false
 
   for (const part of reportParts) {
     if (isReportJsonPath(part.path)) {
-      // Register HTML Content visual in publicCustomVisuals (idempotent)
-      const parsed   = safeParse(part.content) || {}
-      const updated  = ensureHtmlContentRegistered(parsed)
+      // Register the custom visual(s) in publicCustomVisuals (idempotent).
+      // HTML-Content for baked visuals; Semantica Renderer when we embed it.
+      const parsed  = safeParse(part.content) || {}
+      let updated   = ensureHtmlContentRegistered(parsed)
+      if (rendererGuid) updated = ensureSemanticaRendererRegistered(updated, rendererGuid)
       out.push({ path: part.path, content: JSON.stringify(updated, null, 2) })
       reportJsonHandled = true
     } else {
@@ -277,7 +310,7 @@ function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, meas
   // Append new visual.json parts under the target page directory.
   // Path shape: definition/pages/<pageDir>/visuals/<visualSlug>/visual.json
   for (const v of visuals) {
-    const ctx = { measuresByVisualId, secondaryMeasuresByVisualId, tertiaryMeasuresByVisualId, tableMeasureNamesByVisualId, specsByVisualId }
+    const ctx = { measuresByVisualId, secondaryMeasuresByVisualId, tertiaryMeasuresByVisualId, tableMeasureNamesByVisualId, specsByVisualId, rendererGuid }
     const slug = uniqueSlug(visualIdSlug(v.id))
     const visualJson = buildVisualJson(v, ctx)
     visualJson.name = slug   // the folder name must equal the visual's `name`
@@ -285,6 +318,38 @@ function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, meas
       path:    `definition/pages/${targetPageDir}/visuals/${slug}/visual.json`,
       content: JSON.stringify(visualJson, null, 2),
     })
+  }
+
+  // Embed the custom-visual binary parts (CustomVisuals/<guid>/…) so the report
+  // is self-contained. They arrive already base64-encoded ({path, payload,
+  // payloadType}); encodeParts() on the IPC side passes them through unchanged.
+  // Idempotent: skip any path already present (re-inject / already embedded).
+  if (customVisualParts.length) {
+    const seen = new Set(out.map((p) => p.path))
+    for (const p of customVisualParts) {
+      if (!seen.has(p.path)) { out.push(p); seen.add(p.path) }
+    }
+  }
+
+  // Grow the target page so injected visuals placed below existing content stay
+  // visible — PBI does NOT auto-expand a page to fit newly-added visuals. Only
+  // ever grow (never shrink), so existing content is never clipped.
+  let maxBottom = 0
+  for (const v of visuals) {
+    const b = (Number(v.y) || 0) + (Number(v.height) || 0)
+    if (b > maxBottom) maxBottom = b
+  }
+  if (maxBottom > 0) {
+    const pagePath = `definition/pages/${targetPageDir}/page.json`
+    const idx = out.findIndex((p) => p.path === pagePath)
+    if (idx >= 0) {
+      const pj = safeParse(out[idx].content) || {}
+      const needed = Math.ceil(maxBottom + 40)   // pad below the last injected visual
+      if (!(Number(pj.height) >= needed)) {
+        pj.height = needed
+        out[idx] = { path: pagePath, content: JSON.stringify(pj, null, 2) }
+      }
+    }
   }
 
   return out

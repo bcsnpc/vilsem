@@ -74,7 +74,7 @@ export default function EChartsCanvas({ option, onClick, onChartReady, style }) 
     // lines (an axis splitLine) leaves the old one on screen because the new
     // option simply omits it and merge preserves the prior value. dataZoom,
     // legend, radar, etc. stay merged (not listed) so their state is preserved.
-    chart.setOption(option, { notMerge: false, lazyUpdate: true, replaceMerge: ['series', 'xAxis', 'yAxis'] })
+    chart.setOption(option, { notMerge: false, lazyUpdate: true, replaceMerge: ['series', 'xAxis', 'yAxis', 'tooltip'] })
   }, [option])
 
   useEffect(() => {

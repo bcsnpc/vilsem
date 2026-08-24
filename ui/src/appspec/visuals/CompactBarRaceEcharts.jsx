@@ -20,11 +20,14 @@ echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer])
 // NOTE: the play axis (time dimension) and "Bars shown" (limit) are DATA inputs,
 // set in the DATA tab next to Group By (see VisualInspector), not here in STYLE.
 export const schema = [
-  { key: 'playSpeed',   label: 'Frame (ms)',   type: 'range',   default: 620, min: 200, max: 1500, step: 20, group: 'Race' },
+  { key: 'raceMode',    label: 'Value mode',   type: 'select',  default: 'period',
+    options: [{ label: 'Per period', value: 'period' }, { label: 'Cumulative (running total)', value: 'cumulative' }], group: 'Race' },
+  { key: 'playSpeed',   label: 'Frame (ms)',   type: 'range',   default: 900, min: 200, max: 2500, step: 20, group: 'Race' },
   { key: 'autoPlay',    label: 'Auto-play',    type: 'boolean', default: false, group: 'Race' },
   { key: 'loopPlayback',label: 'Loop',         type: 'boolean', default: false, group: 'Race' },
   { key: 'barColorMode',label: 'Bar colours',  type: 'select',  default: 'category',
     options: [{ label: 'Per category', value: 'category' }, { label: 'Single accent', value: 'accent' }], group: 'Appearance' },
+  { key: 'raceControlColor', label: 'Play/slider colour', type: 'color', default: '', group: 'Appearance' },
   { key: 'dataLabels',  label: 'Show values',  type: 'boolean', default: true, group: 'Labels' },
   { key: 'valuePrefix', label: 'Value prefix', type: 'text',    default: '',   group: 'Labels' },
   { key: 'valueSuffix', label: 'Value suffix', type: 'text',    default: '',   group: 'Labels' },
@@ -47,6 +50,18 @@ function buildFrames(rows) {
   return keys.map(k => ({ label: String(k), items: byFrame.get(k) }))
 }
 
+// Cumulative mode — running total per category across the play axis. Each frame shows
+// the sum of that category's values up to and including that frame, so bars only ever
+// grow (the classic "race to a total"). Categories that skipped a frame keep their
+// accumulated total. Computed in vilsem from the same rows — no model measure needed.
+function accumulateFrames(frames) {
+  const running = new Map()
+  return frames.map(f => {
+    for (const it of f.items) running.set(it.name, (running.get(it.name) || 0) + it.value)
+    return { label: f.label, items: [...running.entries()].map(([name, value]) => ({ name, value })) }
+  })
+}
+
 export default function CompactBarRaceEcharts({ rows, config = {}, loading, error }) {
   const t = config._T || getThemeTokens('dark')
   const p = pal(config.colorScheme)
@@ -56,23 +71,28 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
   const [idx, setIdx] = useState(0)
   const [playing, setPlaying] = useState(false)
 
-  const frames = useMemo(() => buildFrames(rows), [rows])
+  const frames = useMemo(() => {
+    const base = buildFrames(rows)
+    return config.raceMode === 'cumulative' ? accumulateFrames(base) : base
+  }, [rows, config.raceMode])
   const topN = config.limit || 8
-  const speed = config.playSpeed || 620
+  const speed = config.playSpeed || 900
   const showLabels = config.dataLabels ?? true
   const prefix = config.valuePrefix || ''
   const suffix = config.valueSuffix || ''
   const perCat = (config.barColorMode || 'category') === 'category'
 
   // Stable colour per category name (so a bar keeps its hue as it changes rank).
+  // Explicit per-category colours (config.categoryColors) win over the auto palette.
+  const catColors = config.categoryColors
   const colorFor = useMemo(() => {
     const names = []
     const seen = new Set()
     for (const f of frames) for (const it of f.items) if (!seen.has(it.name)) { seen.add(it.name); names.push(it.name) }
     const map = {}
     names.forEach((n, i) => { map[n] = RACE_PALETTE[i % RACE_PALETTE.length] })
-    return (name) => (perCat ? (map[name] || p.start) : p.start)
-  }, [frames, perCat, p.start])
+    return (name) => (catColors && catColors[name]) || (perCat ? (map[name] || p.start) : p.start)
+  }, [frames, perCat, p.start, catColors])
 
   // Init the ECharts instance once. The container div is ALWAYS mounted (loading/
   // empty states are overlays) so this runs even before data arrives.
@@ -101,7 +121,7 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
     const anim = Math.max(200, Math.min(560, speed - 60))
     chart.setOption({
       grid: { left: 8, right: 74, top: 8, bottom: 16, containLabel: true },
-      tooltip: { trigger: 'item', confine: true, valueFormatter: (v) => prefix + fmtVal(v) + suffix },
+      tooltip: { show: config.tooltipEnabled !== false, trigger: 'item', confine: true, valueFormatter: (v) => prefix + fmtVal(v) + suffix },
       xAxis: { type: 'value', axisLabel: { show: false }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, animationDurationUpdate: anim },
       yAxis: {
         type: 'category', data: items.map(d => d.name),
@@ -141,7 +161,8 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
   const hasFrames = frames.length > 0
   const maxIdx = Math.max(0, frames.length - 1)
   const curLabel = hasFrames ? frames[Math.min(idx, maxIdx)].label : ''
-  const accent = p.start
+  // Play button + slider accent — user-overridable, independent of the bar palette.
+  const accent = config.raceControlColor || p.start
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
