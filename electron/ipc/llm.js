@@ -138,6 +138,30 @@ async function fetchGeminiModels(apiKey) {
   } catch { return GEMINI_MODELS }
 }
 
+// Fetch Groq's live model catalog (OpenAI-compatible /models). Groq rotates
+// models often, so a hardcoded list goes stale and 404s at generation time.
+// Filters out non-chat models (audio/moderation/tts/embeddings); falls back to
+// the static GROQ_MODELS on any error or empty result.
+async function fetchGroqModels(apiKey) {
+  try {
+    const res = await axios.get('https://api.groq.com/openai/v1/models', {
+      headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000,
+    })
+    const EXCLUDE = /whisper|distil|tts|guard|embed|playai/i
+    const models = (res.data?.data || [])
+      .filter(m => m && m.id && m.active !== false && !EXCLUDE.test(m.id))
+      .map(m => ({
+        id: m.id,
+        label: m.id,
+        description: [m.owned_by, m.context_window ? `${Math.round(m.context_window / 1000)}K ctx` : null]
+          .filter(Boolean).join(' · '),
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(0, 15)
+    return models.length ? models : GROQ_MODELS
+  } catch { return GROQ_MODELS }
+}
+
 // ── Model summary helpers ─────────────────────────────────────────────────────
 
 function shortType(dataType) {
@@ -2690,6 +2714,7 @@ function register() {
     const groqModel       = getKey('groq-model') || 'llama-3.3-70b-versatile'
     const geminiModel     = getKey('gemini-model') || 'gemini-2.5-flash-preview-05-20'
     const geminiModels    = geminiKey ? await fetchGeminiModels(geminiKey) : GEMINI_MODELS
+    const groqModels      = groqKey ? await fetchGroqModels(groqKey) : GROQ_MODELS
     const localLlm        = require('./localLlm')
     const localStatus     = localLlm.getStatus()
     return {
@@ -2703,7 +2728,7 @@ function register() {
       claudeModel, openaiModel, groqModel, geminiModel,
       anthropicModels:  ANTHROPIC_MODELS,
       openaiModels:     OPENAI_MODELS,
-      groqModels:       GROQ_MODELS,
+      groqModels,
       geminiModels,
       localModels:      LOCAL_MODELS,
     }
@@ -2727,8 +2752,10 @@ function register() {
 
   ipcMain.handle('get-ai-models', async () => {
     const geminiKey = getKey('gemini')
+    const groqKey = getKey('groq')
     const geminiModels = geminiKey ? await fetchGeminiModels(geminiKey) : GEMINI_MODELS
-    return { anthropic: ANTHROPIC_MODELS, openai: OPENAI_MODELS, groq: GROQ_MODELS, gemini: geminiModels, local: LOCAL_MODELS }
+    const groqModels = groqKey ? await fetchGroqModels(groqKey) : GROQ_MODELS
+    return { anthropic: ANTHROPIC_MODELS, openai: OPENAI_MODELS, groq: groqModels, gemini: geminiModels, local: LOCAL_MODELS }
   })
 
   ipcMain.handle('generate-visual-config', async (_e, {
