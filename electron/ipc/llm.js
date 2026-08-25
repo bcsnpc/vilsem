@@ -1554,6 +1554,27 @@ function isTransientError(err) {
   return false
 }
 
+// Turn a raw provider AxiosError into an actionable message for the UI, so the
+// user sees WHY it failed (and what to do) instead of "AxiosError: 413".
+function friendlyProviderError(err, provider) {
+  const status = err?.response?.status
+  const body = err?.response?.data?.error?.message || err?.response?.data?.message || ''
+  const p = provider || 'The AI provider'
+  if (status === 413) {
+    return new Error(`${p} rejected the request as too large (413).${body ? ' ' + body : ''} This prompt exceeds the per-request token limit for this model/tier — pick a higher-limit model (on Groq, llama-3.3-70b-versatile or llama-4-scout), generate a simpler page, or switch to Gemini/Anthropic.`)
+  }
+  if (status === 429) {
+    return new Error(`${p} rate limit reached (429).${body ? ' ' + body : ''} Wait a few seconds and retry, or switch to a different model/provider.`)
+  }
+  if (status === 401 || status === 403) {
+    return new Error(`${p} rejected your API key (${status}). Re-check the key in Settings → AI Settings.`)
+  }
+  if (status === 404) {
+    return new Error(`${p} could not find that model (404). Pick a different model in the dropdown.`)
+  }
+  return err
+}
+
 // Calls a single provider, no retry.
 async function callProviderOnce(providerConfig, userMessage, systemPrompt, maxTokens) {
   const { provider, apiKey, model } = providerConfig
@@ -3067,7 +3088,18 @@ USER REQUEST: "${userDescription}"
 Generate the complete App Spec JSON now. Return ONLY valid JSON. No markdown. No explanation.`
     }
 
-    const stage2Raw = await callAnyProvider(genCfg, stage2Msg, APP_GEN_SYSTEM_PROMPT, 6000)
+    // Groq's free tier caps tokens-per-request tightly (e.g. ~8K for some
+    // models). The app-gen system prompt alone is ~5.6K tokens, so a 6K output
+    // budget pushes the request past the cap → 413. Give Groq a smaller output
+    // budget so it fits a high-TPM model (llama-3.3-70b/llama-4); other
+    // providers keep the full budget. JSON repair covers rare truncation.
+    const stage2MaxTokens = genCfg.provider === 'groq' ? 3500 : 6000
+    let stage2Raw
+    try {
+      stage2Raw = await callAnyProvider(genCfg, stage2Msg, APP_GEN_SYSTEM_PROMPT, stage2MaxTokens)
+    } catch (err) {
+      throw friendlyProviderError(err, genCfg.provider)
+    }
     const appSpec = stage2Raw.config
     const stage2Usage = stage2Raw.usage
     // Enforce layout defaults regardless of what the AI returned
