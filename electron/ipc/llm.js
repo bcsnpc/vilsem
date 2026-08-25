@@ -147,16 +147,25 @@ async function fetchGroqModels(apiKey) {
     const res = await axios.get('https://api.groq.com/openai/v1/models', {
       headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000,
     })
+    // Drop non-chat models (audio/moderation/tts/embeddings) AND models whose
+    // context window is too small to hold this app's generation prompt — that's
+    // why allam-2-7b (4K ctx) 400'd. Rank proven generation models first so the
+    // dropdown's default (index 0) is always something capable of full-page gen.
     const EXCLUDE = /whisper|distil|tts|guard|embed|playai/i
+    const PREFER = [/llama-3\.3-70b/i, /kimi-k2/i, /llama-4/i, /gpt-oss/i, /qwen3/i]
+    const rank = id => { const i = PREFER.findIndex(re => re.test(id)); return i === -1 ? PREFER.length : i }
     const models = (res.data?.data || [])
-      .filter(m => m && m.id && m.active !== false && !EXCLUDE.test(m.id))
+      .filter(m => m && m.id && m.active !== false && !EXCLUDE.test(m.id) && (m.context_window || 0) >= 16384)
+      .sort((a, b) =>
+        rank(a.id) - rank(b.id) ||
+        (b.context_window || 0) - (a.context_window || 0) ||
+        a.id.localeCompare(b.id))
       .map(m => ({
         id: m.id,
         label: m.id,
         description: [m.owned_by, m.context_window ? `${Math.round(m.context_window / 1000)}K ctx` : null]
           .filter(Boolean).join(' · '),
       }))
-      .sort((a, b) => a.id.localeCompare(b.id))
       .slice(0, 15)
     return models.length ? models : GROQ_MODELS
   } catch { return GROQ_MODELS }
