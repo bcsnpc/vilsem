@@ -11,6 +11,13 @@ app.commandLine.appendSwitch('no-sandbox')
 process.on('uncaughtException',  err    => console.error('[main] uncaughtException:',  err.message, '\n', err.stack))
 process.on('unhandledRejection', reason => console.error('[main] unhandledRejection:', reason))
 
+// Point the shared src/ persistence (cache DB, audit log, auth token cache,
+// fabric staging) at a WRITABLE dir. In dev cwd is the repo root (writable); in
+// the packaged app cwd is Program Files / System32 (read-only), which silently
+// disabled the cache and forced re-auth every launch. Set this BEFORE requiring
+// the src/ modules below — they read SEMANTICA_DATA_DIR at module-load time.
+try { process.env.SEMANTICA_DATA_DIR = app.getPath('userData') } catch { /* keep cwd fallback */ }
+
 const { initCache, getDimensionTables }                                = require('../src/cache/sqlite')
 const { initAuth, getTokenInfo, getToken, setInteractiveTokens }      = require('../src/auth/auth')
 const { fetchMeasures, startAutoRefresh, getMeasuresList, getMeasuresInfo, getEnrichedMeasures, getRelationships, getRawModelBim } = require('../src/fabric/metadata')

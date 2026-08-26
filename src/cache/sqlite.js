@@ -3,7 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const DB_DIR = path.resolve(process.cwd(), 'cache');
+// Persistence lives under SEMANTICA_DATA_DIR when set (the Electron desktop app
+// points this at a writable userData dir); falls back to cwd for the exported
+// web-app server, which runs beside its own writable folder.
+const DATA_DIR = process.env.SEMANTICA_DATA_DIR || process.cwd();
+const DB_DIR = path.resolve(DATA_DIR, 'cache');
 const DB_FILE = path.join(DB_DIR, 'semantica.db');
 
 let db = null;

@@ -70,7 +70,7 @@ const DC_CLIENT_ID    = 'ea0616ba-638b-4df5-95b9-636659ae5121';
 const RESOURCE        = 'https://analysis.windows.net/powerbi/api';
 const DC_TOKEN_URL    = 'https://login.microsoftonline.com/common/oauth2/token';
 const DEVICE_CODE_URL = 'https://login.microsoftonline.com/common/oauth2/devicecode';
-const AUTH_DIR        = path.resolve(process.cwd(), '.auth');
+const AUTH_DIR        = path.resolve(process.env.SEMANTICA_DATA_DIR || process.cwd(), '.auth');
 const TOKEN_FILE      = path.join(AUTH_DIR, 'token.json');
 const POLL_INTERVAL_MS = 5000;
 

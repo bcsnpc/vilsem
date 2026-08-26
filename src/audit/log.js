@@ -24,7 +24,7 @@ function _persistAudit() {
 
   const fs = require('fs');
   const path = require('path');
-  const DB_FILE = path.resolve(process.cwd(), 'cache', 'semantica.db');
+  const DB_FILE = path.resolve(process.env.SEMANTICA_DATA_DIR || process.cwd(), 'cache', 'semantica.db');
   const data = db.export();
   fs.writeFileSync(DB_FILE, Buffer.from(data));
 }

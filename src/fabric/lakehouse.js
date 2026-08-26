@@ -5,7 +5,7 @@ const { getToken } = require('../auth/auth');
 
 const FABRIC_API = 'https://api.fabric.microsoft.com/v1';
 const ONELAKE_API = 'https://onelake.dfs.fabric.microsoft.com';
-const STAGING_DIR = path.resolve(process.cwd(), 'staging');
+const STAGING_DIR = path.resolve(process.env.SEMANTICA_DATA_DIR || process.cwd(), 'staging');
 
 let lakehouseId = null;
 let lakehouseName = null;
