@@ -1,113 +1,102 @@
 # vilsem
 
-> Natural-language dashboards on top of Microsoft Fabric — generate, explore, and
-> publish to the web, Power BI, and Fabric from a single App Spec.
+**A presentation layer for Power BI and Microsoft Fabric semantic models.**
 
-![version](https://img.shields.io/badge/version-1.0.0--beta.1-blue)
-![license](https://img.shields.io/badge/license-MIT-green)
-![platform](https://img.shields.io/badge/platform-Windows-lightgrey)
-![status](https://img.shields.io/badge/status-public%20beta-orange)
+Build a dashboard once, render it in four places: the vilsem desktop app, a standalone web app, a Power BI report, or a Fabric app. Your semantic model stays the single source of truth — vilsem never copies your data.
 
-vilsem is an Electron desktop app that turns a plain-English prompt (*"revenue by product
-category over the last year, with a KPI row and a bar race"*) into a live, interactive
-dashboard built directly on your **Microsoft Fabric / Power BI semantic model**. It
-queries the model with DAX (`executeQueries`), renders everything with **Apache ECharts**,
-and lets you take the exact same dashboard to three destinations without rebuilding it.
-
-> ⚠️ **Public beta (`v1.0.0-beta.1`).** Expect rough edges and breaking changes. Please
-> file issues — that's what the beta is for.
+![vilsem demo](VideoProject1-ezgif.com-video-to-gif-converter.gif)
 
 ---
 
-## Why vilsem
+## The idea
 
-Building a Fabric/Power BI dashboard usually means dragging fields, wiring measures, and
-hand-tuning each visual. vilsem collapses that into a conversation: describe what you want,
-get a real dashboard wired to your model, refine it in natural language or a full visual
-inspector, then publish. One **App Spec** drives every surface, so a chart you design once
-looks and behaves the same on the canvas, on the web, in Power BI, and in Fabric.
+Power BI couples two things that don't have to be coupled: the semantic model (relationships, measures, business logic) and the report canvas (how it looks, how it behaves, where it lives).
 
-## Features
+The model is the valuable part. It's governed, tested, and shared. The canvas is a rendering decision — and it locks you into one surface. Want the same numbers on a public web page, or embedded in an app, or styled outside Power BI's theming system? You rebuild it, and now you have two definitions of "revenue" drifting apart.
 
-### 🗣️ Natural-language generation & refinement
-- Describe a dashboard; vilsem picks the visuals, measures, dimensions, layout, and theme.
-- Refine conversationally (*"make the bars teal, top 15, add a profit KPI"*) or with a
-  full **5-tab visual inspector** (data, style, text, layout, AI) for pixel-level control.
-- Cloud LLMs — **Anthropic, OpenAI, Gemini, or Groq** — you bring the key (no local model).
+vilsem treats the semantic model as an API. Dashboards are defined separately, in a portable JSON format, and rendered wherever you need them. The DAX still executes against your model through the Power BI `executeQueries` endpoint, so every number comes from the same place it always did.
 
-### 📊 Live data on your semantic model
-- Queries your Fabric/Power BI model via the **Execute Queries REST API** (DAX).
-- **Rate-limited request queue** + deterministic **cache** so you don't storm the API.
-- Measure names validated against model metadata; numbers stay numbers, dates stay ISO.
+## What it does
 
-### 🎨 30+ visual types
-KPIs, stat cards, gauges, bar / column / stacked / grouped bars, line / area / stacked
-area, donut / pie, scatter / bubble, treemap, radar, funnel, waterfall, lollipop, slope,
-bump, heatmap, sunburst, ranked lists, multi-dimension tables — and more.
+- **Connects to an existing Power BI / Fabric semantic model** — no import, no duplicate storage, no separate refresh schedule
+- **Authors dashboards two ways** — a visual editor, or by describing what you want in plain English
+- **Compiles to an App Spec** — a portable JSON definition of layout, visuals, queries, and theme
+- **Renders that spec on four surfaces** from a single definition
+- **Queries through DAX** against the live model, so measures and row-level security behave exactly as they do in Power BI
 
-### ▶️ Interaction plays
-- **Drill-down**, three styles: **expand-in-place** (a bar splits into its children with a
-  morph animation), **detail panel** (a side drawer of the clicked value's breakdown), and
-  **replace / breadcrumb** (drill the axis a level deeper, click back up).
-- **Bar race** — an animated, playable ranking with a Play/scrub timeline over a time axis.
-- **Cross-filter** (click a bar to filter the page), **slicers**, and an **axis switcher**.
-- Every interaction behaves identically on the canvas, the web export, Fabric, and the
-  Power BI custom visual — because they all run the same renderer.
+## One spec, four surfaces
 
-### 🚀 Publish anywhere — one App Spec, three destinations
-| Destination | How |
-|---|---|
-| **Web export** | Self-contained web app: a Fastify server + a `window.semantica` HTTP shim feeding the real vilsem renderer. |
-| **Power BI** | A custom `.pbiviz` visual (in `pbiviz-semantica-renderer/`) that composes ECharts client-side from a categorical dataView — drill and bar race included. Measures merge into a shared `_SemanticaGenerated` table without clobbering existing report measures. You can also **export any single visual as a self-contained `.pbiviz`** from the inspector, then import it into an existing report (per-report or organization-wide) and bind it to your own model fields. |
-| **Microsoft Fabric** | Deployed as a **Fabric App** via the Rayfin CLI (feature-flagged). Runs the identical renderer, re-piping `window.semantica` to the Fabric semantic-model SDK, so the full dashboard — visuals, drill, interactions — shows in Fabric with in-app sign-in. |
+| Surface | Output | Status |
+|---|---|---|
+| **vilsem desktop** | Interactive dashboard in the Electron app | Available |
+| **Web** | Standalone web application, self-hostable | Available |
+| **Power BI** | Published via custom `.pbiviz` renderer | Available |
+| **Microsoft Fabric** | Fabric App deployment | Feature-flagged |
 
-### 🧩 Also
-- **Multi-page** dashboards with page tabs + nav buttons.
-- **Dark / light** theming, per-visual color schemes, and card chrome.
-- Deterministic layout (12-column grid) shared across every render path.
+The interaction model — cross-filtering, drill-down, slicers — is designed to behave consistently across all four, so a dashboard doesn't quietly degrade when you move it.
 
-## How it works
+Because every surface queries the live semantic model at view time (except a static baked-HTML inject option), a dataset refresh is reflected wherever the dashboard is deployed.
+
+## Authoring
+
+### Visual editor
+
+Pick measures and dimensions from the model's metadata, choose visual types, arrange the canvas, set the theme. Everything is directly editable — nothing is generated behind your back that you can't then change by hand.
+
+### Natural language (optional)
+
+If you'd rather start from a description, vilsem can draft the dashboard for you:
+
+> "Show revenue by product category for the last 12 months, add revenue and profit KPIs, and show the top 10 products."
+
+It selects measures, dimensions, visual types, layout, and theme, then hands you an ordinary App Spec you can refine — by prompting again, or in the visual editor.
+
+This is an authoring shortcut, not the product. The generated output is the same JSON you'd get from building it by hand, and the DAX it produces is visible and editable. Bring your own API key: **Anthropic, OpenAI, Gemini, or Groq**. If you never add a key, the visual editor works fully without it.
+
+## Architecture
 
 ```
-Prompt ──► LLM ──► App Spec (JSON) ──► AppSpecRenderer (React + ECharts)
-                                           │  talks only to window.semantica
-                                           ▼
-                        ┌──────────────────┼───────────────────┐
-                   Electron IPC        HTTP shim          Fabric SDK shim
-                  (desktop canvas)   (web export)        (Fabric App)
-                        │                  │                     │
-                        └────────► Execute Queries REST API (DAX) ◄───┘
+Visual editor  ──┐
+                 ├──►  App Spec (JSON)  ──►  React + ECharts renderer
+NL prompt ─► LLM ┘                                      │
+                                                        ▼
+                                              DAX via executeQueries
+                                                        │
+                                                        ▼
+                                        Power BI / Fabric semantic model
 ```
 
-The **App Spec** is the single source of truth. The renderer never talks to a backend
-directly — it only calls `window.semantica.queryTable / query / getDistinctValues`, so the
-same component tree runs everywhere; only the data transport changes per destination. The
-Power BI path is the one exception (a categorical dataView the `.pbiviz` composes from),
-kept in visual parity with the web renderer.
+The App Spec is the contract. Every renderer consumes it; nothing else is shared between surfaces. That's what makes a dashboard portable — and what makes adding a fifth target a matter of writing one more renderer.
 
-## Install (users)
+## Visuals and interactions
 
-1. Download the latest installer from the **[Releases](../../releases)** page and run it.
-   *(Beta builds are unsigned, so Windows SmartScreen may warn — choose "More info → Run
-   anyway".)*
-2. Launch vilsem and **sign in with your Microsoft account** when prompted — that's how it
-   connects to your Fabric / Power BI semantic models. No config files to edit.
-3. Add an **LLM API key** (Anthropic, OpenAI, Gemini, or Groq) in the app's AI settings.
+**30+ visual types** — KPI cards, bar, line, area, combo, waterfall, funnel, heatmap, treemap, radar, sunburst, scatter, tables, animated bar races, and more, built on [Apache ECharts](https://echarts.apache.org/).
 
-**You'll need:** a Microsoft Fabric / Power BI semantic model you can access, with the
-**Semantic Model Execute Queries REST API** tenant setting enabled (your Fabric admin
-controls this).
+**Interactions** — cross-filtering, slicers, drill-down with breadcrumb navigation, detail panels, and axis switching.
 
-## Authentication
+## Privacy
 
-- **Interactive Microsoft sign-in (default)** — nothing to configure; sign in when the app
-  asks. This is the recommended path for everyone.
-- **Service principal (advanced / headless)** — copy `.env.example` to `.env` and provide
-  your app-registration + workspace/dataset details. Most users never need this.
+vilsem has no backend. There is no vilsem server, no telemetry endpoint, and no account to create.
 
-## Develop / build from source (contributors)
+- Model queries go directly from your machine to Power BI
+- LLM calls go directly from your machine to the provider you configured, using your key
+- Your API keys and dashboards stay local
 
-Requirements: **Node.js ≥ 20** and npm.
+The only network calls are the ones you'd make anyway, to services you already have accounts with.
+
+## Requirements
+
+- Windows — this is the only platform vilsem has been tested on
+- A Power BI / Fabric semantic model you can access
+- Microsoft sign-in, or a service principal
+- Node.js 20 or newer, to build from source
+- Optionally, an API key from a supported LLM provider
+
+## Install
+
+**Download** — grab the latest build from [Releases](../../releases). Windows only for now; other platforms are untested.
+
+**From source**
 
 ```bash
 git clone https://github.com/bcsnpc/vilsem.git
@@ -115,53 +104,33 @@ cd vilsem
 npm install
 cd ui && npm install && cd ..
 
-npm run electron:dev     # hot-reload dev (Vite UI + Electron)
-npm run build            # package a Windows NSIS installer into release/
-npm test                 # vitest
-
-# optional extras
-npm run standalone:build    # build the web-export renderer bundle
-npm run fabric-embed:build  # build the Fabric-App renderer bundle
+npm run electron:dev   # run in dev with hot reload
+npm run build          # or build the Windows installer into release/
 ```
 
-### Feature flags
-Some paths are gated by environment flags (default OFF), e.g. **`FEATURE_FABRIC_EXPORT`**
-enables the Deploy-to-Fabric flow. See `ui/src/appspec/shared/feature-flags.js`.
+### About the Windows security warning
 
-## Tech stack
+The installer isn't code-signed yet, so Windows SmartScreen will show **"Windows protected your PC"** the first time you run it. To continue, click **More info** → **Run anyway**.
 
-Electron · React · Apache ECharts · Fastify · SQLite (`better-sqlite3` / `sql.js`) ·
-Vite · Vitest · TypeScript where it adds value, plain JS elsewhere ·
-Power BI custom-visuals API (`pbiviz`).
+This happens to every unsigned application regardless of what's in it — a code-signing certificate costs a few hundred dollars a year and I haven't bought one for a beta. If you'd rather not run a binary from a stranger, build from source using the steps above; it's the same code.
 
-## Repository layout
+When a release includes a SHA-256 checksum, you can verify your download against it:
 
-```
-electron/                    Electron main process — IPC, Fabric/LLM/publish handlers
-  fabric/                    Deploy-to-Fabric (Rayfin) — isolated, feature-flagged
-src/                         Fastify server + Fabric DAX client (queue, cache, translator)
-ui/                          React app
-  src/appspec/              App Spec renderer, visuals, drill engine, inspector
-  src/pages/                Generator, Power BI publish, exports
-  src/standalone/           Web-export + Fabric-embed entries
-pbiviz-semantica-renderer/   Power BI custom visual (.pbiviz)
-docs/architecture/           Architecture notes
+```powershell
+certutil -hashfile "vilsem Setup 1.0.0-beta.1.exe" SHA256
 ```
 
-## Status & roadmap
+## Status
 
-This is an early public beta. Known beta gaps: the installer is **unsigned** and uses the
-**default app icon**; the Deploy-to-Fabric path is a **preview** (region-limited by Fabric
-itself). Feedback and issues are very welcome.
+**`v1.0.0-beta.1`** — beta, and labeled that deliberately. The core paths (connect, author, render, export) work end to end and are covered by tests. The App Spec format may still change before 1.0. Fabric deployment is behind a flag while it stabilizes.
+
+Bug reports and feedback on the App Spec design are especially useful right now.
 
 ## Contributing
 
-Issues and PRs are welcome. The project targets permissive-only dependencies — a CI job
-(`.github/workflows/license-check.yml`) fails the build if a non-permissive license slips
-into production dependencies.
+Contributions are welcome.
 
 ## License
 
-MIT License — see [LICENSE](LICENSE). Third-party attributions (including Apache
-ECharts, whose license requires it) are in [NOTICE](NOTICE).
+MIT License — see [LICENSE](LICENSE). Third-party attributions (including Apache ECharts, whose license requires it) are in [NOTICE](NOTICE).
 Copyright © 2026 Chiranjeevi Bhogireddy.
