@@ -633,21 +633,43 @@ function pbivizDistDir() {
   return base
 }
 
+// Parse the 4-part version from a .pbiviz filename, e.g.
+// "semanticaRenderer<guid>.4.12.0.0.pbiviz" → [4,12,0,0]. Non-matching names
+// sort last.
+function pbivizVersion(name) {
+  const m = name.match(/\.(\d+)\.(\d+)\.(\d+)\.(\d+)\.pbiviz$/i)
+  return m ? [+m[1], +m[2], +m[3], +m[4]] : [-1, -1, -1, -1]
+}
+
+// Pick the newest semanticaRenderer .pbiviz by VERSION, not mtime. electron-builder
+// normalizes file mtimes when it packages, so an mtime sort is non-deterministic in
+// the installed app — it could grab the wrong visual (an old semanticaHtmlRenderer, a
+// 3KB stub, or a mismatched guid), and the report then references a custom-visual
+// resource that isn't in the parts → Fabric rejects the import ("file not found").
+// Restricting to the semanticaRenderer prefix + version sort is stable across dev and
+// packaged, so both always embed the same correct file.
+function pickRendererPbiviz(distDir) {
+  const files = fs.readdirSync(distDir)
+    .filter((f) => f.startsWith('semanticaRenderer') && f.endsWith('.pbiviz'))
+  if (!files.length) return null
+  return files.sort((a, b) => {
+    const va = pbivizVersion(a), vb = pbivizVersion(b)
+    for (let i = 0; i < 4; i++) { if (vb[i] !== va[i]) return vb[i] - va[i] }
+    return a.localeCompare(b)
+  })[0]
+}
+
 function getBundledPbiviz() {
   const distDir = pbivizDistDir()
 
   let pbivizFile = null
   let pbivizMtime = 0
   try {
-    const files = fs.readdirSync(distDir).filter((f) => f.endsWith('.pbiviz'))
-    if (files.length === 0) {
-      return { success: false, message: 'No .pbiviz file found in ' + distDir }
+    pbivizFile = pickRendererPbiviz(distDir)
+    if (!pbivizFile) {
+      return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
     }
-    const latest = files
-      .map((f) => ({ name: f, mtime: fs.statSync(path.join(distDir, f)).mtimeMs }))
-      .sort((a, b) => b.mtime - a.mtime)[0]
-    pbivizFile = latest.name
-    pbivizMtime = latest.mtime
+    pbivizMtime = fs.statSync(path.join(distDir, pbivizFile)).mtimeMs
   } catch (e) {
     return { success: false, message: 'Failed to list pbiviz dir: ' + e.message }
   }
@@ -746,13 +768,9 @@ function getBundledCustomVisualParts() {
   let pbivizFile = null
   let pbivizMtime = 0
   try {
-    const files = fs.readdirSync(distDir).filter((f) => f.endsWith('.pbiviz'))
-    if (!files.length) return { success: false, message: 'No .pbiviz in ' + distDir }
-    const latest = files
-      .map((f) => ({ name: f, mtime: fs.statSync(path.join(distDir, f)).mtimeMs }))
-      .sort((a, b) => b.mtime - a.mtime)[0]
-    pbivizFile = latest.name
-    pbivizMtime = latest.mtime
+    pbivizFile = pickRendererPbiviz(distDir)
+    if (!pbivizFile) return { success: false, message: 'No semanticaRenderer .pbiviz in ' + distDir }
+    pbivizMtime = fs.statSync(path.join(distDir, pbivizFile)).mtimeMs
   } catch (e) {
     return { success: false, message: 'Failed to list pbiviz dir: ' + e.message }
   }
@@ -826,9 +844,8 @@ async function exportVisualPackage({ spec, title, fileBase } = {}) {
   try {
     if (!spec || typeof spec !== 'string') return { success: false, message: 'spec (JSON string) is required' }
     const distDir = pbivizDistDir()
-    const files = fs.readdirSync(distDir).filter((f) => f.endsWith('.pbiviz') && f.startsWith('semanticaRenderer'))
-    if (!files.length) return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
-    const latest = files.map((f) => ({ f, m: fs.statSync(path.join(distDir, f)).mtimeMs })).sort((a, b) => b.m - a.m)[0].f
+    const latest = pickRendererPbiviz(distDir)
+    if (!latest) return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
 
     const OLD_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
     const newGuid  = 'vilsem' + cryptoRandomUuid().replace(/-/g, '')
