@@ -616,8 +616,25 @@ const AdmZip = require('adm-zip')
 // the stale visual bundle even after `pbiviz package` produced a newer one.
 let bundledPbivizCache = null  // { key: string, value: {...} }
 
+// Resolve the pbiviz dist dir. In a PACKAGED app the electron code lives inside
+// app.asar, but the .pbiviz files are asarUnpack'd to app.asar.unpacked. Reading
+// through the app.asar path relies on Electron's asar redirection, which adm-zip's
+// random-access (openSync + positioned reads) does not always get served
+// correctly — yielding malformed custom-visual parts that Fabric then rejects at
+// report-create time. Point every reader at the real unpacked path so fs and
+// adm-zip see the actual bytes. In dev (no asar) this is a no-op.
+function pbivizDistDir() {
+  const base = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+  const marker = `app.asar${path.sep}`
+  if (base.includes(marker) && !base.includes('app.asar.unpacked')) {
+    const unpacked = base.replace(marker, `app.asar.unpacked${path.sep}`)
+    try { if (fs.existsSync(unpacked)) return unpacked } catch { /* fall through to base */ }
+  }
+  return base
+}
+
 function getBundledPbiviz() {
-  const distDir = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+  const distDir = pbivizDistDir()
 
   let pbivizFile = null
   let pbivizMtime = 0
@@ -725,7 +742,7 @@ function getBundledPbiviz() {
 let bundledCustomVisualPartsCache = null  // { key, value }
 
 function getBundledCustomVisualParts() {
-  const distDir = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+  const distDir = pbivizDistDir()
   let pbivizFile = null
   let pbivizMtime = 0
   try {
@@ -808,7 +825,7 @@ async function getAccessTokenForEmbed() {
 async function exportVisualPackage({ spec, title, fileBase } = {}) {
   try {
     if (!spec || typeof spec !== 'string') return { success: false, message: 'spec (JSON string) is required' }
-    const distDir = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+    const distDir = pbivizDistDir()
     const files = fs.readdirSync(distDir).filter((f) => f.endsWith('.pbiviz') && f.startsWith('semanticaRenderer'))
     if (!files.length) return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
     const latest = files.map((f) => ({ f, m: fs.statSync(path.join(distDir, f)).mtimeMs })).sort((a, b) => b.m - a.m)[0].f

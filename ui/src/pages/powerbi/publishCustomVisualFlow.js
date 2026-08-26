@@ -739,15 +739,34 @@ export async function publishCustomVisualFlow({
   let resultReportId = reportId
   let resultReportName = reportName
   if (reportId) {
-    await window.semantica.pbiUpdateReportDefinition({
+    const upd = await window.semantica.pbiUpdateReportDefinition({
       workspaceId, reportId, parts: reportParts,
     })
+    // Surface a real failure instead of silently reporting "Done".
+    if (upd && upd.success === false) {
+      throw new Error(`Report update failed: ${upd.message || upd.error?.message || 'Fabric rejected the report definition'}.`)
+    }
   } else {
     const created = await window.semantica.pbiCreateReport({
       workspaceId, reportName, parts: reportParts,
     })
-    resultReportId = created?.reportId || created?.id
-    resultReportName = created?.reportName || reportName
+    // createReport resolves with { success:false, message } on LRO/permission/
+    // payload failures — don't treat that as a successful publish.
+    if (!created || created.success === false) {
+      throw new Error(`Report creation failed: ${created?.message || created?.error?.message || 'Fabric rejected the report'}.`)
+    }
+    resultReportId   = created.reportId || created.id || null
+    resultReportName = created.reportName || reportName
+    // Some Fabric create LROs succeed without returning the new id in the
+    // operation result. Recover it by name so the "Open in Power BI" link works
+    // (and to confirm the report actually landed in the workspace).
+    if (!resultReportId) {
+      try {
+        const listRes = await window.semantica.pbiListReports?.({ workspaceId, datasetId, force: true })
+        const found = listRes?.reports?.find(r => r.name === reportName)
+        if (found) resultReportId = found.id
+      } catch { /* best-effort id recovery */ }
+    }
   }
 
   progress(100, 'Done')
