@@ -1,12 +1,11 @@
 console.log('[main] line:1 reached. node=', process.versions.node, 'electron=', process.versions.electron, 'ELECTRON_RUN_AS_NODE=', JSON.stringify(process.env.ELECTRON_RUN_AS_NODE))
 require('dotenv').config(); console.log('[main] line:2 dotenv ok')
 
-const { app, BrowserWindow, ipcMain } = require('electron/main'); console.log('[main] line:3 electron/main ok')
+const { app, BrowserWindow, ipcMain, session } = require('electron/main'); console.log('[main] line:3 electron/main ok')
 const path = require('path')
 const axios = require('axios'); console.log('[main] line:5 axios ok')
 
 app.disableHardwareAcceleration()
-app.commandLine.appendSwitch('no-sandbox')
 
 process.on('uncaughtException',  err    => console.error('[main] uncaughtException:',  err.message, '\n', err.stack))
 process.on('unhandledRejection', reason => console.error('[main] unhandledRejection:', reason))
@@ -63,6 +62,73 @@ function setupTokenCheck() {
   }, 5 * 60 * 1000)
 }
 
+// ── Content Security Policy ──────────────────────────────────────────────────
+// Locks down what the renderer may load/execute/connect-to, so an injected
+// string can't run a remote script or exfiltrate data to an attacker host.
+// PRODUCTION (packaged) is strict: script-src 'self' — NO 'unsafe-inline'.
+// DEV adds only what Vite needs (its dev origin + HMR ws, and 'unsafe-inline'
+// for scripts, which React Fast Refresh injects as an inline <script> preamble).
+// The dev relaxation is gated on VITE_DEV_SERVER, which packaged builds never
+// set — so it can never apply in production.
+function buildCsp() {
+  const isDev = !!process.env.VITE_DEV_SERVER
+  const apiHosts = [
+    'https://api.anthropic.com',
+    'https://api.openai.com',
+    'https://api.groq.com',
+    'https://generativelanguage.googleapis.com',
+    'https://api.powerbi.com',
+    'https://api.fabric.microsoft.com',
+    'https://login.microsoftonline.com',
+  ].join(' ')
+
+  const scriptSrc = isDev ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'"
+  const connectSrc = isDev
+    ? `connect-src 'self' ws://127.0.0.1:5173 http://127.0.0.1:5173 ${apiHosts}`
+    : `connect-src 'self' ${apiHosts}`
+
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    // React (style={{}}) and ECharts emit inline style attributes; Google Fonts
+    // CSS is served from fonts.googleapis.com. 'unsafe-inline' here is styles
+    // only — never scripts.
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob:",
+    connectSrc,
+    "object-src 'none'",
+    "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ')
+}
+
+function installCsp() {
+  const csp = buildCsp()
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const url = details.url || ''
+    // Apply OUR CSP ONLY to the app's own documents/resources — file:// when
+    // packaged, the Vite dev origin in dev. Do NOT touch external windows such as
+    // the Microsoft sign-in popup (login.microsoftonline.com + Microsoft CDNs),
+    // which rely on inline scripts and their own CDNs and would render blank
+    // under our policy.
+    const isAppOrigin =
+      url.startsWith('file://') ||
+      url.startsWith('http://127.0.0.1:5173') ||
+      url.startsWith('http://localhost:5173')
+    if (!isAppOrigin) {
+      return callback({ responseHeaders: details.responseHeaders })
+    }
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [csp],
+      },
+    })
+  })
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200, height: 800, minWidth: 900, minHeight: 600,
@@ -72,13 +138,17 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      // Chromium sandbox ON. The preload requires only 'electron' (available in
+      // the sandbox) and the renderer talks to the backend via IPC only — no
+      // direct Node/native modules — so it runs fully sandboxed. Do not disable.
+      sandbox: true,
     },
   })
 
   if (process.env.VITE_DEV_SERVER) {
     const devUrl = 'http://127.0.0.1:5173'
     let attempts = 0
+    let loaded = false
     const MAX_ATTEMPTS = 20    // 20 × 500ms = 10s max wait for Vite
 
     function tryLoad() {
@@ -98,6 +168,11 @@ function createWindow() {
     // Re-trigger load if we land on chrome-error (which happens when first
     // attempt failed before Chromium discarded the error frame).
     mainWindow.webContents.on('did-fail-load', (_e, errCode, errDesc, validated) => {
+      // ERR_ABORTED (-3) is normal when a load is superseded (HMR, navigation) —
+      // ignore it. And once the renderer has loaded, NEVER retry: another loadURL
+      // would abort the live page → another did-fail-load → an endless reload loop
+      // (which also re-races the startup-complete event and sticks on Connect).
+      if (loaded || errCode === -3) return
       console.error(`[main] did-fail-load: ${errCode} ${errDesc} (url: ${validated})`)
       if (attempts < MAX_ATTEMPTS && mainWindow) {
         setTimeout(tryLoad, 500)
@@ -105,6 +180,7 @@ function createWindow() {
     })
 
     mainWindow.webContents.on('did-finish-load', () => {
+      loaded = true
       console.log('[main] ✓ renderer loaded after', attempts, 'attempt(s)')
     })
   } else {
@@ -232,6 +308,7 @@ async function startup() {
   ipcMain.handle('close-window', () => mainWindow?.close())
 
   console.log('[main] creating window...')
+  installCsp()
   createWindow()
   setMainWindowGetter(() => mainWindow)
   console.log('[main] window created')

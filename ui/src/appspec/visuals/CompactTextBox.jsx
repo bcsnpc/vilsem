@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { fmtVal } from '../shared/formatters.js'
 import { getScalarValue } from '../shared/row-normalize.js'
 import { setTextEditActive, setTextEditInactive, setTextEditMeasures, saveTextRange } from '../shared/textEditBus.js'
+import DOMPurify from 'dompurify'
 
 // ── Canvas object: rich, in-place-editable text with live measure/value tokens ──────
 // Double-click on the canvas to edit directly (multi-line, mixed fonts/sizes/colours).
@@ -18,6 +19,13 @@ function escapeHtml(s) {
   d.textContent = s || ''
   return d.innerHTML.replace(/\n/g, '<br>')
 }
+
+// Sanitize stored rich-text HTML before it enters the DOM. DOMPurify's safe
+// defaults strip <script>, event handlers (onerror/onclick) and javascript:
+// URLs — the XSS chain in the threat model — while KEEPING the editor's
+// legitimate formatting and the data-measure live-value token spans.
+// contenteditable is re-added since the token chips carry contenteditable="false".
+const sanitizeRich = (html) => DOMPurify.sanitize(html || '', { ADD_ATTR: ['contenteditable'] })
 
 // Measure names referenced by data-measure token spans in the stored html.
 function extractMeasures(html) {
@@ -100,7 +108,7 @@ export default function CompactTextBox({ config = {} }) {
     if (!ref.current || editing) return
     const el = ref.current
     if (!html) { el.innerHTML = editable ? '<span style="opacity:0.4">Double-click to edit</span>' : ''; return }
-    el.innerHTML = html
+    el.innerHTML = sanitizeRich(html)
     fillTokens(el)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [html, editing])
@@ -132,7 +140,7 @@ export default function CompactTextBox({ config = {} }) {
   useEffect(() => {
     if (!editing || !ref.current) return
     const el = ref.current
-    el.innerHTML = html
+    el.innerHTML = sanitizeRich(html)
     fillTokens(el)   // show live values while editing too (tokens are atomic, not editable)
     el.focus()
     const r = document.createRange(); r.selectNodeContents(el); r.collapse(false)

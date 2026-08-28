@@ -17,6 +17,7 @@
     "d3-force": "^3.0.0",
     "d3-hierarchy": "^3.1.2",
     "d3-sankey": "^0.12.3",
+    "dompurify": "^3.4.14",
     "echarts": "6.0.0",
     "echarts-for-react": "^3.0.6",
     "lucide-react": "^1.22.0",

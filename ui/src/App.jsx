@@ -52,11 +52,13 @@ export default function App() {
       // For service-principal (secret is never exposed to the renderer) or if
       // the token can't be fetched, land on the login page where the saved
       // profile re-signs in with one click.
-      if (data?.authMode === 'interactive' && window.semantica.pbiGetAccessToken) {
+      if (data?.authMode === 'interactive' && window.semantica.pbiAuthState) {
         try {
-          const res = await window.semantica.pbiGetAccessToken()
-          if (res?.ok && res.token) {
-            setAuthCreds({ authMode: 'interactive', accessToken: res.token })
+          // Ask the main process whether a usable token exists — WITHOUT ever
+          // receiving the token. It stays in the main process; handlers use it.
+          const res = await window.semantica.pbiAuthState()
+          if (res?.ok) {
+            setAuthCreds({ authMode: 'interactive' })
             setPage('home')
             return
           }

@@ -3,7 +3,7 @@ const path   = require('path')
 const fs     = require('fs')
 const crypto = require('crypto')
 const axios  = require('axios')
-const { forceRefresh, setInteractiveTokens }                                      = require('../../src/auth/auth')
+const { forceRefresh, setInteractiveTokens, getToken }                            = require('../../src/auth/auth')
 const { fetchMeasures, startAutoRefresh, getMeasuresList, getEnrichedMeasures,
         getRelationships, getRawModelBim }                                          = require('../../src/fabric/metadata')
 const { initLakehouse }                                                             = require('../../src/fabric/lakehouse')
@@ -198,7 +198,14 @@ async function reinitEngine(ws) {
   process.env.AUTH_MODE = authMode
 
   if (authMode === 'interactive') {
-    setInteractiveTokens(ws.accessToken || '', ws.refreshToken, ws.expiresIn || 3600)
+    // Seed when EITHER token is supplied: fresh login carries the access token; a
+    // restart / workspace-switch restores from the saved snapshot's refresh token
+    // (access tokens expire, so they aren't persisted). Only skip when BOTH are
+    // absent (a post-reload reconnect where the renderer no longer holds tokens),
+    // so we preserve whatever the main process already has.
+    if (ws.accessToken || ws.refreshToken) {
+      setInteractiveTokens(ws.accessToken || '', ws.refreshToken, ws.expiresIn || 3600)
+    }
   } else {
     process.env.FABRIC_TENANT_ID      = ws.tenantId
     process.env.FABRIC_CLIENT_ID      = ws.clientId
@@ -268,6 +275,13 @@ async function fetchTokenSP(tenantId, clientId, clientSecret) {
 // Resolve a bearer token from either accessToken directly or SP credentials
 async function resolveToken(params) {
   if (params.accessToken) return params.accessToken
+  // Interactive sign-in: the bearer token lives ONLY in the main process — use it
+  // here instead of requiring the renderer to hand one back. Service-principal
+  // mode falls through to a fresh SP token.
+  if ((process.env.AUTH_MODE || 'service_principal') === 'interactive') {
+    const token = await getToken()
+    if (token) return token
+  }
   return fetchTokenSP(params.tenantId, params.clientId, params.clientSecret)
 }
 

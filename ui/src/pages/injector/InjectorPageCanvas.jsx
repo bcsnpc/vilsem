@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
-import * as pbi from 'powerbi-client'
 import CanvasEditor from '../../appspec/CanvasEditor.jsx'
 import AppSpecRenderer from '../../appspec/AppSpecRenderer.jsx'
 import VisualInspector from '../../appspec/VisualInspector.jsx'
@@ -146,26 +145,11 @@ export default function InjectorPageCanvas({
   const embedRef = useRef(null)
   const [embedState, setEmbedState] = useState('idle')
   useEffect(() => {
-    if (!embed?.embedUrl || !embedRef.current || !window.semantica?.pbiGetAccessToken) { setEmbedState('fallback'); return }
-    let cancelled = false, powerbi
-    setEmbedState('loading')
-    ;(async () => {
-      try {
-        const res = await window.semantica.pbiGetAccessToken()
-        if (cancelled) return
-        if (!res?.ok || !res.token) { setEmbedState('fallback'); return }
-        powerbi = new pbi.service.Service(pbi.factories.hpmFactory, pbi.factories.wpmpFactory, pbi.factories.routerFactory)
-        const report = powerbi.embed(embedRef.current, {
-          type: 'report', id: embed.reportId, embedUrl: embed.embedUrl, accessToken: res.token,
-          tokenType: pbi.models.TokenType.Aad, viewMode: pbi.models.ViewMode.View,
-          ...(embed.pageName ? { pageName: embed.pageName } : {}),
-          settings: { panes: { filters: { visible: false }, pageNavigation: { visible: false } }, background: pbi.models.BackgroundType.Transparent },
-        })
-        report.off('loaded'); report.on('loaded', () => { if (!cancelled) setEmbedState('embedded') })
-        report.off('error');  report.on('error',  () => { if (!cancelled) setEmbedState('fallback') })
-      } catch { if (!cancelled) setEmbedState('fallback') }
-    })()
-    return () => { cancelled = true; try { powerbi?.reset(embedRef.current) } catch { /* ignore */ } }
+    // The live Power BI embed backdrop required a bearer token in the renderer
+    // (via the powerbi-client SDK). Tokens no longer leave the main process for
+    // security, so we always use the static canvas fallback instead. The static
+    // render still shows the report's vilsem visuals and layout for authoring.
+    setEmbedState('fallback')
   }, [embed?.embedUrl, embed?.reportId, embed?.pageName])
 
   // ── Present mode (read-only, full-bleed) ──────────────────────────────────

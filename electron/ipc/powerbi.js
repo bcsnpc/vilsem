@@ -679,6 +679,11 @@ function getBundledPbiviz() {
 
   try {
     const fullPath = path.join(distDir, pbivizFile)
+    // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
+    // bundled .pbiviz (pbivizDistDir(), shipped read-only) — never a user-supplied,
+    // downloaded, or imported archive — and nothing here extracts to disk. Change
+    // the input source and the zip path-traversal advisory becomes reachable:
+    // upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip      = new AdmZip(fullPath)
     const entries  = zip.getEntries()
 
@@ -780,6 +785,11 @@ function getBundledCustomVisualParts() {
 
   try {
     const fullPath = path.join(distDir, pbivizFile)
+    // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
+    // bundled .pbiviz (pbivizDistDir(), shipped read-only) — never a user-supplied,
+    // downloaded, or imported archive — and nothing here extracts to disk. Change
+    // the input source and the zip path-traversal advisory becomes reachable:
+    // upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip      = new AdmZip(fullPath)
     const entries  = zip.getEntries().filter((e) => !e.isDirectory)
 
@@ -851,6 +861,11 @@ async function exportVisualPackage({ spec, title, fileBase } = {}) {
     const newGuid  = 'vilsem' + cryptoRandomUuid().replace(/-/g, '')
     const displayName = String(title || 'Vilsem visual').slice(0, 50)
 
+    // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
+    // bundled .pbiviz template (pbivizDistDir(), shipped read-only) — never a
+    // user-supplied, downloaded, or imported archive — and nothing here extracts
+    // to disk. Change the input source and the zip path-traversal advisory becomes
+    // reachable: upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip = new AdmZip(path.join(distDir, latest))
 
     // 1. Resource pbiviz.json — bake the spec, swap the guid everywhere, set displayName.
@@ -893,7 +908,13 @@ async function exportVisualPackage({ spec, title, fileBase } = {}) {
 }
 
 function register() {
-  ipcMain.handle('pbi-get-access-token',            ()      => getAccessTokenForEmbed())
+  // Returns ONLY whether an interactive sign-in with a usable token exists — the
+  // bearer token itself never crosses into the renderer. (Replaces the former
+  // pbi-get-access-token, which handed the raw token to the UI.)
+  ipcMain.handle('pbi-auth-state', async () => {
+    const r = await getAccessTokenForEmbed()
+    return { ok: !!r.ok, authMode: r.authMode, reason: r.ok ? undefined : r.reason }
+  })
   ipcMain.handle('pbi-export-visual-package',       (_e, p) => exportVisualPackage(p || {}))
   ipcMain.handle('pbi-list-reports',                (_e, p) => listReports(p || {}))
   ipcMain.handle('pbi-get-report-definition-v2',    (_e, p) => getReportDefinitionV2(p || {}))

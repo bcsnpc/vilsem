@@ -44,6 +44,15 @@ async function start() {
   // 2. CORS
   await fastify.register(cors);
 
+  // 2b. Clickjacking protection. frame-ancestors can only be delivered as an
+  // HTTP header (browsers ignore it inside a <meta> CSP); the rest of the policy
+  // is in the page's meta tag. X-Frame-Options is the legacy equivalent.
+  fastify.addHook('onSend', async (req, reply, payload) => {
+    reply.header('Content-Security-Policy', "frame-ancestors 'none'");
+    reply.header('X-Frame-Options', 'DENY');
+    return payload;
+  });
+
   // 3. Serve static files (index.html + assets)
   fastify.get('/', async (req, reply) => {
     reply.type('text/html').send(f.readFileSync(p.join(__dirname, 'index.html'), 'utf-8'));
@@ -80,6 +89,24 @@ const BACKEND_FILES = [
   'src/queue/limiter.js',
   'src/routes/preview.js',
 ]
+
+// CSP for the exported web app. Mirrors the desktop production policy, EXCEPT
+// connect-src is 'self' — the exported renderer fetches its data only from its
+// own bundled server (window.location.origin), and that server makes the Fabric
+// calls. frame-ancestors is NOT here (meta tags can't carry it); it's a server
+// header in SERVER_ENTRY. Injected into the exported index.html <head>.
+const EXPORT_CSP_META =
+  '<meta http-equiv="Content-Security-Policy" content="' +
+  "default-src 'self'; script-src 'self'; " +
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+  "font-src 'self' data: https://fonts.gstatic.com; " +
+  "img-src 'self' data: blob:; connect-src 'self'; " +
+  "object-src 'none'; frame-src 'none'; base-uri 'self'\">"
+
+function injectExportCsp(html) {
+  if (/http-equiv=["']Content-Security-Policy/i.test(html)) return html
+  return html.replace(/<head[^>]*>/i, (m) => `${m}\n    ${EXPORT_CSP_META}`)
+}
 
 function register() {
   ipcMain.handle('export-app-package', async (_e, { spec, appName, credentials, exportFolderName }) => {
@@ -138,6 +165,10 @@ function register() {
         let html = fs.readFileSync(htmlSrc, 'utf-8')
         // Fix asset paths (Vite outputs ./assets/..., serve from /public/assets/...)
         html = html.replace(/\.\/assets\//g, './public/assets/')
+        // Harden the exported page (Vite output uses external scripts, so
+        // script-src 'self' holds). The legacy preview.html fallback below has
+        // inline scripts and is intentionally left un-hardened.
+        html = injectExportCsp(html)
         fs.writeFileSync(path.join(exportDir, 'index.html'), html, 'utf-8')
       }
     } else {

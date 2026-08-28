@@ -1,8 +1,20 @@
 import React from 'react'
+import DOMPurify from 'dompurify'
 import { pal } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
+
+// Restrictive allowlist for the narrative HTML sink. Accent colour rides a CSS
+// variable set on the container (a React inline style — never injected HTML),
+// so the class-only allowlist keeps the highlight without an inline style attr.
+const NARRATIVE_SANITIZE = { ALLOWED_TAGS: ['span', 'b', 'i', 'em', 'strong', 'br'], ALLOWED_ATTR: ['class'] }
+if (typeof document !== 'undefined' && !document.getElementById('nar-accent-style')) {
+  const s = document.createElement('style')
+  s.id = 'nar-accent-style'
+  s.textContent = '.nar-accent{color:var(--nar-accent,inherit);font-weight:700}'
+  document.head.appendChild(s)
+}
 
 export default function CompactNarrative({ rows, config, loading, error }) {
   const p = pal(config.colorScheme)
@@ -39,12 +51,15 @@ export default function CompactNarrative({ rows, config, loading, error }) {
   const iconEmoji   = config.icon || '💡'
   const accentWords = config.accentWords || [] // words to highlight in accent color
 
-  // Highlight accent words
+  // Highlight accent words as <span class="nar-accent"> (colour via the CSS var
+  // on the container below — no inline styles), then sanitize the final HTML
+  // string before it reaches the DOM to close the innerHTML XSS sink.
   let displayText = narrative
   if (accentWords.length && narrative) {
     for (const word of accentWords) {
-      displayText = displayText.replace(new RegExp(`(${word})`, 'gi'), `<span style="color:${p.text};font-weight:700">$1</span>`)
+      displayText = displayText.replace(new RegExp(`(${word})`, 'gi'), '<span class="nar-accent">$1</span>')
     }
+    displayText = DOMPurify.sanitize(displayText, NARRATIVE_SANITIZE)
   }
 
   return (
@@ -56,7 +71,7 @@ export default function CompactNarrative({ rows, config, loading, error }) {
         </div>
       )}
       <div
-        style={{ fontSize, fontWeight, color: t.textPrimary, lineHeight, textAlign: align, fontFamily: config.titleFontFamily || 'inherit' }}
+        style={{ fontSize, fontWeight, color: t.textPrimary, lineHeight, textAlign: align, fontFamily: config.titleFontFamily || 'inherit', '--nar-accent': p.text }}
         dangerouslySetInnerHTML={accentWords.length ? { __html: displayText } : undefined}
       >
         {!accentWords.length ? narrative : undefined}

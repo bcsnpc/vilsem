@@ -1,5 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+// Buffer the one-shot startup-complete event. The main process sends it on
+// did-finish-load, which can arrive BEFORE React mounts and registers its
+// listener (especially on a reload). Capturing it here — preload runs before any
+// renderer JS — lets a late onStartupComplete() replay the payload, so the UI
+// never gets stuck on the splash.
+let __lastStartupData
+ipcRenderer.on('startup-complete', (_e, data) => { __lastStartupData = data })
+
 contextBridge.exposeInMainWorld('semantica', {
   // ── Queries ──────────────────────────────────────────────────────────────
   query:       (params) => ipcRenderer.invoke('query',     params),
@@ -34,7 +42,12 @@ contextBridge.exposeInMainWorld('semantica', {
   close:    () => ipcRenderer.invoke('close-window'),
 
   // ── Events ────────────────────────────────────────────────────────────
-  onStartupComplete: (cb) => ipcRenderer.on('startup-complete', cb),
+  onStartupComplete: (cb) => {
+    // Replay the buffered payload if startup already completed before this
+    // listener registered, then keep listening for future (reload) events.
+    if (__lastStartupData !== undefined) { try { cb(null, __lastStartupData) } catch { /* ignore */ } }
+    ipcRenderer.on('startup-complete', cb)
+  },
   onShowSetup:       (cb) => ipcRenderer.on('show-setup',       cb),
   onMetadataUpdated: (cb) => ipcRenderer.on('metadata-updated', cb),
   onAuthExpired:     (cb) => ipcRenderer.on('auth-expired',     cb),
@@ -113,7 +126,7 @@ contextBridge.exposeInMainWorld('semantica', {
   },
 
   // ── Power BI Mode (Fabric Items API) ──────────────────────────────────
-  pbiGetAccessToken:          ()  => ipcRenderer.invoke('pbi-get-access-token'),
+  pbiAuthState:               ()  => ipcRenderer.invoke('pbi-auth-state'),
   pbiListReports:             (p) => ipcRenderer.invoke('pbi-list-reports',             p),
   pbiGetReportDefinitionV2:   (p) => ipcRenderer.invoke('pbi-get-report-definition-v2', p),
   pbiUpdateReportDefinition:  (p) => ipcRenderer.invoke('pbi-update-report-definition', p),
