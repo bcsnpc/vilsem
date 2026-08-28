@@ -122,9 +122,13 @@ certutil -hashfile "vilsem Setup 1.0.0-beta.1.exe" SHA256
 
 ## Status
 
-**`v1.0.0-beta.1`** — beta, and labeled that deliberately. The core paths (connect, author, render, export) work end to end and are covered by tests. The App Spec format may still change before 1.0. Fabric deployment is behind a flag while it stabilizes.
+**`v1.0.0-beta.2`** — beta, and labeled that deliberately. The core paths (connect, author, render, export) work end to end and are covered by tests. The App Spec format may still change before 1.0. Fabric deployment is behind a flag while it stabilizes.
 
 Bug reports and feedback on the App Spec design are especially useful right now.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the security policy, how to report a vulnerability privately, and a summary of what's been hardened. vilsem is beta software and is **not recommended for production or sensitive data**.
 
 ## Contributing
 
