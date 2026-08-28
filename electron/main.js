@@ -71,7 +71,11 @@ function setupTokenCheck() {
 // The dev relaxation is gated on VITE_DEV_SERVER, which packaged builds never
 // set — so it can never apply in production.
 function buildCsp() {
-  const isDev = !!process.env.VITE_DEV_SERVER
+  // `&& !app.isPackaged` makes the "dev relaxations can never reach a packaged
+  // build" guarantee enforced by code, not just by VITE_DEV_SERVER being unset:
+  // even if that env var somehow leaked into a packaged build, the strict policy
+  // still applies.
+  const isDev = !!process.env.VITE_DEV_SERVER && !app.isPackaged
   const apiHosts = [
     'https://api.anthropic.com',
     'https://api.openai.com',

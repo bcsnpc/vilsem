@@ -682,7 +682,7 @@ function getBundledPbiviz() {
     // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
     // bundled .pbiviz (pbivizDistDir(), shipped read-only) — never a user-supplied,
     // downloaded, or imported archive — and nothing here extracts to disk. Change
-    // the input source and the zip path-traversal advisory becomes reachable:
+    // the input source and the adm-zip advisory becomes reachable:
     // upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip      = new AdmZip(fullPath)
     const entries  = zip.getEntries()
@@ -788,7 +788,7 @@ function getBundledCustomVisualParts() {
     // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
     // bundled .pbiviz (pbivizDistDir(), shipped read-only) — never a user-supplied,
     // downloaded, or imported archive — and nothing here extracts to disk. Change
-    // the input source and the zip path-traversal advisory becomes reachable:
+    // the input source and the adm-zip advisory becomes reachable:
     // upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip      = new AdmZip(fullPath)
     const entries  = zip.getEntries().filter((e) => !e.isDirectory)
@@ -864,7 +864,7 @@ async function exportVisualPackage({ spec, title, fileBase } = {}) {
     // SECURITY (adm-zip pinned <0.6): safe ONLY because the input is our OWN
     // bundled .pbiviz template (pbivizDistDir(), shipped read-only) — never a
     // user-supplied, downloaded, or imported archive — and nothing here extracts
-    // to disk. Change the input source and the zip path-traversal advisory becomes
+    // to disk. Change the input source and the adm-zip advisory becomes
     // reachable: upgrade adm-zip to >=0.6.0 FIRST. See SECURITY.md ("adm-zip").
     const zip = new AdmZip(path.join(distDir, latest))
 
