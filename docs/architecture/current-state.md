@@ -1,6 +1,10 @@
 # Semantica — Current State Architecture
 
 **Purpose:** Factual snapshot of what exists today. Not a proposal.
+
+**Historical snapshot:** This file describes April 2026, not the current extracted
+renderer/primitive architecture. See [the September audit](../architecture.md) and
+[current visual inventory](../visual-inventory.md) before relying on its file/line references.
 **Last updated:** 2026-04-21.
 
 This document describes the visual rendering and publish pipelines as they stand. Code citations use `file:line` form.

@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0-beta.3",
+  "unitTests": {
+    "passed": 625,
+    "failed": 1,
+    "total": 626,
+    "knownFailure": "Secondary-axis cross-visual filter contract"
+  },
+  "packagedStartup": "PASS",
+  "installerExtractedPayloadStartup": "PASS",
+  "installerArchiveIntegrity": "PASS",
+  "interactiveInstallUpgradeUninstall": "NOT TESTED",
+  "windowsSigning": "Unsigned",
+  "sha256": "199546b81b72a6660171485b016693bdc3005532440fb7cffc21f410a86935d8",
+  "installerBytes": 133533361
+}

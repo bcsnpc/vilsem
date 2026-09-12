@@ -75,6 +75,11 @@ function buildTableDAX(groupBy: string[], measures: string[], filters: any, limi
   const sortMeasure = measures[0]
   const sortColumn = groupCols[0]
   const lim = limit || 100
+  if (!measures.length) {
+    const sort = groupCols.map(col => `${col}, ${order}`).join(', ')
+    const displaySort = groupCols.map(col => `${col} ${order}`).join(', ')
+    return `EVALUATE\nTOPN(${lim}, ${summary}, ${sort})\nORDER BY ${displaySort}`
+  }
   return `EVALUATE\nTOPN(${lim}, ${summary}, [${sortMeasure}], ${order}, ${sortColumn}, ASC)\nORDER BY [${sortMeasure}] ${order}, ${sortColumn} ASC`
 }
 function buildScalarDAX(measures: string[], filters: any): string {
@@ -91,7 +96,9 @@ function buildScalarDAX(measures: string[], filters: any): string {
 function cleanKey(k: string): string {
   return k.startsWith('[') && k.endsWith(']') ? k.slice(1, -1) : k
 }
-function coerce(v: any): any {
+function coerce(v: any, key: string): any {
+  // Dimension identifiers are text even when they look numeric (e.g. "00123").
+  if (key.indexOf('[') > 0 && key.endsWith(']')) return v
   return typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v)) ? Number(v) : v
 }
 function toRows(table: any): any[] {
@@ -101,9 +108,9 @@ function toRows(table: any): any[] {
   return raw.map((r: any) => {
     const obj: any = {}
     if (Array.isArray(r)) {
-      cols.forEach((name, i) => { obj[cleanKey(name)] = coerce(r[i]) })
+      cols.forEach((name, i) => { obj[cleanKey(name)] = coerce(r[i], name) })
     } else {
-      for (const [k, val] of Object.entries(r)) obj[cleanKey(k)] = coerce(val)
+      for (const [k, val] of Object.entries(r)) obj[cleanKey(k)] = coerce(val, k)
     }
     return obj
   })

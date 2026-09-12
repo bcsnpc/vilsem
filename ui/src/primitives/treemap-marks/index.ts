@@ -3,6 +3,7 @@ import { fmtVal } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { TreemapMarksProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 export const schema: PrimitiveFieldDef[] = [
   { key: 'showLabels',    label: 'Tile labels',    type: 'boolean', default: true,                                  group: 'Labels' },
@@ -98,7 +99,7 @@ export const TreemapMarks: Primitive<TreemapMarksProps> = (props, ctx) => {
         formatter: (params: any) => {
           const name = params.name || ''
           const v = params.data?._rawValue ?? params.value
-          return `${name}<br/>${fmtVal(v, prefix, suffix)}`
+          return `${escapeHtml(name)}<br/>${escapeHtml(fmtVal(v, prefix, suffix))}`
         },
       },
       series: [{

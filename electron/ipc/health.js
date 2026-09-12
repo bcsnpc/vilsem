@@ -97,6 +97,8 @@ async function handleGetHealth() {
 }
 
 async function handleGetMeasures() {
+  const local = require('../../src/powerbi/localRuntime').current();
+  if (local) return { measures: local.measures, source: 'local-pbip' };
   const datasetId = process.env.FABRIC_DATASET_ID
   const measures  = getRegistryMeasures(datasetId)
   const info      = getMeasuresInfo()
@@ -104,6 +106,8 @@ async function handleGetMeasures() {
 }
 
 async function handleGetDimensions() {
+  const local = require('../../src/powerbi/localRuntime').current();
+  if (local) return { tables: local.tables, source: 'local-pbip' };
   const datasetId = process.env.FABRIC_DATASET_ID
 
   // Strategy 1: dimension_registry (populated via file import)
@@ -241,6 +245,8 @@ function register() {
   ipcMain.handle('get-dimensions', () => handleGetDimensions())
 
   ipcMain.handle('get-measure-registry', () => {
+    const local = require('../../src/powerbi/localRuntime').current();
+    if (local) return { measures: local.measures };
     const datasetId = process.env.FABRIC_DATASET_ID
     return { measures: getRegistryMeasures(datasetId) }
   })
@@ -258,6 +264,8 @@ function register() {
   })
 
   ipcMain.handle('get-model-context', () => {
+    const local = require('../../src/powerbi/localRuntime').current();
+    if (local) return { tables: local.tables, measures: local.measures, relationships: [], source: 'local-pbip' };
     return global.semanticaModelContext || null
   })
 }

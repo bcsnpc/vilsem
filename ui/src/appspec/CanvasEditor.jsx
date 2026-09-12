@@ -1,3 +1,4 @@
+import { chartTitleStyle } from './shared/chartTitle.js'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { VISUAL_MAP, getCardChromeStyle } from './AppSpecRenderer.jsx'
 import { getThemeTokens } from './getThemeTokens.ts'
@@ -35,10 +36,11 @@ function pxToGrid(px, containerW) {
   const step = colW + GAP
   // Round to 1 decimal = ~10px precision in a 12-col 1200px canvas
   const round = (n) => Math.round(n * 10) / 10
+  const w = Math.max(1, Math.min(COLS, round((px.width + GAP) / step)))
   return {
-    x: Math.max(0, Math.min(COLS, round(px.left / step))),
+    x: Math.max(0, Math.min(COLS - w, round(px.left / step))),
     y: Math.max(0, round(px.top / (ROW_H + GAP))),
-    w: Math.max(1, Math.min(COLS, round((px.width + GAP) / step))),
+    w,
     h: Math.max(1, round((px.height + GAP) / (ROW_H + GAP))),
   }
 }
@@ -141,6 +143,7 @@ export default function CanvasEditor({
   const [dragState, setDragState] = useState(null) // { id, type:'move'|'resize', startMouse, startPx }
   const [liveOffset, setLiveOffset] = useState(null) // { id, left, top, width, height } during drag
   const [visualData, setVisualData] = useState({})
+  const [visualErrors, setVisualErrors] = useState({})
   const [dropTargetId, setDropTargetId] = useState(null) // visual highlighted during a field drag-over
   // Click-to-drill in the edit canvas (same behaviour as view/present). Per-visual
   // stack of clicked values; expand-in-place splits a bar into its children.
@@ -220,10 +223,12 @@ export default function CanvasEditor({
     let cancelled = false
     const load = async () => {
       for (const v of spec.visuals) {
-        if (!v.data?.measures?.length) {
+        const dimensionOnlyTable = v.type === 'table' && (v.data?.dimensions?.length || v.data?.groupBy?.column)
+        if (!v.data?.measures?.length && !dimensionOnlyTable) {
           // Measures removed → clear stale value + reset the fetch guard so re-adding
           // a measure refetches (instead of showing the previous measure's data).
-          setVisualData(d => (d[v.id] == null ? d : { ...d, [v.id]: null }))
+          setVisualData(d => (Array.isArray(d[v.id]) && d[v.id].length === 0 ? d : { ...d, [v.id]: [] }))
+          setVisualErrors(e => e[v.id] ? { ...e, [v.id]: null } : e)
           fetchedAxisRef.current[v.id] = ''
           continue
         }
@@ -245,10 +250,10 @@ export default function CanvasEditor({
           : ''
         // Include orderBy + limit so changing the Query panel (Order / Row limit) busts
         // the dedup and actually re-queries — otherwise the bars keep their old order/count.
-        const obTag = typeof v.data?.orderBy === 'string' ? v.data.orderBy : (v.data?.orderBy?.dir || '')
-        const axisKey = `${effectiveGroupBy?.table || ''}|${effectiveGroupBy?.column || ''}|drill:${drillTag}${playTag}|ob:${obTag}|lim:${v.data?.limit ?? ''}`
-        if (fetchedAxisRef.current[v.id] === axisKey) continue // same axis/drill/order/limit as last fetch
-        const measures = v.data.measures
+        const axisKey = JSON.stringify([v.type, v.data, effectiveGroupBy, drillTag, playTag])
+        if (fetchedAxisRef.current[v.id] === axisKey) continue // all query inputs unchanged
+        setVisualErrors(e => e[v.id] ? { ...e, [v.id]: null } : e)
+        const measures = v.data.measures || []
         const groupBy = effectiveGroupBy
         // Build filters object the same way AppSpecRenderer does — spec stores
         // filters as an array of {table, column, value}; backend expects a keyed object
@@ -269,6 +274,7 @@ export default function CanvasEditor({
             const limit = Math.max(v.data.limit || 0, 200)
             const res = await window.semantica?.queryTable?.({ groupBy: groupByRefs, measures, filters, limit, orderBy: 'desc' })
             if (cancelled) return
+            if (res?.error) throw new Error(res.message || res.error)
             const rows2 = normaliseTableRows(res?.rows, groupByRefs, measures)
             setVisualData(d => ({ ...d, [v.id]: shapeExpandInPlace(rows2, expandedValue) }))
             fetchedAxisRef.current[v.id] = axisKey
@@ -289,6 +295,7 @@ export default function CanvasEditor({
               const t0 = Date.now()
               const res = await window.semantica?.queryTable?.({ groupBy: groupByRefs, measures, filters, limit, orderBy: 'desc' })
               if (cancelled) return
+            if (res?.error) throw new Error(res.message || res.error)
               const elapsedMs = Date.now() - t0
               const rows = normaliseTableRows(res?.rows, groupByRefs, measures)
               setVisualData(d => ({ ...d, [v.id]: rows }))
@@ -313,6 +320,7 @@ export default function CanvasEditor({
             const t0 = Date.now()
             const res = await window.semantica?.queryTable?.({ groupBy: groupByRefs, measures, filters, limit, orderBy })
             if (cancelled) return
+            if (res?.error) throw new Error(res.message || res.error)
             const elapsedMs = Date.now() - t0
             const rows = normaliseTableRows(res?.rows, groupByRefs, measures)
             setVisualData(d => ({ ...d, [v.id]: rows }))
@@ -323,6 +331,7 @@ export default function CanvasEditor({
             const t0 = Date.now()
             const res = await window.semantica?.query?.({ measures, filters })
             if (cancelled) return
+            if (res?.error) throw new Error(res.message || res.error)
             const elapsedMs = Date.now() - t0
             const row = {
               _val:  getScalarValue(res, measures[0]),
@@ -346,6 +355,7 @@ export default function CanvasEditor({
               limit, orderBy,
             })
             if (cancelled) return
+            if (res?.error) throw new Error(res.message || res.error)
             const elapsedMs = Date.now() - t0
             const resolvedKey = resolveRowKey(res?.rows, ref)
             const rows = normaliseRows(res?.rows, resolvedKey, measures)
@@ -353,7 +363,13 @@ export default function CanvasEditor({
             setPreview(v.id, { type: v.type, title: v.config?.title || v.type, measures, groupBy: effectiveGroupBy, dimensions: null, filters, limit, orderBy, dax: buildTablePreviewDax([ref], measures, filters, limit, orderBy), rows, rowCount: res?.total ?? rows.length, elapsedMs, error: res?.error ? (res.message || res.error) : null })
             fetchedAxisRef.current[v.id] = axisKey
           }
-        } catch { /* ignore */ }
+        } catch (error) {
+          if (cancelled) return
+          const message = error.message || 'Query failed'
+          setVisualErrors(e => ({ ...e, [v.id]: message }))
+          setVisualData(d => ({ ...d, [v.id]: [] }))
+          setPreview(v.id, { type: v.type, title: v.config?.title || v.type, measures, filters, rows: [], rowCount: 0, error: message })
+        }
       }
     }
     load()
@@ -365,7 +381,7 @@ export default function CanvasEditor({
     // playAxis lives in config (bar race), so include it or editing the play axis
     // wouldn't re-trigger the fetch (data is unchanged).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify((spec?.visuals || []).map(v => ({ id: v.id, data: v.data, playAxis: v.config?.playAxis || v.data?.frameBy || null }))), JSON.stringify(axisOverrides), JSON.stringify(drillPaths)])
+  }, [JSON.stringify((spec?.visuals || []).map(v => ({ id: v.id, type: v.type, data: v.data, playAxis: v.config?.playAxis || v.data?.frameBy || null }))), JSON.stringify(axisOverrides), JSON.stringify(drillPaths)])
 
   // Measure container
   useEffect(() => {
@@ -645,7 +661,7 @@ export default function CanvasEditor({
                   return (
                     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                       <VisualBoundary resetKey={data}>
-                        <Component rows={data} config={chartConfig} loading={!data} error={null} />
+                        <Component rows={data} config={chartConfig} loading={!data} error={visualErrors[item.id]} />
                       </VisualBoundary>
                     </div>
                   )
@@ -656,7 +672,7 @@ export default function CanvasEditor({
                       <div
                         onPointerDown={(e) => handlePointerDown(e, item.id, 'move')}
                         style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, gap: 8, zIndex: 4, position: 'relative', cursor: isDragging ? 'grabbing' : 'grab' }}>
-                        <span style={{ fontSize: item.config?.titleFontSize || 12, fontWeight: 600, color: item.config?.titleColor || (isDark ? 'rgba(255,255,255,0.86)' : '#1E293B'), flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: item.config?.titleFontFamily || 'inherit', pointerEvents: 'none' }}>
+                        <span data-chart-title style={{ ...chartTitleStyle(item.config, isDark ? 'rgba(255,255,255,0.86)' : '#1E293B'), pointerEvents: 'none' }}>
                           {item.config?.title || item.config?.label || ''}
                         </span>
                         <div onPointerDown={(e) => e.stopPropagation()}>
@@ -679,7 +695,7 @@ export default function CanvasEditor({
                         onDrillTo={handleDrillTo} onPanelClose={() => closePanel(item.id)}
                         muted={isDark ? '#94A3B8' : '#64748B'} primary={isDark ? 'rgba(255,255,255,0.86)' : '#1E293B'}
                         border={isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0'} surface={isDark ? '#161A1F' : '#FFFFFF'} accent={colorVal}>
-                        <Component rows={data} config={chartConfig} loading={!data} error={null} groupBy={effectiveGroupBy} />
+                        <Component rows={data} config={chartConfig} loading={!data} error={visualErrors[item.id]} groupBy={effectiveGroupBy} />
                       </DrillChrome>
                       </VisualBoundary>
                     </div>

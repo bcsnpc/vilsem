@@ -75,7 +75,7 @@ export const TYPE_FIELD_DEFAULTS = {
 export const TYPE_FIELD_HIDE = {
   // showLegend/legendPosition are owned by the dedicated Legend panel (Text tab) for
   // pie/donut, so hide the pie-marks schema duplicates.
-  pie:          ['innerRadius', 'showCenterText', 'showLegend', 'legendPosition'],  // pie forces innerRadius:0 (donut-only)
+  pie:          ['innerRadius', 'showCenterText', 'centerFontSize', 'centerColor', 'showLegend', 'legendPosition'],  // pie forces innerRadius:0 (donut-only)
   donut:        ['showLegend', 'legendPosition'],
   bar:          ['stacked', 'secondaryColor'],       // single-series path — no secondary measure
   column:       ['stacked', 'secondaryColor'],

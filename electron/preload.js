@@ -93,6 +93,9 @@ contextBridge.exposeInMainWorld('semantica', {
 
   // ── Model context ─────────────────────────────────────────────────────
   getModelContext: () => ipcRenderer.invoke('get-model-context'),
+  saveLocalPowerBIReport: (params) => ipcRenderer.invoke('save-local-power-bi-report', params),
+  connectLocalPowerBIModel: (params) => ipcRenderer.invoke('connect-local-power-bi-model', params),
+  selectLocalPowerBIModel: (params) => ipcRenderer.invoke('select-local-power-bi-model', params),
 
   // ── Relationship validation ───────────────────────────────────────────
   validateFilter: (p) => ipcRenderer.invoke('validate-filter', p),

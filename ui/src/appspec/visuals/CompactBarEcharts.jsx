@@ -92,7 +92,7 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
     const fragments = [
       CartesianFrame({
         orientation,
-        margin: { left: 4, right: showDataLabels ? 60 : 16, top: 4, bottom: 4 },
+        margin: { left: 4, right: showDataLabels ? 60 : 16, top: showDataLabels && labelPosition === 'top' ? 20 : 4, bottom: 4 },
       }, ctx),
 
       isHorizontal
@@ -211,7 +211,7 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
     if (!config._onBarClick) return
     // Bar click: params.name is the category label (from axis data, matched by index)
     const cat = params?.name
-    if (cat != null) config._onBarClick(String(cat))
+    if (cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
 
   // Keep the chart mounted during a re-query if we already have data — otherwise
@@ -223,7 +223,7 @@ export default function CompactBarEcharts({ rows, config, loading, error }) {
 
   return (
     <div style={{ height: '100%', overflow: 'hidden', borderRadius: 12 }}>
-      <EChartsCanvas
+      <EChartsCanvas config={config}
         option={applyTooltipConfig(option, config)}
         onClick={config._onBarClick ? handleClick : undefined}
       />

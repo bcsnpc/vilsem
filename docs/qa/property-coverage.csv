@@ -1,0 +1,322 @@
+visual,property,discovery,status
+bar,barRadius,runtime schema (visibility not resolved),NOT_TESTED
+bar,maxBarSize,runtime schema (visibility not resolved),NOT_TESTED
+bar,showBarBackground,runtime schema (visibility not resolved),NOT_TESTED
+bar,gradient,runtime schema (visibility not resolved),NOT_TESTED
+bar,rankOpacity,runtime schema (visibility not resolved),NOT_TESTED
+bar,highlightMax,runtime schema (visibility not resolved),NOT_TESTED
+bar,gridLines,runtime schema (visibility not resolved),NOT_TESTED
+bar,gridStyle,runtime schema (visibility not resolved),NOT_TESTED
+bar,stacked,runtime schema (visibility not resolved),NOT_TESTED
+bar,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+bar,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+bar,labelPosition,runtime schema (visibility not resolved),NOT_TESTED
+bar,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+bar,avgLineColor,runtime schema (visibility not resolved),NOT_TESTED
+bar,avgLineStyle,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,barRadius,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,maxBarSize,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,showBarBackground,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,gradient,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,rankOpacity,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,highlightMax,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,gridLines,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,gridStyle,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,stacked,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,labelPosition,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,avgLineColor,runtime schema (visibility not resolved),NOT_TESTED
+stacked_bar,avgLineStyle,runtime schema (visibility not resolved),NOT_TESTED
+line,chartType,runtime schema (visibility not resolved),NOT_TESTED
+line,smooth,runtime schema (visibility not resolved),NOT_TESTED
+line,strokeWidth,runtime schema (visibility not resolved),NOT_TESTED
+line,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+line,stacked,runtime schema (visibility not resolved),NOT_TESTED
+line,primaryColor,runtime schema (visibility not resolved),NOT_TESTED
+line,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+line,showDots,runtime schema (visibility not resolved),NOT_TESTED
+line,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+line,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+line,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+line,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+line,invertY,runtime schema (visibility not resolved),NOT_TESTED
+line,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+line,targetLine,runtime schema (visibility not resolved),NOT_TESTED
+area,chartType,runtime schema (visibility not resolved),NOT_TESTED
+area,smooth,runtime schema (visibility not resolved),NOT_TESTED
+area,strokeWidth,runtime schema (visibility not resolved),NOT_TESTED
+area,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+area,stacked,runtime schema (visibility not resolved),NOT_TESTED
+area,primaryColor,runtime schema (visibility not resolved),NOT_TESTED
+area,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+area,showDots,runtime schema (visibility not resolved),NOT_TESTED
+area,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+area,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+area,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+area,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+area,invertY,runtime schema (visibility not resolved),NOT_TESTED
+area,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+area,targetLine,runtime schema (visibility not resolved),NOT_TESTED
+donut,innerRadius,runtime schema (visibility not resolved),NOT_TESTED
+donut,outerRadius,runtime schema (visibility not resolved),NOT_TESTED
+donut,paddingAngle,runtime schema (visibility not resolved),NOT_TESTED
+donut,cornerRadius,runtime schema (visibility not resolved),NOT_TESTED
+donut,showLegend,runtime schema (visibility not resolved),NOT_TESTED
+donut,legendPosition,runtime schema (visibility not resolved),NOT_TESTED
+donut,maxLegendItems,runtime schema (visibility not resolved),NOT_TESTED
+donut,showLabels,runtime schema (visibility not resolved),NOT_TESTED
+donut,labelStyle,runtime schema (visibility not resolved),NOT_TESTED
+donut,showCenterText,runtime schema (visibility not resolved),NOT_TESTED
+donut,centerFontSize,runtime schema (visibility not resolved),NOT_TESTED
+donut,centerColor,runtime schema (visibility not resolved),NOT_TESTED
+pie,innerRadius,runtime schema (visibility not resolved),NOT_TESTED
+pie,outerRadius,runtime schema (visibility not resolved),NOT_TESTED
+pie,paddingAngle,runtime schema (visibility not resolved),NOT_TESTED
+pie,cornerRadius,runtime schema (visibility not resolved),NOT_TESTED
+pie,showLegend,runtime schema (visibility not resolved),NOT_TESTED
+pie,legendPosition,runtime schema (visibility not resolved),NOT_TESTED
+pie,maxLegendItems,runtime schema (visibility not resolved),NOT_TESTED
+pie,showLabels,runtime schema (visibility not resolved),NOT_TESTED
+pie,labelStyle,runtime schema (visibility not resolved),NOT_TESTED
+pie,showCenterText,runtime schema (visibility not resolved),NOT_TESTED
+pie,centerFontSize,runtime schema (visibility not resolved),NOT_TESTED
+pie,centerColor,runtime schema (visibility not resolved),NOT_TESTED
+gauge,minValue,runtime schema (visibility not resolved),NOT_TESTED
+gauge,maxValue,runtime schema (visibility not resolved),NOT_TESTED
+gauge,arcWidth,runtime schema (visibility not resolved),NOT_TESTED
+gauge,gaugeSize,runtime schema (visibility not resolved),NOT_TESTED
+gauge,showMinMax,runtime schema (visibility not resolved),NOT_TESTED
+gauge,valueFontSize,runtime schema (visibility not resolved),NOT_TESTED
+radar,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+radar,strokeWidth,runtime schema (visibility not resolved),NOT_TESTED
+radar,showDots,runtime schema (visibility not resolved),NOT_TESTED
+radar,radarRadius,runtime schema (visibility not resolved),NOT_TESTED
+radar,labelFontSize,runtime schema (visibility not resolved),NOT_TESTED
+scatter,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+scatter,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+scatter,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+scatter,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+scatter,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+scatter,showLabels,runtime schema (visibility not resolved),NOT_TESTED
+bubble,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+bubble,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+bubble,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+bubble,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+bubble,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+bubble,showLabels,runtime schema (visibility not resolved),NOT_TESTED
+treemap,showLabels,runtime schema (visibility not resolved),NOT_TESTED
+treemap,labelColor,runtime schema (visibility not resolved),NOT_TESTED
+treemap,labelFontSize,runtime schema (visibility not resolved),NOT_TESTED
+treemap,showValues,runtime schema (visibility not resolved),NOT_TESTED
+treemap,valueColor,runtime schema (visibility not resolved),NOT_TESTED
+treemap,valueFontSize,runtime schema (visibility not resolved),NOT_TESTED
+treemap,colorMode,runtime schema (visibility not resolved),NOT_TESTED
+treemap,borderRadius,runtime schema (visibility not resolved),NOT_TESTED
+treemap,borderWidth,runtime schema (visibility not resolved),NOT_TESTED
+treemap,padding,runtime schema (visibility not resolved),NOT_TESTED
+column,barRadius,runtime schema (visibility not resolved),NOT_TESTED
+column,maxBarSize,runtime schema (visibility not resolved),NOT_TESTED
+column,showBarBackground,runtime schema (visibility not resolved),NOT_TESTED
+column,gradient,runtime schema (visibility not resolved),NOT_TESTED
+column,rankOpacity,runtime schema (visibility not resolved),NOT_TESTED
+column,highlightMax,runtime schema (visibility not resolved),NOT_TESTED
+column,gridLines,runtime schema (visibility not resolved),NOT_TESTED
+column,gridStyle,runtime schema (visibility not resolved),NOT_TESTED
+column,stacked,runtime schema (visibility not resolved),NOT_TESTED
+column,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+column,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+column,labelPosition,runtime schema (visibility not resolved),NOT_TESTED
+column,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+column,avgLineColor,runtime schema (visibility not resolved),NOT_TESTED
+column,avgLineStyle,runtime schema (visibility not resolved),NOT_TESTED
+lollipop,orientation,runtime schema (visibility not resolved),NOT_TESTED
+lollipop,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+lollipop,lineWidth,runtime schema (visibility not resolved),NOT_TESTED
+lollipop,gridLines,runtime schema (visibility not resolved),NOT_TESTED
+lollipop,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+progress,maxValue,runtime schema (visibility not resolved),NOT_TESTED
+progress,barHeight,runtime schema (visibility not resolved),NOT_TESTED
+progress,barRadius,runtime schema (visibility not resolved),NOT_TESTED
+progress,showPercentage,runtime schema (visibility not resolved),NOT_TESTED
+progress,valueFontSize,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,barRadius,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,maxBarSize,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,showBarBackground,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,gradient,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,rankOpacity,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,highlightMax,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,gridLines,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,gridStyle,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,stacked,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,labelPosition,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,avgLineColor,runtime schema (visibility not resolved),NOT_TESTED
+grouped_bar,avgLineStyle,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,chartType,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,smooth,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,strokeWidth,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,stacked,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,primaryColor,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,showDots,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,invertY,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+stacked_area,targetLine,runtime schema (visibility not resolved),NOT_TESTED
+slope,leftLabel,runtime schema (visibility not resolved),NOT_TESTED
+slope,rightLabel,runtime schema (visibility not resolved),NOT_TESTED
+slope,showValues,runtime schema (visibility not resolved),NOT_TESTED
+slope,showLegend,runtime schema (visibility not resolved),NOT_TESTED
+slope,lineWidth,runtime schema (visibility not resolved),NOT_TESTED
+slope,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+bump,chartType,runtime schema (visibility not resolved),NOT_TESTED
+bump,smooth,runtime schema (visibility not resolved),NOT_TESTED
+bump,strokeWidth,runtime schema (visibility not resolved),NOT_TESTED
+bump,fillOpacity,runtime schema (visibility not resolved),NOT_TESTED
+bump,stacked,runtime schema (visibility not resolved),NOT_TESTED
+bump,primaryColor,runtime schema (visibility not resolved),NOT_TESTED
+bump,secondaryColor,runtime schema (visibility not resolved),NOT_TESTED
+bump,showDots,runtime schema (visibility not resolved),NOT_TESTED
+bump,dotSize,runtime schema (visibility not resolved),NOT_TESTED
+bump,showGrid,runtime schema (visibility not resolved),NOT_TESTED
+bump,showXAxis,runtime schema (visibility not resolved),NOT_TESTED
+bump,showYAxis,runtime schema (visibility not resolved),NOT_TESTED
+bump,invertY,runtime schema (visibility not resolved),NOT_TESTED
+bump,showAvgLine,runtime schema (visibility not resolved),NOT_TESTED
+bump,targetLine,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,raceMode,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,playSpeed,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,autoPlay,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,loopPlayback,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,barColorMode,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,raceControlColor,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,dataLabels,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,valuePrefix,runtime schema (visibility not resolved),NOT_TESTED
+bar_race,valueSuffix,runtime schema (visibility not resolved),NOT_TESTED
+text_box,fontFamily,runtime schema (visibility not resolved),NOT_TESTED
+text_box,fontSize,runtime schema (visibility not resolved),NOT_TESTED
+text_box,fontWeight,runtime schema (visibility not resolved),NOT_TESTED
+text_box,color,runtime schema (visibility not resolved),NOT_TESTED
+text_box,align,runtime schema (visibility not resolved),NOT_TESTED
+text_box,vAlign,runtime schema (visibility not resolved),NOT_TESTED
+shape,shape,runtime schema (visibility not resolved),NOT_TESTED
+shape,fillColor,runtime schema (visibility not resolved),NOT_TESTED
+shape,borderColor,runtime schema (visibility not resolved),NOT_TESTED
+shape,borderWidth,runtime schema (visibility not resolved),NOT_TESTED
+shape,borderRadius,runtime schema (visibility not resolved),NOT_TESTED
+shape,opacity,runtime schema (visibility not resolved),NOT_TESTED
+image,imageUrl,runtime schema (visibility not resolved),NOT_TESTED
+image,fit,runtime schema (visibility not resolved),NOT_TESTED
+image,borderRadius,runtime schema (visibility not resolved),NOT_TESTED
+image,opacity,runtime schema (visibility not resolved),NOT_TESTED
+image,alt,runtime schema (visibility not resolved),NOT_TESTED
+divider,orientation,runtime schema (visibility not resolved),NOT_TESTED
+divider,thickness,runtime schema (visibility not resolved),NOT_TESTED
+divider,color,runtime schema (visibility not resolved),NOT_TESTED
+divider,style,runtime schema (visibility not resolved),NOT_TESTED
+UNMAPPED,accentColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,align,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,animationDuration,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,animationPreset,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,animations,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,axisFontFamily,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,axisFontSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,axisOptions,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,axisTickColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,bgOpacity,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,borderRadius,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,cardStyle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,categoryColors,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,color,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,colorScheme,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,compact,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,dataLabelColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,dataLabels,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,drillStyle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,filterColumn,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,filterMode,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,filterValue,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,flat,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,fullWidth,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,gradient,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,gridLines,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,gridLinesColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,gridLinesOpacity,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,headerBg,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,heatmap,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,highlightMax,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,hoverEffect,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,icon,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,iconColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,iconSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,label,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,labelColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,labelPosition,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,legendColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,legendFontSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,legendPosition,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,limit,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,miniBars,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,modalPageId,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,navTarget,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,playAxis,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,prefix,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,progressColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,progressHeight,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,progressMax,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,progressTrackColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,rankColumn,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,rankOpacity,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sectionColors,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showAccentStrip,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showDots,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showGlow,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showIcon,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showLegend,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showProgress,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showSparkline,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showTitle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,showTrend,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,size,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,smooth,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineAxis,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineHeight,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklinePosition,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineShowArea,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineWeight,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,sparklineWidth,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,subtitle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,suffix,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,targetPageId,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,title,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titleColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titleFontFamily,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titleFontSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titleFontWeight,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titlePosition,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,titleUppercase,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipEnabled,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipShowName,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipShowSwatch,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipShowTitle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipShowValue,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipTitle,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,tooltipTrigger,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,trendDownColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,trendFontSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,trendUpColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,url,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,valueColor,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,valueFontFamily,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,valueFontSize,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,valueFontWeight,literal inspector updateConfig (type gating not resolved),NOT_TESTED
+UNMAPPED,variant,literal inspector updateConfig (type gating not resolved),NOT_TESTED

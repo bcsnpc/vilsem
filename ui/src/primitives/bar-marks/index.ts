@@ -105,7 +105,7 @@ export const BarMarks: Primitive<BarMarksProps> = (props, ctx) => {
   const data = rows.map((row, index) => {
     const val = Number(row._val) || 0
     const hasSelection = selectedCat != null
-    const isSelected = hasSelection && String(row._cat) === String(selectedCat)
+    const isSelected = hasSelection && (Array.isArray(selectedCat) ? selectedCat.includes(String(row._cat)) : String(row._cat) === String(selectedCat))
     const isDimmed = hasSelection && !isSelected
 
     const baseColor = gradient
@@ -234,6 +234,7 @@ export const BarMarks: Primitive<BarMarksProps> = (props, ctx) => {
     showBackground,
     backgroundStyle: showBackground ? { color: t.shimmerBg } : undefined,
     label: seriesLabel,
+    labelLayout: { hideOverlap: true },
     animationDuration: animEnabled ? animDuration : 0,
     animationEasing: 'cubicOut',
     ...(markLine ? { markLine } : {}),
@@ -253,6 +254,7 @@ export const BarMarks: Primitive<BarMarksProps> = (props, ctx) => {
       // secondary label sits at the bar's outer end (total) and the primary's
       // sits inside the primary slice — readable, no overlap.
       label: seriesLabel,
+      labelLayout: { hideOverlap: true },
       animationDuration: animEnabled ? animDuration : 0,
       animationEasing: 'cubicOut',
     })

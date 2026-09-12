@@ -98,11 +98,11 @@
   border-radius: var(--radius-xl); box-shadow: var(--shadow-modal); width: 100%; max-width: 460px;
   display: flex; flex-direction: column; max-height: 88vh; overflow: hidden;
   animation: sx-pop var(--dur-base) var(--ease-standard); }
-.sx-modal__header { display: flex; align-items: center; justify-content: space-between;
+.sx-modal__header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
   padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-subtle); }
 .sx-modal__title { font-family: var(--font-display); font-size: var(--fs-h3); font-weight: 600; color: var(--text-primary); }
-.sx-modal__body { padding: var(--space-5); overflow: auto; }
-.sx-modal__footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2);
+.sx-modal__body { min-height: 0; padding: var(--space-5); overflow: auto; }
+.sx-modal__footer { flex-shrink: 0; flex-wrap: wrap; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2);
   padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border-subtle); }
 
 /* ── Badge / Chip / Dot ─────────────────────────────────────────────────── */

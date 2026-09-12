@@ -204,7 +204,7 @@ function buildExistingReportParts({
     // (semanticaPagesPartList.dropPaths controls which paths are dropped).
     if (semanticaPagesPartList.dropPaths.has(p.path)) return false
     return true
-  }).map((p) => ({ path: p.path, content: p.content }))
+  }).map((p) => ({ ...p }))
 
   return [
     ...passThroughs,

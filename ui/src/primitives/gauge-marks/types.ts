@@ -7,6 +7,9 @@ export interface GaugeMarksProps {
   showMinMax?: boolean
   colorZones?: { from: number; to: number; color: string }[] | null
   valueFontSize?: number
+  valueFontWeight?: number
+  valueFontFamily?: string
+  valueColor?: string
   prefix?: string
   suffix?: string
   animEnabled?: boolean

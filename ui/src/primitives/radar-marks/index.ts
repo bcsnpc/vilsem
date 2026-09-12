@@ -3,6 +3,7 @@ import { fmtVal } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { RadarMarksProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 export const schema: PrimitiveFieldDef[] = [
   { key: 'fillOpacity',   label: 'Fill opacity',     type: 'range',   default: 0.22, min: 0,  max: 1,  step: 0.01, group: 'Appearance' },
@@ -84,8 +85,8 @@ export const RadarMarks: Primitive<RadarMarksProps> = (props, ctx) => {
             const name = indicators[i]?.name ?? ''
             const formatted = fmtVal(v, prefix, suffix)
             return `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;padding:2px 0">
-              <span style="color:${t.echartsLegendText}">${name}</span>
-              <span style="color:${p.start};font-weight:700">${formatted}</span>
+              <span style="color:${t.echartsLegendText}">${escapeHtml(name)}</span>
+              <span style="color:${p.start};font-weight:700">${escapeHtml(formatted)}</span>
             </div>`
           }).join('')
           const shadow = t.canvasBg && t.canvasBg.startsWith('#0') ? '0 12px 28px rgba(0,0,0,0.48)' : '0 8px 24px rgba(0,0,0,0.12)'

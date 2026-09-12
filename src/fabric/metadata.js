@@ -520,6 +520,7 @@ async function discoverViaScanner(workspaceId, datasetId, token) {
 // ── Main fetch ────────────────────────────────────────────────────────────────
 
 async function fetchMeasures() {
+  if (require('../powerbi/localRuntime').current()) return;
   const datasetId   = process.env.FABRIC_DATASET_ID;
   const workspaceId = process.env.FABRIC_WORKSPACE_ID;
 
@@ -619,6 +620,8 @@ function stopAutoRefresh() {
 // ── Validation ────────────────────────────────────────────────────────────────
 
 function validateMeasures(requestedMeasures) {
+  const local = require('../powerbi/localRuntime').current();
+  if (local) { const invalid = requestedMeasures.filter(name => !local.measures.some(m => m.name === name)); return invalid.length ? { valid: false, error: { code: 'MEASURE_NOT_FOUND', message: 'Unknown local measure: ' + invalid[0] } } : { valid: true }; }
   if (!measuresDiscovered) return { valid: true };
   const invalid = requestedMeasures.filter(m => !measuresSet.has(m));
   if (invalid.length > 0) {
@@ -645,7 +648,7 @@ function getMeasuresInfo()     { return { count: measuresSet.size, refreshedAt, 
 function getRefreshedAt()      { return refreshedAt; }
 function getMeasures()         { return getMeasuresList(); }
 function getTablesList()       { return []; }
-function getMeasureTable(name) { return measuresMap.get(name)?.table || ''; }
+function getMeasureTable(name) { const local = require('../powerbi/localRuntime').current(); return local ? local.measures.find(m => m.name === name)?.table || '' : measuresMap.get(name)?.table || ''; }
 
 module.exports = {
   discoverViaItemDefinition,

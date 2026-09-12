@@ -3,6 +3,7 @@ import { fmtAxisNumber } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { PointMarksProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 export const schema: PrimitiveFieldDef[] = [
   { key: 'dotSize',     label: 'Dot size',      type: 'range',   default: 16,   min: 4,  max: 60,  step: 1,  group: 'Appearance' },
@@ -93,7 +94,7 @@ export const PointMarks: Primitive<PointMarksProps> = (props, ctx) => {
           const name = params.name || ''
           const xStr = `${xLabel || 'X'}: ${fmtAxisNumber(x)}`
           const yStr = `${yLabel || 'Y'}: ${fmtAxisNumber(y)}`
-          return name ? `${name}<br/>${xStr}<br/>${yStr}` : `${xStr}<br/>${yStr}`
+          return name ? `${escapeHtml(name)}<br/>${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}` : `${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}`
         },
       },
       series: [{

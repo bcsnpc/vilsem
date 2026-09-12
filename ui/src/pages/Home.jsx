@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Card } from '../ui/Surface.jsx'
 import { Button, IconButton } from '../ui/Button.jsx'
 import { Input } from '../ui/Input.jsx'
@@ -24,6 +24,9 @@ const actionIcon = (prime) => ({
 
 export default function Home({ connectionInfo, authCreds, onOpenProject, onCreateProject, onRestyleReport, onInjectVisuals, onSettings, onLogout }) {
   const [projects, setProjects] = useState([])
+  const [projectError, setProjectError] = useState('')
+  const [deleteDialog, setDeleteDialog] = useState(null)
+  const deletingRef = useRef(false)
   const [loading, setLoading]   = useState(true)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [createStep, setCreateStep]     = useState('workspace')
@@ -34,6 +37,8 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
   const [dialogLoading, setDialogLoading] = useState(false)
   const [dialogError, setDialogError]     = useState('')
   const [projectName, setProjectName]     = useState('')
+  const [projectSource, setProjectSource] = useState('fabric')
+  const [localSource, setLocalSource] = useState(null)
 
   const [search, setSearch] = useState('')
   const [contextMenu, setContextMenu] = useState(null) // { x, y, project }
@@ -44,10 +49,13 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
 
   async function loadProjects() {
     setLoading(true)
+    setProjectError('')
     try {
-      const specs = await window.semantica?.getAppSpecs?.({})
-      setProjects(Array.isArray(specs) ? specs : [])
-    } catch { setProjects([]) }
+      if (!window.semantica?.getAppSpecs) throw new Error('Project storage is unavailable.')
+      const specs = await window.semantica.getAppSpecs({})
+      if (!Array.isArray(specs)) throw new Error('Project storage returned an invalid response.')
+      setProjects(specs)
+    } catch (error) { setProjectError(error.message || 'Could not load projects.') }
     setLoading(false)
   }
 
@@ -58,18 +66,29 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
     : null
 
   async function handleCreateClick() {
-    setShowCreateDialog(true)
-    setCreateStep('name')
-    setProjectName('')
-    setSelectedWorkspace(null)
-    setSelectedDataset(null)
+    setShowCreateDialog(true); setCreateStep('name'); setProjectName('')
+    setProjectSource('fabric'); setLocalSource(null)
+    setSelectedWorkspace(null); setSelectedDataset(null); setDialogError(''); setDialogLoading(false)
+  }
+
+  async function chooseLocalModel() {
     setDialogError('')
-    setDialogLoading(true)
+    const result = await window.semantica.selectLocalPowerBIModel()
+    if (result?.canceled) return
+    if (!result?.success) { setDialogError(result?.error || 'Could not read local project.'); return }
+    setLocalSource(result.source)
+  }
+
+  async function createLocalReport() {
+    if (!localSource || !projectName.trim() || dialogLoading) return
+    setDialogLoading(true); setDialogError('')
     try {
-      const res = await window.semantica?.getWorkspaces?.(creds || {})
-      setWorkspaces(Array.isArray(res?.workspaces) ? res.workspaces : [])
-    } catch { setWorkspaces([]) }
-    setDialogLoading(false)
+      const result = await window.semantica.connectLocalPowerBIModel({ path: localSource.projectPath || localSource.modelPath })
+      if (!result?.success) throw new Error(result?.error || 'Local connection failed.')
+      setShowCreateDialog(false)
+      onCreateProject({ ...result.connection, projectName: projectName.trim() })
+    } catch (error) { setDialogError(error.message || 'Local connection failed.') }
+    finally { setDialogLoading(false) }
   }
 
   async function handleWorkspaceNext() {
@@ -108,11 +127,25 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
     })
   }
 
-  async function handleDelete(id) {
+  function handleDelete(id) {
+    const project = projects.find(item => item.id === id)
+    setDeleteDialog({ id, name: project?.name || 'Untitled project', busy: false, error: '' })
+  }
+
+  async function confirmDelete() {
+    if (!deleteDialog || deletingRef.current) return
+    deletingRef.current = true
+    const id = deleteDialog.id
+    setDeleteDialog(current => ({ ...current, busy: true, error: '' }))
     try {
-      await window.semantica?.deleteAppSpec?.({ id })
-      await loadProjects()
-    } catch { /* ignore */ }
+      if (!window.semantica?.deleteAppSpec) throw new Error('Project storage is unavailable.')
+      const result = await window.semantica.deleteAppSpec({ id })
+      if (result?.success === false) throw new Error(result.error || result.message || 'Could not delete project.')
+      setProjects(current => current.filter(project => project.id !== id))
+      setDeleteDialog(null)
+    } catch (error) {
+      setDeleteDialog(current => ({ ...current, busy: false, error: error.message || 'Could not delete project.' }))
+    } finally { deletingRef.current = false }
   }
 
   function handleRename(project) {
@@ -126,7 +159,10 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
     try {
       await window.semantica?.renameAppSpec?.({ id: renameDialog.id, name: renameDialog.name.trim() })
       await loadProjects()
-    } catch { /* ignore */ }
+    } catch (error) {
+      setRenameDialog(current => current ? { ...current, error: error.message || 'Rename failed. Try again.' } : current)
+      return
+    }
     setRenameDialog(null)
   }
 
@@ -141,7 +177,7 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
     if (!search.trim()) return true
     const spec = typeof p.config === 'string' ? (() => { try { return JSON.parse(p.config) } catch { return p.spec } })() : (p.spec || p.config)
     const title = (p.name || spec?.title || '').toLowerCase()
-    return title.includes(search.toLowerCase())
+    return title.includes(search.trim().toLowerCase())
   })
 
   return (
@@ -199,36 +235,41 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '34px 0 10px' }}>
             <div style={{ font: '600 10px var(--v-mono)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--v-text-faint)' }}>Recent</div>
             {projects.length > 5 && (
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…"
+              <input aria-label="Search projects" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…"
                 style={{ width: 180, boxSizing: 'border-box', padding: '5px 9px', background: 'var(--v-bg-1)', border: '1px solid var(--v-border)', borderRadius: 'var(--v-r)', color: 'var(--v-text)', font: '400 12px var(--v-font)', outline: 'none' }} />
             )}
           </div>
+          {projectError && <div role="alert" style={{ padding: 16, color: 'var(--danger)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', marginBottom: 12 }}>
+            <div>Could not load projects. {projectError}</div>
+            <Button size="sm" onClick={loadProjects} disabled={loading} style={{ marginTop: 10 }}>Retry loading projects</Button>
+          </div>}
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><Spinner size={20} /></div>
-          ) : filtered.length === 0 ? (
+          ) : projectError && projects.length === 0 ? null : filtered.length === 0 ? (
             <div style={{ padding: 22, textAlign: 'center', border: '1px dashed var(--v-border)', borderRadius: 'var(--v-r-2)', font: '400 12px var(--v-font)', color: 'var(--v-text-muted)' }}>
-              No projects yet — create one above.
+              {search.trim() ? 'No projects match your search.' : 'No projects yet. Create one above.'}
+              {search.trim() && <div style={{ marginTop: 10 }}><Button size="sm" onClick={() => setSearch('')}>Clear search</Button></div>}
             </div>
           ) : (
             <div style={{ border: '1px solid var(--v-border)', borderRadius: 'var(--v-r-2)', overflow: 'hidden', background: 'var(--v-surface)' }}>
               {filtered.map((p, i) => {
                 const spec = typeof p.config === 'string' ? (() => { try { return JSON.parse(p.config) } catch { return p.spec } })() : (p.spec || p.config)
                 const title   = p.name || spec?.title || 'Untitled'
-                const count   = spec?.visuals?.length || 0
+                const count   = Array.isArray(spec?.pages) && spec.pages.length ? spec.pages.reduce((total, page) => total + (page.visuals?.length || 0), 0) : spec?.visuals?.length || 0
                 const date    = p.updatedAt || p.createdAt
                 const dateStr = date ? new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
                 return (
-                  <div key={p.id} onClick={() => onOpenProject(p)}
+                  <div key={p.id} role="group" aria-label={title} onClick={() => onOpenProject(p)}
                     onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, project: p }) }}
                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--v-surface-2)' }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', cursor: 'pointer', borderTop: i ? '1px solid var(--v-border-subtle)' : 'none' }}>
                     <div style={{ width: 28, height: 28, borderRadius: 'var(--v-r)', background: 'var(--v-accent-quiet)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><LogoMark size={16} /></div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <button type="button" onClick={e => { e.stopPropagation(); onOpenProject(p) }} aria-label={`Open ${title}`} style={{ flex: 1, minWidth: 0, padding: 0, border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer' }}>
                       <div style={{ font: '500 13px var(--v-font)', color: 'var(--v-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
                       <div style={{ font: '400 11px var(--v-mono)', color: 'var(--v-text-muted)', marginTop: 2 }}>{count} visual{count !== 1 ? 's' : ''}{dateStr && ` · ${dateStr}`}</div>
-                    </div>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }} title="Delete"
+                    </button>
+                    <button aria-label={`Delete ${title}`} onClick={(e) => { e.stopPropagation(); handleDelete(p.id) }} title="Delete"
                       onMouseEnter={e => { e.currentTarget.style.color = 'var(--v-danger)'; e.currentTarget.style.background = 'var(--v-surface-3)' }}
                       onMouseLeave={e => { e.currentTarget.style.color = 'var(--v-text-faint)'; e.currentTarget.style.background = 'transparent' }}
                       style={{ width: 26, height: 26, border: 'none', background: 'transparent', color: 'var(--v-text-faint)', cursor: 'pointer', borderRadius: 'var(--v-r)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -254,7 +295,7 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
               )}
               <Button variant="secondary" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
               {createStep === 'name' ? (
-                <Button variant="primary" onClick={goToWorkspaceStep} disabled={!projectName.trim()}>Next →</Button>
+                <Button variant="primary" onClick={projectSource === 'local' ? createLocalReport : goToWorkspaceStep} loading={dialogLoading} disabled={!projectName.trim() || (projectSource === 'local' && !localSource)}>Next →</Button>
               ) : createStep === 'workspace' ? (
                 <Button variant="primary" onClick={handleWorkspaceNext} disabled={!selectedWorkspace}>Next →</Button>
               ) : (
@@ -277,9 +318,18 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
 
           <div style={{ maxHeight: 240, overflowY: 'auto' }}>
             {createStep === 'name' ? (
-              <Input autoFocus value={projectName} onChange={(e) => setProjectName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && projectName.trim()) goToWorkspaceStep() }}
+              <><Input aria-label="Project name" autoFocus value={projectName} onChange={(e) => setProjectName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && projectName.trim()) { if (projectSource === 'local') createLocalReport(); else goToWorkspaceStep() } }}
                 placeholder="My Analytics Dashboard" />
+              <div role="group" aria-label="Semantic model source" style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                <Button aria-pressed={projectSource === 'fabric'} onClick={() => setProjectSource('fabric')} disabled={dialogLoading}>Fabric model</Button>
+                <Button aria-pressed={projectSource === 'local'} onClick={() => setProjectSource('local')} disabled={dialogLoading}>Local PBIP model</Button>
+              </div>
+              {projectSource === 'local' && <div style={{ marginTop: 12 }}>
+                <p>Create a new Vilsem report using a local model. Open the model or an unchanged copy in Power BI Desktop first. Your existing report is not imported or overwritten.</p>
+                <Button onClick={chooseLocalModel} disabled={dialogLoading}>Choose PBIP folder</Button>
+                {localSource && <p role="status" style={{ overflowWrap: 'anywhere' }}>{localSource.name}<br />{localSource.modelPath}</p>}
+              </div>}</>
             ) : dialogLoading ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}><Spinner size={20} /></div>
             ) : createStep === 'workspace' ? (
@@ -290,6 +340,14 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
           </div>
         </Modal>
       )}
+
+      {deleteDialog && <Modal title="Delete project" onClose={deleteDialog.busy ? undefined : () => setDeleteDialog(null)} footer={<>
+        <Button onClick={() => setDeleteDialog(null)} disabled={deleteDialog.busy}>Cancel</Button>
+        <Button onClick={confirmDelete} loading={deleteDialog.busy} disabled={deleteDialog.busy}>Delete project</Button>
+      </>}>
+        <p>Delete <strong>{deleteDialog.name}</strong> from your saved projects? This cannot be undone. The connected semantic model is not deleted.</p>
+        {deleteDialog.error && <p role="alert" style={{ color: 'var(--danger)' }}>{deleteDialog.error} You can retry.</p>}
+      </Modal>}
 
       {/* Rename dialog */}
       {renameDialog && (
@@ -302,8 +360,9 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
           </>}
         >
           <Input autoFocus value={renameDialog.name}
-            onChange={e => setRenameDialog(prev => ({ ...prev, name: e.target.value }))}
+            onChange={e => setRenameDialog(prev => ({ ...prev, name: e.target.value, error: null }))}
             onKeyDown={e => { if (e.key === 'Enter') confirmRename() }} />
+          {renameDialog.error && <p role="alert" style={{ color: 'var(--danger, #ef4444)', fontSize: 13 }}>{renameDialog.error}</p>}
         </Modal>
       )}
 

@@ -1,3 +1,6 @@
+import { schemaFieldsForTab, legendSchemaExtras } from './shared/schemaPlacement.js'
+import { axisFormattingSchema } from './shared/axisFormattingSchema.js'
+import { settingsCapabilities, VALUE_TEXT_DEFAULTS } from './shared/settingsCapabilities.js'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { VISUAL_MAP } from './visuals/index.js'
@@ -18,7 +21,7 @@ import { exportVisualPbiviz } from '../pages/powerbi/exportVisualPbiviz.js'
 // favour of chrome tokens.
 function ElementPanel({ label, children }) {
   return (
-    <div style={{ marginBottom: 10, padding: 10, background: 'var(--surface-sunken)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+    <div data-settings-panel={label} style={{ marginBottom: 10, padding: 10, background: 'var(--surface-sunken)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
       <div style={{ fontSize: 'var(--fs-micro)', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{label}</div>
       {children}
     </div>
@@ -192,7 +195,7 @@ const HARDCODED_KEYS = new Set([
   'gradient', 'rankOpacity', 'highlightMax', 'smooth', 'showDots', 'showAccentStrip',
 ])
 
-function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, inputStyle, isDark, dateColumnOptions }) {
+function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, inputStyle, isDark, dateColumnOptions, grouped = true }) {
   if (!Array.isArray(schema) || schema.length === 0) return null
 
   // Hide hardcoded-panel duplicates AND controls the renderer can't honor for this type.
@@ -214,7 +217,7 @@ function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, 
     // so the control matches what the chart draws on load — no nudge needed.
     const dflt = fieldDefault(type, f.key, f.default)
     const val = cfg[f.key] !== undefined ? cfg[f.key] : dflt
-    const onChange = (v) => updateConfig(f.key, v)
+    const onChange = (v) => updateConfig(f.key, f.nullable && v === '' ? null : v)
     switch (f.type) {
       case 'boolean':
         return <ToggleField key={f.key} label={f.label} value={val} onChange={onChange} baseColor={baseColor} />
@@ -222,7 +225,7 @@ function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, 
         return <RangeField key={f.key} label={f.label} value={val} onChange={onChange}
           min={f.min ?? 0} max={f.max ?? 100} step={f.step ?? 1} mutedColor={mutedColor} />
       case 'number':
-        return <NumberField key={f.key} label={f.label} value={val} onChange={onChange}
+        return <NumberField key={f.key} label={f.label} value={val} onChange={onChange} placeholder={f.nullable ? 'auto' : undefined}
           min={f.min ?? 0} max={f.max ?? 999} step={f.step ?? 1} inputStyle={inputStyle} />
       case 'color':
         return <ColorField key={f.key} label={f.label} value={val} onChange={onChange}
@@ -247,6 +250,8 @@ function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, 
         return null
     }
   }
+
+  if (!grouped) return visibleFields.map(renderField)
 
   return (
     <>
@@ -617,7 +622,7 @@ function NavButtonPanel({ cfg, updateConfig, pages = [], columnOptions = [], isD
   )
 }
 
-export default function VisualInspector({ visual, isDark: _isDarkProp, canvasTheme, editSpec, selectedVisualId, onClose, onDelete, onDuplicate, onAiRefine, customTemplate, embedded = false, pages = [] }) {
+export default function VisualInspector({ visual, isDark: _isDarkProp, canvasTheme, editSpec, selectedVisualId, onClose, onDelete, onDuplicate, onAiRefine, customTemplate, embedded = false, pages = [], allowPowerBIExport = true }) {
   // The inspector is app chrome, so it follows the chrome theme (not the canvas
   // theme that was passed in). This flips the whole panel's isDark-keyed styling.
   const [_chromeTheme] = useTheme()
@@ -630,6 +635,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
   const [exportState, setExportState] = useState(null)
   const [exportStepsOpen, setExportStepsOpen] = useState(false)
   async function handleExport() {
+    if (!allowPowerBIExport) return
     if (!visual) return
     setExportState('busy')
     try {
@@ -742,6 +748,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
   const resolved = resolveVisualConfig(visual, { theme: canvasTheme || 'dark' })
   const pos = visual.position || { x: 0, y: 0, w: 4, h: 2 }
   const isKpi = KPI_TYPES.has(visual.type)
+  const capabilities = settingsCapabilities(visual.type)
   const isObject = isObjectType(visual.type)   // text/shape/image/divider — schema-only inspector
   const isNavButton = visual.type === 'nav_button'   // web-style button — dedicated panel
   const suggestions = AI_SUGGESTIONS[visual.type] || AI_SUGGESTIONS.default
@@ -1208,7 +1215,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
         )}
 
         {/* Canvas objects — schema-only Style tab (no chart/card panels) */}
-        {tab === 'style' && isObject && (
+        {((tab === 'style' && isObject && !capabilities.richText) || (tab === 'text' && capabilities.richText)) && (
           <>
             {visual.type === 'text_box' && <TextFormatPanel isDark={isDark} mutedColor={mutedColor} />}
             <SchemaFields
@@ -1225,6 +1232,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
           </>
         )}
 
+        {tab === 'style' && capabilities.richText && <ElementPanel label="Text box"><p style={{ fontSize: 12 }}>Edit fonts, alignment and selected text in the Text tab.</p><button onClick={() => setTab('text')}>Text formatting</button></ElementPanel>}
         {tab === 'style' && !isObject && !isNavButton && (
           <>
             {/* Playground Spike — per-section colours (custom visuals) */}
@@ -1248,11 +1256,11 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
               </ElementPanel>
             )}
             {/* Appearance */}
-            <ElementPanel label="Appearance" isDark={isDark}>
+            <ElementPanel label="Colors & container" isDark={isDark}>
               <div style={{ fontSize: 10, color: mutedColor, marginBottom: 4 }}>Color scheme</div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6, alignItems: 'center' }}>
                 {COLOR_SCHEMES.map(c => (
-                  <button key={c} onClick={() => updateConfig('colorScheme', c)}
+                  <button key={c} type="button" title={`Color scheme: ${c}`} aria-label={`Color scheme: ${c}`} onClick={() => updateConfig('colorScheme', c)}
                     style={{ width: 22, height: 22, borderRadius: 6, background: COLOR_HEX[c],
                       border: cfg.colorScheme === c ? '2px solid white' : '1px solid var(--v-border)',
                       cursor: 'pointer', boxShadow: cfg.colorScheme === c ? `0 0 0 2px ${COLOR_HEX[c]}80` : 'none' }} />
@@ -1315,7 +1323,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             </ElementPanel>
 
             {/* KPI Features */}
-            {isKpi && (
+            {capabilities.kpiFeatures && (
               <ElementPanel label="Features" isDark={isDark}>
                 <ToggleField label="Trend indicator" value={!!cfg.showTrend} onChange={v => updateConfig('showTrend', v)} baseColor={baseColor} />
                 <ToggleField label="Sparkline" value={!!cfg.showSparkline} onChange={v => updateConfig('showSparkline', v)} baseColor={baseColor} />
@@ -1355,7 +1363,6 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
                 <ToggleField label="Glow effect" value={cfg.showGlow !== false} onChange={v => updateConfig('showGlow', v)} baseColor={baseColor} />
                 <ToggleField label="Animations" value={cfg.animations !== false} onChange={v => updateConfig('animations', v)} baseColor={baseColor} />
                 <ToggleField label="Compact mode" value={!!cfg.compact} onChange={v => updateConfig('compact', v)} baseColor={baseColor} />
-                <ToggleField label="Title uppercase" value={!!cfg.titleUppercase} onChange={v => updateConfig('titleUppercase', v)} baseColor={baseColor} />
               </ElementPanel>
             )}
 
@@ -1372,8 +1379,8 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
                 schema (Race/Appearance/Labels) so it opts out of this generic panel. */}
             {!isKpi && visual.type !== 'bar_race' && (
               <ElementPanel label="Chart Features" isDark={isDark}>
-                <ToggleField label="Grid lines" value={cfg.gridLines !== undefined ? cfg.gridLines : fieldDefault(visual.type, 'gridLines', false)} onChange={v => updateConfig('gridLines', v)} baseColor={baseColor} />
-                {cfg.gridLines && (
+                {capabilities.grid && <ToggleField label="Grid lines" value={cfg.gridLines !== undefined ? cfg.gridLines : fieldDefault(visual.type, 'gridLines', false)} onChange={v => updateConfig('gridLines', v)} baseColor={baseColor} />}
+                {capabilities.grid && cfg.gridLines && (
                   <div style={{ marginLeft: 18, marginBottom: 6, padding: '6px 8px', background: isDark ? 'var(--v-accent-quiet)' : 'var(--v-accent-quiet)', borderLeft: '2px solid var(--v-accent)', borderRadius: 4 }}>
                     <ColorField label="Grid color" value={cfg.gridLinesColor} placeholder="auto" onChange={v => updateConfig('gridLinesColor', v)} inputStyle={inputStyle} />
                     <div style={{ ...fieldRowStyle(), marginBottom: 0 }}>
@@ -1386,7 +1393,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
                   </div>
                 )}
                 <ToggleField label="Animations" value={cfg.animations !== false} onChange={v => updateConfig('animations', v)} baseColor={baseColor} />
-                <ToggleField label="Data labels" value={cfg.dataLabels !== undefined ? cfg.dataLabels : fieldDefault(visual.type, 'dataLabels', false)} onChange={v => updateConfig('dataLabels', v)} baseColor={baseColor} />
+                {capabilities.dataLabels && <ToggleField label="Data labels" value={cfg.dataLabels !== undefined ? cfg.dataLabels : fieldDefault(visual.type, 'dataLabels', false)} onChange={v => updateConfig('dataLabels', v)} baseColor={baseColor} />}
                 {cfg.dataLabels && (
                   <div style={{ marginLeft: 18, marginBottom: 6, padding: '6px 8px', background: isDark ? 'var(--v-accent-quiet)' : 'var(--v-accent-quiet)', borderLeft: '2px solid var(--v-accent)', borderRadius: 4 }}>
                     <SelectField label="Label position"
@@ -1406,7 +1413,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
                       inputStyle={inputStyle} />
                   </div>
                 )}
-                <ToggleField label="Gradient fill" value={!!cfg.gradient} onChange={v => updateConfig('gradient', v)} baseColor={baseColor} />
+                {capabilities.gradient && <ToggleField label="Gradient fill" value={cfg.gradient ?? (visual.type === 'funnel')} onChange={v => updateConfig('gradient', v)} baseColor={baseColor} />}
                 {(visual.type === 'bar' || visual.type === 'stacked_bar' || visual.type === 'grouped_bar' || visual.type === 'column') && <>
                   <ToggleField label="Rank fading" value={cfg.rankOpacity !== undefined ? cfg.rankOpacity : fieldDefault(visual.type, 'rankOpacity', true)} onChange={v => updateConfig('rankOpacity', v)} baseColor={baseColor} />
                   <ToggleField label="Highlight max bar" value={!!cfg.highlightMax} onChange={v => updateConfig('highlightMax', v)} baseColor={baseColor} />
@@ -1463,9 +1470,9 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             {/* Schema-driven fields (Phase 4.4) — reads VISUAL_MAP[type].schema
                 and renders one control per field, writing straight to visual.config.
                 Hardcoded fields above take precedence; see HARDCODED_KEYS.  */}
-            {!isKpi && (
+            {(
               <SchemaFields
-                schema={visual.type === 'custom' ? paramsToSchema(customTemplate) : VISUAL_MAP[visual.type]?.schema}
+                schema={visual.type === 'custom' ? paramsToSchema(customTemplate) : schemaFieldsForTab(VISUAL_MAP[visual.type]?.schema, 'style', { valueText: isKpi, legend: capabilities.legend })}
                 type={visual.type}
                 cfg={cfg}
                 updateConfig={updateConfig}
@@ -1487,11 +1494,13 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
               <ToggleField label="Show title" value={cfg.showTitle !== false} onChange={v => updateConfig('showTitle', v)} baseColor={baseColor} />
               <TextField label="Text" value={cfg.title || ''} onChange={v => updateConfig('title', v)} inputStyle={inputStyle} />
               <FontField label="Font" value={cfg.titleFontFamily} onChange={v => updateConfig('titleFontFamily', v)} fonts={FONTS} inputStyle={inputStyle} />
-              <NumberField label="Size" value={cfg.titleFontSize ?? 11} min={8} max={32} onChange={v => updateConfig('titleFontSize', v)} inputStyle={inputStyle} />
-              <NumberField label="Weight" value={cfg.titleFontWeight ?? 500} min={100} max={900} step={100} onChange={v => updateConfig('titleFontWeight', v)} inputStyle={inputStyle} />
+              <NumberField label="Size" value={cfg.titleFontSize ?? (visual.type === 'kpi' ? 11 : 12)} min={8} max={32} onChange={v => updateConfig('titleFontSize', v)} inputStyle={inputStyle} />
+              <NumberField label="Weight" value={cfg.titleFontWeight ?? (visual.type === 'kpi' ? 500 : 600)} min={100} max={900} step={100} onChange={v => updateConfig('titleFontWeight', v)} inputStyle={inputStyle} />
               <ColorField label="Color" value={cfg.titleColor} placeholder={resolved.titleColor} onChange={v => updateConfig('titleColor', v)} inputStyle={inputStyle} />
+              {capabilities.titleLayout && <>
               <SelectField label="Position" value={cfg.titlePosition || 'below'} options={[['above','Above'],['below','Below']]} onChange={v => updateConfig('titlePosition', v)} inputStyle={inputStyle} />
               <SelectField label="Align" value={cfg.align || 'center'} options={[['left','Left'],['center','Center'],['right','Right']]} onChange={v => updateConfig('align', v)} inputStyle={inputStyle} />
+              </>}
               <ToggleField label="Uppercase" value={!!cfg.titleUppercase} onChange={v => updateConfig('titleUppercase', v)} baseColor={baseColor} />
             </ElementPanel>
 
@@ -1499,7 +1508,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             {isKpi && (
               <ElementPanel label="Value" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <FontField label="Font" value={cfg.valueFontFamily} onChange={v => updateConfig('valueFontFamily', v)} fonts={FONTS} inputStyle={inputStyle} />
-                <NumberField label="Size" value={typeof cfg.valueFontSize === 'number' ? cfg.valueFontSize : 32} min={14} max={96} onChange={v => updateConfig('valueFontSize', v)} inputStyle={inputStyle} />
+                <NumberField label="Size" value={typeof cfg.valueFontSize === 'number' ? cfg.valueFontSize : (VALUE_TEXT_DEFAULTS[visual.type] ?? 32)} min={14} max={96} onChange={v => updateConfig('valueFontSize', v)} inputStyle={inputStyle} />
                 <NumberField label="Weight" value={cfg.valueFontWeight ?? 800} min={100} max={900} step={100} onChange={v => updateConfig('valueFontWeight', v)} inputStyle={inputStyle} />
                 <ColorField label="Color" value={cfg.valueColor} placeholder={resolved.valueColor} onChange={v => updateConfig('valueColor', v)} inputStyle={inputStyle} />
                 <TextField label="Prefix" value={cfg.prefix || ''} onChange={v => updateConfig('prefix', v || null)} placeholder="$" inputStyle={inputStyle} />
@@ -1509,15 +1518,8 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             )}
 
             {/* ─── CARD HEADER (charts only) ─── */}
-            {!isKpi && (
-              <ElementPanel label="Card Header" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
-                <ColorField label="Accent" value={cfg.accentColor} placeholder="auto" onChange={v => updateConfig('accentColor', v)} inputStyle={inputStyle} />
-                <ColorField label="Bg" value={cfg.headerBg} placeholder="auto" onChange={v => updateConfig('headerBg', v)} inputStyle={inputStyle} />
-              </ElementPanel>
-            )}
-
             {/* ─── TREND INDICATOR ─── */}
-            {cfg.showTrend && (
+            {capabilities.kpiFeatures && cfg.showTrend && (
               <ElementPanel label="Trend Indicator" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <ColorField label="Positive" value={cfg.trendUpColor} placeholder="#22C55E" onChange={v => updateConfig('trendUpColor', v)} inputStyle={inputStyle} />
                 <ColorField label="Negative" value={cfg.trendDownColor} placeholder="#F43F5E" onChange={v => updateConfig('trendDownColor', v)} inputStyle={inputStyle} />
@@ -1526,7 +1528,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             )}
 
             {/* ─── SPARKLINE ─── */}
-            {cfg.showSparkline && (
+            {capabilities.kpiFeatures && cfg.showSparkline && (
               <ElementPanel label="Sparkline" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <SelectField label="Position" value={cfg.sparklinePosition || 'inline'} options={[['inline','Inline (next to value)'],['below','Below value']]} onChange={v => updateConfig('sparklinePosition', v)} inputStyle={inputStyle} />
                 <SelectField label="Axis" value={cfg.sparklineAxis || ''} options={dateColumnOptions} onChange={v => updateConfig('sparklineAxis', v || null)} inputStyle={inputStyle} />
@@ -1538,7 +1540,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             )}
 
             {/* ─── PROGRESS BAR ─── */}
-            {cfg.showProgress && (
+            {capabilities.kpiFeatures && cfg.showProgress && (
               <ElementPanel label="Progress Bar" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <NumberField label="Max" value={cfg.progressMax ?? 100} min={0} step={1} onChange={v => updateConfig('progressMax', v)} inputStyle={inputStyle} />
                 <ColorField label="Fill" value={cfg.progressColor} placeholder="auto" onChange={v => updateConfig('progressColor', v)} inputStyle={inputStyle} />
@@ -1548,7 +1550,7 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             )}
 
             {/* ─── ICON ─── */}
-            {cfg.showIcon && (
+            {capabilities.kpiFeatures && cfg.showIcon && (
               <ElementPanel label="Icon" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <TextField label="Emoji" value={cfg.icon || '✦'} onChange={v => updateConfig('icon', v)} inputStyle={inputStyle} />
                 <NumberField label="Size" value={cfg.iconSize ?? 18} min={10} max={48} onChange={v => updateConfig('iconSize', v)} inputStyle={inputStyle} />
@@ -1557,12 +1559,11 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             )}
 
             {/* ─── AXIS (charts) ─── */}
-            {!isKpi && (
+            {capabilities.axisText && (
               <ElementPanel label="Axis & Labels" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <ColorField label="Axis Color" value={cfg.axisTickColor} placeholder="auto" onChange={v => updateConfig('axisTickColor', v)} inputStyle={inputStyle} />
                 <NumberField label="Axis Size" value={cfg.axisFontSize ?? 10} min={6} max={20} onChange={v => updateConfig('axisFontSize', v)} inputStyle={inputStyle} />
                 <FontField label="Axis Font" value={cfg.axisFontFamily} onChange={v => updateConfig('axisFontFamily', v)} fonts={FONTS} inputStyle={inputStyle} />
-                <ColorField label="Label Color" value={cfg.labelColor} placeholder="auto" onChange={v => updateConfig('labelColor', v)} inputStyle={inputStyle} />
                 {/* Grid color + opacity moved to the Grid lines toggle in Chart Features (STYLE tab). */}
               </ElementPanel>
             )}
@@ -1570,14 +1571,18 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
             {/* ─── LEGEND — only visuals that actually render one (pie/donut show
                 categories; grouped/stacked show the two measures). Single-series bars,
                 lines, etc. have no legend, so the panel is hidden for them. ─── */}
-            {['pie', 'donut', 'grouped_bar', 'stacked_bar'].includes(visual.type) && (
+            {capabilities.axisText && <SchemaFields schema={axisFormattingSchema} type={visual.type} cfg={cfg} updateConfig={updateConfig} baseColor={baseColor} mutedColor={mutedColor} inputStyle={inputStyle} isDark={isDark} />}
+
+            {capabilities.legend && (
               <ElementPanel label="Legend" baseColor={baseColor} mutedColor={mutedColor} labelColor={labelColor} isDark={isDark}>
                 <ToggleField label="Show legend" value={cfg.showLegend !== false} onChange={v => updateConfig('showLegend', v)} baseColor={baseColor} />
                 <SelectField label="Position" value={cfg.legendPosition || (visual.type === 'pie' || visual.type === 'donut' ? 'right' : 'top')} options={[['top','Top'],['right','Right'],['bottom','Bottom']]} onChange={v => updateConfig('legendPosition', v)} inputStyle={inputStyle} />
                 <ColorField label="Text Color" value={cfg.legendColor} placeholder="auto" onChange={v => updateConfig('legendColor', v)} inputStyle={inputStyle} />
                 <NumberField label="Text Size" value={cfg.legendFontSize ?? 11} min={8} max={20} onChange={v => updateConfig('legendFontSize', v)} inputStyle={inputStyle} />
+                <SchemaFields grouped={false} schema={legendSchemaExtras(VISUAL_MAP[visual.type]?.schema)} type={visual.type} cfg={cfg} updateConfig={updateConfig} baseColor={baseColor} mutedColor={mutedColor} inputStyle={inputStyle} isDark={isDark} />
               </ElementPanel>
             )}
+            {!isObject && <SchemaFields schema={schemaFieldsForTab(VISUAL_MAP[visual.type]?.schema, 'text', { valueText: isKpi, legend: capabilities.legend })} type={visual.type} cfg={cfg} updateConfig={updateConfig} baseColor={baseColor} mutedColor={mutedColor} inputStyle={inputStyle} isDark={isDark} dateColumnOptions={dateColumnOptions} />}
           </>
         )}
 
@@ -1717,10 +1722,10 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
 
       {/* Actions footer */}
       <div style={{ padding: '10px 12px', borderTop: isDark ? '1px solid var(--v-border)' : '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button onClick={handleExport} disabled={exportState === 'busy'} title="Export this visual as a Power BI custom visual (.pbiviz)"
+        {allowPowerBIExport && <button onClick={handleExport} disabled={exportState === 'busy'} title="Export this visual as a Power BI custom visual (.pbiviz)"
           style={{ width: '100%', background: 'var(--v-accent)', border: 'none', color: '#04121a', borderRadius: 6, padding: '7px 10px', fontSize: 11, fontWeight: 700, cursor: exportState === 'busy' ? 'default' : 'pointer', fontFamily: 'inherit', opacity: exportState === 'busy' ? 0.6 : 1 }}>
           {exportState === 'busy' ? 'Exporting…' : '⬇ Export to Power BI'}
-        </button>
+        </button>}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={onDuplicate}
             style={{ flex: 1, background: 'var(--v-accent-quiet)', border: '1px solid var(--v-accent-border)', color: 'var(--v-accent)', borderRadius: 6, padding: '6px 10px', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>

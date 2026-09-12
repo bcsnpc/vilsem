@@ -48,14 +48,20 @@ function restore() {
 export function applyTextCmd(cmd, val) {
   if (!restore()) return
   document.execCommand('styleWithCSS', false, true)
-  document.execCommand(cmd, false, val)
+  // Quote font families: names such as Source Serif 4 are invalid bare CSS values.
+  const value = cmd === 'fontName' ? JSON.stringify(String(val)) : val
+  document.execCommand(cmd, false, value)
   saveTextRange()
 }
 
 export function applyTextFontSize(px) {
   if (!restore()) return
+  // fontSize must emit a legacy font node for the pixel conversion below.
+  // Other commands enable CSS mode, where Chromium instead emits xxx-large (48px).
+  document.execCommand('styleWithCSS', false, false)
   document.execCommand('fontSize', false, '7')
   state.el.querySelectorAll('font[size="7"]').forEach(f => { f.removeAttribute('size'); f.style.fontSize = px + 'px' })
+  document.execCommand('styleWithCSS', false, true)
   saveTextRange()
 }
 

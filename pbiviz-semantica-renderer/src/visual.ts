@@ -36,14 +36,16 @@ import {
   MarkLineComponent, GraphicComponent, TitleComponent,
 } from "echarts/components"
 import { CanvasRenderer } from "echarts/renderers"
+import { LabelLayout } from "echarts/features"
 
 echarts.use([
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart,
   TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
-  MarkLineComponent, GraphicComponent, TitleComponent, CanvasRenderer,
+  MarkLineComponent, GraphicComponent, TitleComponent, CanvasRenderer, LabelLayout,
 ])
 
 import { composeOption } from "./compositions"
+import { escapeHtml } from "./primitives/escapeHtml"
 // Click-to-drill (interaction-plays) — shared pure helpers copied into the bundle.
 // @ts-ignore — plain-JS module, no type declarations
 import { shapeExpandInPlace, aggregateDrillLevel } from "./appspec/shared/drill.js"
@@ -154,6 +156,10 @@ export class Visual implements IVisual {
   // re-running composeOption() — selection should be a render-state shim,
   // not a recomposition.
   private lastOption: any = null
+  private primitiveCategoryNames: string[] = []
+  private primitiveRowNames: string[] = []
+  private primitiveVisualType = ""
+  private radarHoveredIndex = -1
   // Click-to-drill state (interaction-plays).
   private drillExpanded: string | null = null // expand-in-place: which parent is open
   private replacePath: string[] = []          // replace: the drilled path
@@ -501,6 +507,10 @@ export class Visual implements IVisual {
         return sign * (va - vb)
       })
     }
+    this.primitiveVisualType = visualType
+    this.primitiveCategoryNames = (dv?.categorical?.categories?.[0]?.values || []).map(v => String(this.normalizeCat(v) ?? ''))
+    this.primitiveRowNames = rows.map(r => String(r._cat ?? ''))
+    this.radarHoveredIndex = -1
 
     // Compose option via the primitives runtime. Theme already resolved above
     // from spec.canvasTheme — Semantica's actual canvas theme rather than PBI's
@@ -519,7 +529,7 @@ export class Visual implements IVisual {
     // measure is missing — e.g. slope needs a 2nd measure). Render an empty state
     // instead of dereferencing null below.
     if (!option) {
-      this.renderError(`No data to display`, visualType)
+      this.renderError('No data matches the current filters.', visualType, true)
       return
     }
 
@@ -538,7 +548,7 @@ export class Visual implements IVisual {
 
     // Per-visual tooltip config (show/hide + trigger) — same helper the web canvas
     // uses, so tooltip behaviour matches on canvas, web export and PBI.
-    applyTooltipConfig(option, config as any)
+    option = applyTooltipConfig(option, config as any)
 
     // Save the composed option so applyChartSelection can derive selection-
     // aware overrides without recomposing.
@@ -558,23 +568,23 @@ export class Visual implements IVisual {
       const zr = this.chart.getZr()
       zr.on('mousemove', (e: any) => {
         const N = indicators.length
-        if (!N) { hoveredIdx = -1; return }
+        if (!N) { hoveredIdx = this.radarHoveredIndex = -1; return }
         const { clientWidth: W, clientHeight: H } = chartRoot
         const cx = W / 2, cy = H / 2
         const dx = (e.offsetX as number) - cx
         const dy = (e.offsetY as number) - cy
-        if (Math.sqrt(dx * dx + dy * dy) < 12) { hoveredIdx = -1; return }
+        if (Math.sqrt(dx * dx + dy * dy) < 12) { hoveredIdx = this.radarHoveredIndex = -1; return }
         const mouseAngle = (((Math.atan2(-dy, dx) * 180 / Math.PI) % 360) + 360) % 360
         let closest = 0, minDiff = Infinity
         for (let i = 0; i < N; i++) {
-          const iAngle = (((90 - (i / N) * 360) % 360) + 360) % 360
+          const iAngle = (((90 + (i / N) * 360) % 360) + 360) % 360
           let diff = Math.abs(mouseAngle - iAngle)
           if (diff > 180) diff = 360 - diff
           if (diff < minDiff) { minDiff = diff; closest = i }
         }
-        hoveredIdx = closest
+        hoveredIdx = this.radarHoveredIndex = closest
       })
-      zr.on('mouseout', () => { hoveredIdx = -1 })
+      zr.on('mouseout', () => { hoveredIdx = this.radarHoveredIndex = -1 })
 
       const accentColor = colorValFor(config.colorScheme)
       const pre = config.prefix as string | undefined
@@ -596,8 +606,8 @@ export class Visual implements IVisual {
         `<div style="background:${theme.echartsTooltipBg};border:1px solid ${theme.echartsTooltipBorder};border-radius:10px;padding:10px 13px;min-width:140px;box-shadow:${shadow};color:${theme.echartsTooltipText}">${inner}</div>`
       const mkRow = (name: string, v: unknown) =>
         `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;padding:2px 0">` +
-        `<span style="color:${theme.echartsLegendText}">${name}</span>` +
-        `<span style="color:${accentColor};font-weight:700">${fmtV(v)}</span></div>`
+        `<span style="color:${theme.echartsLegendText}">${escapeHtml(name)}</span>` +
+        `<span style="color:${accentColor};font-weight:700">${escapeHtml(fmtV(v))}</span></div>`
 
       const radarFormatter = (params: any) => {
         const vals: unknown[] = Array.isArray(params.value) ? params.value : [params.value]
@@ -634,7 +644,7 @@ export class Visual implements IVisual {
       }
 
       this.chart.on("click", (params: any) => {
-        const idx = typeof params?.dataIndex === "number" ? params.dataIndex : -1
+        const idx = this.primitiveCategoryIndex(params)
         if (idx < 0 || idx >= selectionIds.length) return
         const ev = params?.event?.event as MouseEvent | undefined
         const multi = !!(ev && (ev.ctrlKey || ev.metaKey))
@@ -659,6 +669,27 @@ export class Visual implements IVisual {
         this.selectionManager.getSelectionIds() as powerbi.visuals.ISelectionId[],
       )
     }
+  }
+
+  // ECharts indexes marks, whereas SelectionIds index the original DataView.
+  // Sorting, treemap's virtual root and slope endpoints make these different.
+  private primitiveCategoryIndex(params: any): number {
+    let name: unknown
+    if (this.primitiveVisualType === 'slope') name = params?.seriesName
+    else if (this.primitiveVisualType === 'radar') {
+      if (this.radarHoveredIndex < 0) return -1
+      name = this.primitiveRowNames[this.radarHoveredIndex]
+    } else {
+      name = params?.data?.name ?? params?.name
+      if (name == null || !this.primitiveCategoryNames.includes(String(name))) {
+        if (this.primitiveVisualType === 'lollipop' && Array.isArray(params?.value)) {
+          const axis = this.lastOption?.xAxis
+          const xAxis = Array.isArray(axis) ? axis[0] : axis
+          name = params.value[xAxis?.type === 'category' ? 0 : 1]
+        } else name = this.primitiveRowNames[params?.dataIndex]
+      }
+    }
+    return name == null ? -1 : this.primitiveCategoryNames.indexOf(String(name))
   }
 
   // Update chart visual emphasis based on current selection. Mirrors PBI's
@@ -693,18 +724,26 @@ export class Visual implements IVisual {
       return
     }
 
-    // Deep-clone series so we don't poison this.lastOption (selection state
-    // should be derived, not destructive).
-    const cloned = JSON.parse(JSON.stringify(this.lastOption))
+    // Clone the branches we change. JSON cloning loses formatter/symbolSize
+    // functions and changes chart semantics merely because a user selected it.
+    const cloned = { ...this.lastOption, series: (this.lastOption.series || []).map((s: any) => ({ ...s })) }
     const series = Array.isArray(cloned.series) ? cloned.series : []
     for (const s of series) {
       if (!Array.isArray(s.data)) continue
+      // Radar has one polygon spanning all categories, not one mark per row.
+      if (this.primitiveVisualType === 'radar') continue
+      if (this.primitiveVisualType === 'slope') {
+        const selectedSeries = selectedSet.has(this.primitiveCategoryIndex({ seriesName: s.name }))
+        s.lineStyle = { ...s.lineStyle, opacity: selectedSeries ? (s.lineStyle?.opacity ?? 1) : 0.25 }
+      }
       s.data = s.data.map((d: any, i: number) => {
-        const isSelected = selectedSet.has(i)
+        const categoryIndex = this.primitiveCategoryIndex({ dataIndex: i, data: d, name: d?.name, value: Array.isArray(d) ? d : d?.value, seriesName: s.name })
+        const isSelected = selectedSet.has(categoryIndex)
         const opacity = isSelected ? 1 : 0.25
         // Data items can be raw values (number/string) or objects with
         // {value, itemStyle, ...}. Normalize to the object form so we can
         // attach itemStyle.opacity without losing the existing fields.
+        if (Array.isArray(d)) return { value: [...d], itemStyle: { opacity } }
         if (d != null && typeof d === "object") {
           const existing = d.itemStyle && typeof d.itemStyle === "object" ? d.itemStyle : {}
           return { ...d, itemStyle: { ...existing, opacity } }
@@ -848,7 +887,7 @@ export class Visual implements IVisual {
     }
     const frames = String(config.raceMode) === "cumulative" ? accumulate(baseFrames) : baseFrames
 
-    if (!frames.length) { this.renderError("No data to display", "bar_race"); return }
+    if (!frames.length) { this.renderError('No data matches the current filters.', 'bar_race', true); return }
 
     const topN = Number(config.limit) || 8
     const speed = Number(config.playSpeed) || 620
@@ -1384,12 +1423,15 @@ export class Visual implements IVisual {
       </div>`
   }
 
-  private renderError(message: string, visualType: string): void {
+  private renderError(message: string, visualType: string, empty = false): void {
     this.disposeChart()
     this.root.innerHTML = ""
     const div = document.createElement("div")
     div.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#F87171;font-family:system-ui,sans-serif;font-size:11px;text-align:center;padding:16px"
-    div.textContent = `Semantica renderer error (${visualType}): ${message}`
+    div.style.boxSizing = 'border-box'
+    if (empty) div.style.color = '#94A3B8'
+    div.setAttribute('role', empty ? 'status' : 'alert')
+    div.textContent = empty ? message : `Semantica renderer error (${visualType}): ${message}`
     this.root.appendChild(div)
   }
 

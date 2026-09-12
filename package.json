@@ -1,6 +1,6 @@
 {
   "name": "vilsem",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "vilsem — Microsoft Fabric desktop query engine",
   "author": "vilsem",
   "license": "MIT",
@@ -14,7 +14,8 @@
     "ui:build": "cd ui && npm run build",
     "standalone:build": "cd ui && npx vite build --config vite.standalone.config.js",
     "fabric-embed:build": "cd ui && npx vite build --config vite.fabric-embed.config.js",
-    "build": "npm run ui:build && npm run fabric-embed:build && electron-builder"
+    "build": "npm run powerbi:build && npm run ui:build && npm run fabric-embed:build && electron-builder --publish never",
+    "powerbi:build": "npm --prefix pbiviz-semantica-renderer run package"
   },
   "build": {
     "appId": "com.semantica.app",
@@ -51,6 +52,7 @@
       }
     ],
     "asarUnpack": [
+      "src/powerbi/*.ps1",
       "pbiviz-semantica-renderer/dist/**",
       "dist/fabric-embed/**"
     ],

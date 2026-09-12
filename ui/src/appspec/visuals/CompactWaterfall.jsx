@@ -35,7 +35,7 @@ export default function CompactWaterfall({ rows, config, loading, error }) {
   const range = maxY - minY || 1
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '4px 8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box', padding: showLabels ? '20px 8px 4px' : '4px 8px' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: 2, minHeight: 0 }}>
         {bars.map((b, i) => {
           const barColor = b.isTotal ? totalColor : b.isIncrease ? increaseColor : decreaseColor

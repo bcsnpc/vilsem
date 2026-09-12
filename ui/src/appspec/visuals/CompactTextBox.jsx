@@ -48,6 +48,7 @@ export default function CompactTextBox({ config = {} }) {
   const editing = !!c._editing        // driven by CanvasEditor (double-click the handle)
   const ref = useRef(null)
   const [vals, setVals] = useState({})
+  const [, setEditRevision] = useState(0)
   const [modelMeasures, setModelMeasures] = useState([])
   const [slash, setSlash] = useState(null)   // { query, top, left } when the "/" menu is open
 
@@ -62,7 +63,7 @@ export default function CompactTextBox({ config = {} }) {
   const html = c.html != null ? c.html : (c.text ? escapeHtml(c.text) : '')
   const filters = c._globalFilters || {}
   const filtersKey = c._globalFiltersKey || ''
-  const measures = extractMeasures(html)
+  const measures = extractMeasures(editing ? (ref.current?.innerHTML || html) : html)
   const measuresKey = measures.join('|')
 
   // Fill every token span with its live value (or the name until it loads) and normalise
@@ -177,6 +178,8 @@ export default function CompactTextBox({ config = {} }) {
   // "/" slash command — type "/" then filter measures; Enter or click inserts a live token.
   const slashMatches = slash ? modelMeasures.filter(m => m.toLowerCase().includes((slash.query || '').toLowerCase())).slice(0, 8) : []
   const onEditorInput = () => {
+    // Refresh token query dependencies without replacing the editable DOM or caret.
+    if (editing) setEditRevision(v => v + 1)
     if (!editing) { if (slash) setSlash(null); return }
     const sel = window.getSelection()
     if (!sel || !sel.rangeCount) { setSlash(null); return }
@@ -213,7 +216,7 @@ export default function CompactTextBox({ config = {} }) {
   const hAlign = c.align === 'left' ? 'flex-start' : c.align === 'right' ? 'flex-end' : 'center'
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: editing ? 'stretch' : vAlign, justifyContent: editing ? 'stretch' : hAlign, padding: 8, boxSizing: 'border-box', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: editing ? 'stretch' : vAlign, justifyContent: editing ? 'stretch' : hAlign, padding: c.padding ?? 8, boxSizing: 'border-box', position: 'relative' }}>
       {editing && slash && slashMatches.length > 0 && createPortal(
         <div data-text-toolbar style={{ position: 'fixed', top: slash.top, left: slash.left, zIndex: 99999, background: 'var(--v-surface)', border: '1px solid var(--v-border)', borderRadius: 8, boxShadow: 'var(--v-shadow)', padding: 4, minWidth: 190, maxHeight: 240, overflow: 'auto' }}>
           <div style={{ fontSize: 9, color: 'var(--v-text-faint)', padding: '2px 8px 4px', textTransform: 'uppercase', letterSpacing: '.08em' }}>Insert value</div>
@@ -246,11 +249,14 @@ export default function CompactTextBox({ config = {} }) {
           color: c.color || t.textPrimary || '#E5E7EB',
           textAlign: c.align || 'center',
           lineHeight: c.lineHeight ?? 1.4,
+          letterSpacing: c.letterSpacing ?? 0,
           textTransform: c.uppercase ? 'uppercase' : 'none',
           whiteSpace: 'pre-wrap', wordBreak: 'break-word',
           outline: editing ? '2px solid #818CF8' : 'none',
           borderRadius: 4, minHeight: editing ? '1.4em' : undefined,
-          overflow: editing ? 'auto' : 'visible',
+          // Constrain long paragraphs in both modes; retain all content via scrolling.
+          maxHeight: '100%', minWidth: 0,
+          overflow: 'auto',
           cursor: editable && !editing ? 'text' : 'inherit',
         }}
       />
@@ -259,6 +265,10 @@ export default function CompactTextBox({ config = {} }) {
 }
 
 CompactTextBox.schema = [
+  {key:'lineHeight',label:'Line height',group:'Paragraph',type:'range',default:1.4,min:0.8,max:3,step:0.1},
+  {key:'letterSpacing',label:'Letter spacing',group:'Paragraph',type:'range',default:0,min:-1,max:8,step:0.25},
+  {key:'padding',label:'Inner padding',group:'Paragraph',type:'range',default:8,min:0,max:40,step:1},
+  {key:'uppercase',label:'Uppercase text',group:'Paragraph',type:'boolean',default:false},
   { key: 'fontFamily', label: 'Base font',  type: 'font',    default: '', group: 'Text' },
   { key: 'fontSize',   label: 'Base size',  type: 'range',   default: 16, min: 8, max: 96, step: 1, group: 'Text' },
   { key: 'fontWeight', label: 'Base weight', type: 'range',  default: 500, min: 100, max: 900, step: 100, group: 'Text' },

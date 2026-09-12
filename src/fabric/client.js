@@ -33,6 +33,8 @@ async function pollAsyncResult(locationUrl, token, maxWaitMs = 30_000) {
 }
 
 async function executeQuery(daxQuery) {
+  const local = require('../powerbi/localRuntime');
+  if (local.current()) return { ...parseFabricResponse({ results: [{ tables: [{ rows: await local.query(daxQuery) }] }] }), queryPath: 'local' };
   const token = await getToken();
   const url = getExecuteUrl();
   const body = {
@@ -136,7 +138,8 @@ function parseFabricResponseMulti(data) {
       const cleanKey = (key.startsWith('[') && key.endsWith(']'))
         ? key.slice(1, -1)
         : key;
-      obj[cleanKey] = typeof value === 'string' && !isNaN(value) && value.trim() !== ''
+      const isDimension = key.indexOf('[') > 0 && key.endsWith(']');
+      obj[cleanKey] = !isDimension && typeof value === 'string' && !isNaN(value) && value.trim() !== ''
         ? Number(value)
         : value;
     }
@@ -145,6 +148,8 @@ function parseFabricResponseMulti(data) {
 }
 
 async function executeQueryMulti(daxQuery) {
+  const local = require('../powerbi/localRuntime');
+  if (local.current()) return parseFabricResponseMulti({ results: [{ tables: [{ rows: await local.query(daxQuery) }] }] });
   const token = await getToken();
   const url = getExecuteUrl();
   const body = {

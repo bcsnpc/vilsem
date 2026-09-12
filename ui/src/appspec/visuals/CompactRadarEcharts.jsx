@@ -5,6 +5,7 @@ import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
 import { mergeFragments, RadarMarks } from '../../primitives/index'
 import { fmtVal } from '../shared/formatters.js'
+import { escapeHtml } from '../../primitives/escapeHtml'
 import { pal } from '../shared/palettes.js'
 
 export default function CompactRadarEcharts({ rows, config, loading, error }) {
@@ -54,8 +55,8 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
       `<div style="background:${t.echartsTooltipBg};border:1px solid ${t.echartsTooltipBorder};border-radius:10px;padding:10px 13px;min-width:140px;box-shadow:${shadow};color:${t.echartsTooltipText}">${inner}</div>`
     const mkRow = (name, v) =>
       `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;padding:2px 0">` +
-      `<span style="color:${t.echartsLegendText}">${name}</span>` +
-      `<span style="color:${p.start};font-weight:700">${fmtVal(v, pre, suf)}</span></div>`
+      `<span style="color:${t.echartsLegendText}">${escapeHtml(name)}</span>` +
+      `<span style="color:${p.start};font-weight:700">${escapeHtml(fmtVal(v, pre, suf))}</span></div>`
 
     base.tooltip = {
       ...(base.tooltip || {}),
@@ -86,7 +87,7 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
   ])
 
   // Wire up ZR mousemove to detect which axis (spoke) the cursor is nearest to.
-  // ECharts radar: indicator 0 is at the top (90° in math coords), going clockwise.
+  // ECharts radar: indicator 0 is at the top, proceeding counterclockwise.
   const handleChartReady = useCallback((chart) => {
     const zr = chart.getZr()
     zr.on('mousemove', (e) => {
@@ -102,7 +103,7 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
       const mouseAngle = (((Math.atan2(-dy, dx) * 180 / Math.PI) % 360) + 360) % 360
       let closest = 0, minDiff = Infinity
       for (let i = 0; i < N; i++) {
-        const iAngle = (((90 - (i / N) * 360) % 360) + 360) % 360
+        const iAngle = (((90 + (i / N) * 360) % 360) + 360) % 360
         let diff = Math.abs(mouseAngle - iAngle)
         if (diff > 180) diff = 360 - diff
         if (diff < minDiff) { minDiff = diff; closest = i }
@@ -114,8 +115,9 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
 
   const handleClick = useCallback((params) => {
     if (!config._onBarClick) return
-    const cat = typeof params?.name === 'string' ? params.name : null
-    if (cat) config._onBarClick(cat)
+    // A radar data item names the whole polygon; its spokes are the categories.
+    const cat = indicatorsRef.current[hoveredIdxRef.current]?.name
+    if (typeof cat === 'string') config._onBarClick(cat, { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
 
   if (loading) return <LoadingShimmer />
@@ -125,7 +127,7 @@ export default function CompactRadarEcharts({ rows, config, loading, error }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, minHeight: 0 }}>
-        <EChartsCanvas
+        <EChartsCanvas config={config}
           option={applyTooltipConfig(option, config)}
           onClick={config._onBarClick ? handleClick : undefined}
           onChartReady={handleChartReady}

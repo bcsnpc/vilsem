@@ -25,7 +25,7 @@ export default function CompactSunburst({ rows, config, loading, error }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-      <div style={{ position: 'relative', width: '80%', maxWidth: 220, aspectRatio: '1' }}>
+      <div style={{ position: 'relative', width: '80%', maxWidth: 220, height: '100%', maxHeight: 220, minHeight: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -38,9 +38,18 @@ export default function CompactSunburst({ rows, config, loading, error }) {
               strokeWidth={1}
               startAngle={90}
               endAngle={-270}
-              isAnimationActive
+              isAnimationActive={config.animations !== false && config.animationEnabled !== false}
               animationDuration={500}
-              label={showLabels ? ({ name, percent }) => percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : '' : false}
+              labelLine={false}
+              label={showLabels ? ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                const radius = (innerRadius + outerRadius) / 2
+                const text = `${(percent * 100).toFixed(0)}%`
+                // Keep percentages within their ring instead of outside the SVG.
+                // Small segments retain their values in the tooltip.
+                if (percent <= 0.05 || radius * 2 * Math.PI * percent < text.length * 7 || outerRadius - innerRadius < 14) return null
+                const angle = -midAngle * Math.PI / 180
+                return <text className="recharts-pie-label-text" x={cx + radius * Math.cos(angle)} y={cy + radius * Math.sin(angle)} textAnchor="middle" dominantBaseline="central" fontSize={11} fill={t.textPrimary}>{text}</text>
+              } : false}
             >
               {pieData.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}
             </Pie>

@@ -1,3 +1,4 @@
+import { applyAxisTextConfig } from '../shared/axisTextConfig.js'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'
@@ -115,18 +116,22 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
   // Draw the current frame (MERGE update → bars animate to their new ranks).
   useEffect(() => {
     const chart = chartRef.current
-    if (!chart || !frames.length) return
+    if (!chart) return
+    if (!frames.length || loading || error) {
+      chart.clear()
+      return
+    }
     const fr = frames[Math.min(idx, frames.length - 1)]
     const items = [...fr.items].sort((a, b) => a.value - b.value).slice(-topN)
     const anim = Math.max(200, Math.min(560, speed - 60))
-    chart.setOption({
+    chart.setOption(applyAxisTextConfig({
       grid: { left: 8, right: 74, top: 8, bottom: 16, containLabel: true },
       tooltip: { show: config.tooltipEnabled !== false, trigger: 'item', confine: true, valueFormatter: (v) => prefix + fmtVal(v) + suffix },
       xAxis: { type: 'value', axisLabel: { show: false }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, animationDurationUpdate: anim },
       yAxis: {
         type: 'category', data: items.map(d => d.name),
         axisTick: { show: false }, axisLine: { show: false },
-        axisLabel: { color: t.textMuted, fontSize: 12 }, animationDurationUpdate: anim,
+        axisLabel: { color: t.textMuted, fontSize: 12, fontFamily: 'sans-serif' }, animationDurationUpdate: anim,
       },
       series: [{
         type: 'bar', barMaxWidth: 26,
@@ -137,8 +142,8 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
         animationDurationUpdate: anim, animationEasingUpdate: 'linear',
       }],
       animationDurationUpdate: anim, animationEasingUpdate: 'linear',
-    })
-  }, [idx, frames, topN, showLabels, prefix, suffix, colorFor, t.textMuted, speed])
+    }, config), { replaceMerge: ['xAxis', 'yAxis'] })
+  }, [config.xAxisLabelFamily, config.xAxisLabelWidth, config.xAxisLabelOverflow, config.xAxisLabelHideOverlap, config.yAxisLabelFamily, config.yAxisLabelWidth, config.yAxisLabelOverflow, config.yAxisLabelHideOverlap, config.xAxisLabelColor, config.xAxisLabelSize, config.xAxisLabelWeight, config.xAxisLabelRotation, config.xAxisLabelSpacing, config.yAxisLabelColor, config.yAxisLabelSize, config.yAxisLabelWeight, config.yAxisLabelRotation, config.yAxisLabelSpacing, config.axisTickColor, config.axisFontSize, config.axisFontFamily, idx, frames, topN, showLabels, prefix, suffix, colorFor, t.textMuted, speed, loading, error])
 
   // Play timer.
   useEffect(() => {

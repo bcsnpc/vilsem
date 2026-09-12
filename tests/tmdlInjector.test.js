@@ -56,10 +56,14 @@ describe('mergeTmdlPartsWithLiveDax — retains other reports\' measures', () =>
 })
 
 describe('measureNameForVisual', () => {
-  it('strips hyphens + non-alphanumerics from visual ids', () => {
+  it('uses a sanitized prefix and stable collision-resistant suffix', () => {
     const name = measureNameForVisual('abcd1234-e567-890f-ghij-klmnopqrstuv')
     expect(name.startsWith('_SemanticaHtml_')).toBe(true)
-    expect(name).toMatch(/^_SemanticaHtml_[A-Za-z0-9]+$/)
+    expect(name).toMatch(/^_SemanticaHtml_[A-Za-z0-9]{1,16}_[a-z0-9]{7,8}$/)
+    expect(name).toBe(measureNameForVisual('abcd1234-e567-890f-ghij-klmnopqrstuv'))
+    // Same truncated clean prefix must not collapse distinct authored IDs.
+    expect(measureNameForVisual('abcdefghijklmnop-copy-one')).not.toBe(measureNameForVisual('abcdefghijklmnop-copy-two'))
+    expect(measureNameForVisual('a-b')).not.toBe(measureNameForVisual('ab'))
   })
   it('handles empty/null ids without throwing', () => {
     expect(() => measureNameForVisual(null)).not.toThrow()

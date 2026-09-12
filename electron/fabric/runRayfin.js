@@ -61,6 +61,9 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
   const appSlug = slug(appName)
   const workspace = opts.workspace || opts.workspaceName
   if (!workspace) return { ok: false, error: { code: 'NO_WORKSPACE', message: 'A target Fabric workspace name is required.' } }
+  if (opts.injectChart !== false && (!opts.modelWorkspaceId || !opts.datasetId || String(opts.datasetId).startsWith('local:'))) {
+    return { ok: false, stage: 'connection', error: { code: 'NO_MODEL_CONNECTION', message: 'Connect a Fabric semantic model before deploying the report app.' } }
+  }
 
   const parentDir = opts.parentDir || path.join(os.tmpdir(), 'vilsem-fabric')
   fs.mkdirSync(parentDir, { recursive: true })
@@ -84,8 +87,7 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
 
   // 2) Inject the FULL vilsem app — vilsem's real renderer bundle + a Fabric-SDK
   //    window.semantica shim + the App Spec. The deployed app matches the web export
-  //    exactly (all visuals + drill + interactions). BEST-EFFORT: if it throws or the
-  //    caller asked for a template-only deploy, we still proceed so you SEE an app.
+  //    using the production renderer. Required setup must succeed before publishing.
   let injected = null
   if (opts.injectChart === false) {
     log('Skipping vilsem app injection (template-only deploy).')
@@ -100,7 +102,7 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
         const be = C.cli.buildEmbed
         log(`$ ${be.cmd} ${be.args.join(' ')}  (rebuilding vilsem renderer bundle)`)
         const built = await runStreamed(be.cmd, be.args, REPO_ROOT, onOutput)
-        if (built.code !== 0) log('⚠ Renderer bundle build returned non-zero — using existing bundle if present.', 'stderr')
+        if (built.code !== 0) return { ok: false, projectDir, stage: 'build', error: { code: 'RENDERER_BUILD_FAILED', message: 'The renderer build failed. Resolve the build error and retry deployment.' } }
       } else {
         log('Using the vilsem renderer bundle shipped with the app.')
       }
@@ -108,7 +110,8 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
       injected = injectFullApp(projectDir, spec, { appName, workspaceId: opts.workspaceId, datasetId: opts.datasetId })
       log(`Injected full vilsem app (${injected.visualCount} visuals, ${Math.round(injected.bundleBytes / 1024)}KB renderer, ${injected.written.length} files): ${injected.written.join(', ')}`)
     } catch (e) {
-      log(`⚠ App injection skipped (${e.message}). Deploying the scaffolded template as-is.`, 'stderr')
+      log(`App injection failed: ${e.message}`, 'stderr')
+      return { ok: false, projectDir, stage: 'inject', error: { code: 'APP_INJECTION_FAILED', message: `Could not prepare the report app: ${e.message}` } }
     }
     if (injected) {
       // Wire the semantic-model connection alias so the shim's queries resolve.
@@ -120,8 +123,10 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
       if (modelWs && modelItem) {
         const addArgs = C.cli.addConnection.args.map(a => a.replace('{alias}', alias).replace('{workspaceId}', modelWs).replace('{itemId}', modelItem))
         log(`$ ${C.cli.addConnection.cmd} ${addArgs.join(' ')}`)
-        await runStreamed(C.cli.addConnection.cmd, addArgs, projectDir, onOutput)
-        await runStreamed(C.cli.generateConn.cmd, C.cli.generateConn.args, projectDir, onOutput)
+        const added = await runStreamed(C.cli.addConnection.cmd, addArgs, projectDir, onOutput)
+        if (added.code !== 0) return { ok: false, projectDir, injected, stage: 'connection', error: { code: 'MODEL_CONNECTION_FAILED', message: 'Could not connect the semantic model. Check the connection command output and retry.' } }
+        const generated = await runStreamed(C.cli.generateConn.cmd, C.cli.generateConn.args, projectDir, onOutput)
+        if (generated.code !== 0) return { ok: false, projectDir, injected, stage: 'connection', error: { code: 'MODEL_CONNECTION_GENERATION_FAILED', message: 'Could not generate the semantic-model connection. Check the command output and retry.' } }
       } else {
         log(`ℹ Model ids not passed — wire the connection once in ${projectDir}:`)
         log(`    npx fabric-app-data add semanticModel ${alias} --from-url "<your Power BI semantic model URL>"`)
@@ -131,7 +136,7 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
       // the renderer bundle is self-contained, so no extra deps are added).
       log('$ npm install')
       const inst = await runStreamed('npm', ['install'], projectDir, onOutput)
-      if (inst.code !== 0) log('⚠ npm install non-zero — build may fail.', 'stderr')
+      if (inst.code !== 0) return { ok: false, projectDir, injected, stage: 'install', error: { code: 'DEPENDENCY_INSTALL_FAILED', message: 'App dependencies could not be installed. Check the npm output and retry.' } }
     }
   }
 

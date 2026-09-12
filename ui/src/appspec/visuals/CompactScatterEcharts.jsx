@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
@@ -7,6 +7,10 @@ import { mergeFragments, PointMarks } from '../../primitives/index'
 import { gridLineColor } from '../shared/palettes.js'
 
 export default function CompactScatterEcharts({ rows, config, loading, error }) {
+  const handleClick = useCallback(params => {
+    const cat = params?.name
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
+  }, [config._onBarClick])
   const t = config._T || getThemeTokens('dark')
 
   if (loading) return <LoadingShimmer />
@@ -41,7 +45,7 @@ export default function CompactScatterEcharts({ rows, config, loading, error }) 
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

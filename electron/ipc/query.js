@@ -319,6 +319,11 @@ function buildTableDAX(groupBy, measures, filters = {}, limit = 100, orderBy = '
   const summary = `SUMMARIZECOLUMNS(\n  ${args.join(',\n  ')}\n)`
   const sortMeasure = measures[0]
   const sortColumn = groupCols[0]
+  if (!measures.length) {
+    const sort = groupCols.map(col => `${col}, ${order}`).join(', ')
+    const displaySort = groupCols.map(col => `${col} ${order}`).join(', ')
+    return `EVALUATE\nTOPN(${limit}, ${summary}, ${sort})\nORDER BY ${displaySort}`
+  }
   return `EVALUATE\nTOPN(${limit}, ${summary}, [${sortMeasure}], ${order}, ${sortColumn}, ASC)\nORDER BY [${sortMeasure}] ${order}, ${sortColumn} ASC`
 }
 
@@ -331,8 +336,8 @@ async function handleQueryTable({ groupBy, measures, filters = {}, limit = 100, 
   if (!groupBy || !Array.isArray(groupBy) || groupBy.length === 0) {
     return { error: 'VALIDATION_ERROR', message: 'groupBy must be a non-empty array' }
   }
-  if (!measures || !Array.isArray(measures) || measures.length === 0) {
-    return { error: 'VALIDATION_ERROR', message: 'measures must be a non-empty array' }
+  if (!Array.isArray(measures)) {
+    return { error: 'VALIDATION_ERROR', message: 'measures must be an array' }
   }
   try {
     const dax      = buildTableDAX(groupBy, measures, filters, limit, orderBy)

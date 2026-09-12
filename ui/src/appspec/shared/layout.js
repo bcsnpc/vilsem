@@ -18,7 +18,7 @@ export function normalizeLayout(spec) {
   // (nav buttons + canvas objects) — they carry no data and must still render.
   const KPI_TYPES = new Set(['kpi', 'stat_card', 'metric_tile', 'sparkline_kpi', 'bullet', 'progress', 'gauge'])
   const kpis   = visuals.filter(v => KPI_TYPES.has(v.type) && v.data?.measures?.length > 0)
-  const charts = visuals.filter(v => !KPI_TYPES.has(v.type) && (v.data?.measures?.length > 0 || isBareVisual(v.type)))
+  const charts = visuals.filter(v => !KPI_TYPES.has(v.type) && (v.data?.measures?.length > 0 || isBareVisual(v.type) || (v.type === 'table' && (v.data?.dimensions?.length || v.data?.groupBy?.column))))
 
   let currentY = 0
   const placedSlicers = []
@@ -38,7 +38,16 @@ export function normalizeLayout(spec) {
   if (kpis.length > 0) {
     const aiTotalW = kpis.reduce((s, k) => s + (k.position?.w || 3), 0)
     const kpiH = Math.max(...kpis.map(k => k.position?.h || 2))
-    if (aiTotalW <= cols && kpis.every(k => k.position?.w)) {
+    if (kpis.length > cols) {
+      for (let start = 0; start < kpis.length; start += cols) {
+        const row = kpis.slice(start, start + cols)
+        const width = Math.floor(cols / row.length)
+        row.forEach((kpi, i) => placedKpis.push({ ...kpi, position: {
+          x: i * width, y: currentY, w: i === row.length - 1 ? cols - i * width : width, h: kpi.position?.h || 2,
+        } }))
+        if (start + cols < kpis.length) currentY += kpiH
+      }
+    } else if (aiTotalW <= cols && kpis.every(k => k.position?.w)) {
       let kx = 0
       kpis.forEach((kpi) => {
         const w = Math.min(kpi.position.w, cols - kx)

@@ -77,7 +77,7 @@ export default function CompactCustom({ rows, config, loading, error }) {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} />
     </div>
   )
 }

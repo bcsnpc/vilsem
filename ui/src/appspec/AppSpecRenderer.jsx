@@ -1,3 +1,5 @@
+import { nextCategorySelection } from './shared/categorySelection.js'
+import { chartTitleStyle } from './shared/chartTitle.js'
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import GridLayout from 'react-grid-layout'
 import AxisSwitchPills, { getEffectiveGroupBy } from './AxisSwitchPills.jsx'
@@ -130,10 +132,13 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
 
   // ── Load visual data ────────────────────────────────────────────────────
   const loadVisualData = useCallback(async (visual, currentFilters, requestEpoch = requestEpochRef.current, groupByOverride = null, drillCtx = null) => {
-    if (!visual.data?.measures?.length) {
+    const dimensionOnlyTable = visual.type === 'table' && (visual.data?.dimensions?.length || visual.data?.groupBy?.column)
+    if (!visual.data?.measures?.length && !dimensionOnlyTable) {
       // No measures (e.g. the user removed the last one) → clear any stale value so
       // the visual goes blank instead of showing the previous measure's data.
-      setVisualData(prev => (prev[visual.id] == null ? prev : { ...prev, [visual.id]: null }))
+      setVisualData(prev => ({ ...prev, [visual.id]: [] }))
+      setVisualLoading(prev => ({ ...prev, [visual.id]: false }))
+      setVisualErrors(prev => ({ ...prev, [visual.id]: null }))
       return
     }
     if (!window.semantica) return
@@ -142,7 +147,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
     setVisualErrors(prev => ({ ...prev, [visual.id]: null }))
 
     try {
-      const measures  = visual.data.measures
+      const measures  = visual.data.measures || []
       // Axis-switch override takes priority over spec groupBy
       const specGroupBy = (visual.data.groupBy?.table && visual.data.groupBy?.column)
         ? visual.data.groupBy : null
@@ -311,7 +316,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
   // column → propagates through globalFilters → KPIs and other charts
   // re-evaluate. Clicking the same category again toggles the filter off.
   // Never affects slicers (one-way interaction per user requirement).
-  const handleBarClick = useCallback((visual, categoryValue) => {
+  const handleBarClick = useCallback((visual, categoryValue, modifiers = {}) => {
     // Click-to-drill takes priority over cross-filter: a visual with a declared
     // drill hierarchy drills on click rather than filtering its siblings. Only in
     // view/present — in edit mode a click selects.
@@ -350,15 +355,16 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
     const gb = (override?.table && override?.column) ? override : visual?.data?.groupBy
     if (!gb?.table || !gb?.column || categoryValue == null) return
     const filterKey = `${gb.table}[${gb.column}]`
+    const selection = nextCategorySelection(globalFilters[filterKey], categoryValue, modifiers.ctrlKey || modifiers.metaKey)
     setGlobalFilters(prev => {
       const next = { ...prev }
-      if (next[filterKey] === categoryValue) delete next[filterKey]
-      else next[filterKey] = categoryValue
+      if (selection === undefined) delete next[filterKey]
+      else next[filterKey] = selection
       return next
     })
     setFilterSources(prev => {
       const next = { ...prev }
-      if (globalFilters[filterKey] === categoryValue) delete next[filterKey]
+      if (selection === undefined) delete next[filterKey]
       else next[filterKey] = visual.id
       return next
     })
@@ -383,29 +389,9 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
     return { expandedValue: ev == null ? null : String(ev), childLabel: lv?.child?.label || '' }
   }, [drillPaths])
 
-  // Charts that finished loading with no chartable rows OR an error are hidden (AI over-generation)
-  // "chartable" means at least one row has a non-null _val (mirrors what chart components check)
-  const hiddenVisualIds = useMemo(() => new Set(
-    (preNormalizedSpec?.visuals || []).filter(v => {
-      const KPI_LIKE = new Set(['kpi','stat_card','metric_tile','sparkline_kpi','bullet','progress','gauge'])
-      if (KPI_LIKE.has(v.type)) return false
-      const loaded = !visualLoading[v.id] && v.id in visualData
-      if (!loaded) return false
-      if (visualErrors[v.id]) return true
-      const rows = visualData[v.id] || []
-      const hasChartableData = rows.some(r => r?._val != null)
-      return !hasChartableData
-    }).map(v => v.id)
-  ), [preNormalizedSpec, visualLoading, visualData, visualErrors])
-
-  // Pass 2: re-run normalizeLayout with hidden visuals removed so positions are gap-free
-  const renderSpec = useMemo(() => {
-    if (!preNormalizedSpec || hiddenVisualIds.size === 0) return preNormalizedSpec
-    return normalizeLayout({
-      ...preNormalizedSpec,
-      visuals: (preNormalizedSpec.visuals || []).filter(v => !hiddenVisualIds.has(v.id))
-    })
-  }, [preNormalizedSpec, hiddenVisualIds])
+  // Empty/error results are runtime states, not edits to the authored document.
+  // Keep each card and its position so its renderer can explain the result.
+  const renderSpec = preNormalizedSpec
 
   // ── Build stable edit layout from raw spec (edit mode only) ──────────────
   // Only rebuilds when the spec structure actually changes (new generation/load),
@@ -685,7 +671,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
               const activeAxis = axisOverrides[v.id] || null
               const chartConfig = {
                 ...(v.config || {}),
-                title: undefined, label: undefined,
+                title: undefined, label: v.type === 'nav_button' ? v.config?.label : undefined,
                 measureName: v.data?.measures?.[0],
                 secondaryMeasureName: v.data?.measures?.[1] || null,
                 orderBy: typeof v.data?.orderBy === 'string'
@@ -694,7 +680,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                 _globalFilters: buildAppliedFiltersForVisual(preNormalizedSpec, v, globalFilters, filterSources),
                 _globalFiltersKey: globalFiltersKey,
                 _selectedCat: getSourceSelectedCat(v, globalFilters, filterSources),
-                _onBarClick: (cat) => handleBarClick(v, cat),
+                _onBarClick: (cat, modifiers) => handleBarClick(v, cat, modifiers),
                 _expand: expandConfigFor(v),
                 _onNavigatePage: onNavigatePage,
                 _onOpenModal: onOpenModal,
@@ -743,7 +729,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                         padding: '0 14px', borderBottom: `1px solid ${T.headerBorder}`, gap: 8,
                         zIndex: 3, position: 'relative',
                       }}>
-                        <span style={{ fontSize: v.config?.titleFontSize || 12, fontWeight: 600, color: v.config?.titleColor || T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: v.config?.titleFontFamily || 'inherit' }}>
+                        <span data-chart-title style={chartTitleStyle(v.config, T.textPrimary)}>
                           {v.config?.title || v.config?.label || ''}
                         </span>
                         <AxisSwitchPills
@@ -830,7 +816,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
               const hasAxisOpts = Array.isArray(v.config?.axisOptions) && v.config.axisOptions.filter(o => o?.groupBy?.table && o?.groupBy?.column).length >= 2
               const chartConfig = {
                 ...(v.config || {}),
-                title: undefined, label: undefined,
+                title: undefined, label: v.type === 'nav_button' ? v.config?.label : undefined,
                 measureName: v.data?.measures?.[0],
                 secondaryMeasureName: v.data?.measures?.[1] || null,
                 orderBy: typeof v.data?.orderBy === 'string' ? v.data.orderBy : (v.data?.orderBy?.dir || 'desc'),
@@ -838,7 +824,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                 _globalFilters: buildAppliedFiltersForVisual(preNormalizedSpec, v, globalFilters, filterSources),
                 _globalFiltersKey: globalFiltersKey,
                 _selectedCat: getSourceSelectedCat(v, globalFilters, filterSources),
-                _onBarClick: (cat) => handleBarClick(v, cat),
+                _onBarClick: (cat, modifiers) => handleBarClick(v, cat, modifiers),
                 _expand: expandConfigFor(v),
                 _onNavigatePage: onNavigatePage,
                 _onOpenModal: onOpenModal,
@@ -864,7 +850,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                   {!isKpiContent && ((v.config?.showTitle !== false && (v.config?.title || v.config?.label)) || hasAxisOpts) && (
                     <div style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${T.headerBorder}`, gap: 8, position: 'relative', zIndex: 2 }}>
                       {v.config?.showAccentStrip !== false && !v.config?.flat && !isBareVisual(v.type) && <div style={{ position: 'absolute', left: 0, top: 9, bottom: 9, width: 2.5, borderRadius: 2, background: T.accentBgFn(colorVal) }} />}
-                      <span style={{ fontSize: 12, fontWeight: 600, color: T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span data-chart-title style={chartTitleStyle(v.config, T.textPrimary)}>
                         {v.config?.title || v.config?.label || ''}
                       </span>
                       <AxisSwitchPills
@@ -979,7 +965,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                   const kpiConfig   = { ...(v.config || {}), _T: T, measureName: v.data?.measures?.[0], _cardPixelHeight: cellH, _globalFilters: buildAppliedFiltersForVisual(preNormalizedSpec, v, globalFilters, filterSources), _globalFiltersKey: globalFiltersKey }
                   const chartConfig = {
                     ...(v.config || {}),
-                    title: undefined, label: undefined,
+                    title: undefined, label: v.type === 'nav_button' ? v.config?.label : undefined,
                     measureName: v.data?.measures?.[0],
                     secondaryMeasureName: v.data?.measures?.[1] || null,
                     orderBy: typeof v.data?.orderBy === 'string' ? v.data.orderBy : (v.data?.orderBy?.dir || 'desc'),
@@ -987,7 +973,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                     _globalFilters: buildAppliedFiltersForVisual(preNormalizedSpec, v, globalFilters, filterSources),
                     _globalFiltersKey: globalFiltersKey,
                     _selectedCat: getSourceSelectedCat(v, globalFilters, filterSources),
-                    _onBarClick: (cat) => handleBarClick(v, cat),
+                    _onBarClick: (cat, modifiers) => handleBarClick(v, cat, modifiers),
                 _expand: expandConfigFor(v),
                     _onNavigatePage: onNavigatePage,
                 _onOpenModal: onOpenModal,
@@ -1026,7 +1012,7 @@ export default function AppSpecRenderer({ spec, availableMeasures, canvasWidth, 
                         <>
                           {(v.config?.showTitle !== false && (v.config?.title || v.config?.label)) && (
                             <div style={{ height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', borderBottom: `1px solid ${T.headerBorder}`, gap: 8, position: 'relative' }}>
-                              <span style={{ fontSize: v.config?.titleFontSize || 12, fontWeight: 600, color: v.config?.titleColor || T.textPrimary, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: v.config?.titleFontFamily || 'inherit' }}>
+                              <span data-chart-title style={chartTitleStyle(v.config, T.textPrimary)}>
                                 {v.config?.title || v.config?.label || ''}
                               </span>
                               <AxisSwitchPills visual={v} axisOverride={activeAxis} onPick={(gb) => setAxisOverrides(prev => ({ ...prev, [v.id]: gb }))} colorVal={colorVal} mutedColor={T.textMuted} borderColor={T.headerBorder} fontFamily={v.config?.titleFontFamily} />

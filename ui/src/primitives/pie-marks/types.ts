@@ -14,7 +14,7 @@ export interface PieMarksProps {
 
   // Legend
   showLegend?: boolean
-  legendPosition?: 'right' | 'bottom'
+  legendPosition?: 'right' | 'bottom' | 'top'
   legendColor?: string
   legendFontSize?: number
   maxLegendItems?: number       // truncate to first N (overflow scrolls)
@@ -28,7 +28,7 @@ export interface PieMarksProps {
   centerColor?: string          // override center text color (default: scheme primary)
   centerFontSize?: number
 
-  // Single-measure radial progress mode (used when ctx.data.rows.length === 1)
+  // Scalar donut radial progress (one row without a category).
   maxValue?: number             // denominator for percent fill
 
   // Animation

@@ -2,6 +2,7 @@ import { fmtVal } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { TooltipPrimitiveProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 // Tooltip content is derived from data and color scheme automatically.
 export const schema: PrimitiveFieldDef[] = []
@@ -61,10 +62,10 @@ export const Tooltip: Primitive<TooltipPrimitiveProps> = (props, ctx) => {
                 ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${swatchColor};margin-right:6px;vertical-align:middle"></span>`
                 : ''
               const nameCell = (showName || showSwatch)
-                ? `<span style="color:${labelColor}">${swatch}${showName ? seriesName : ''}</span>`
+                ? `<span style="color:${labelColor}">${swatch}${showName ? escapeHtml(seriesName) : ''}</span>`
                 : ''
               const valCell = showValue
-                ? `<span style="color:${accentColor};font-weight:700">${formatted}</span>`
+                ? `<span style="color:${accentColor};font-weight:700">${escapeHtml(formatted)}</span>`
                 : ''
               return `<div style="display:flex;justify-content:space-between;gap:16px;font-size:${fontSize}px;padding:2px 0">
                 ${nameCell}${valCell}
@@ -72,7 +73,7 @@ export const Tooltip: Primitive<TooltipPrimitiveProps> = (props, ctx) => {
             })
             .join('')
           const titleHtml = (showTitle && cat)
-            ? `<div style="font-size:${fontSize + 1}px;font-weight:600;color:${titleColor};margin-bottom:6px">${cat}</div>`
+            ? `<div style="font-size:${fontSize + 1}px;font-weight:600;color:${titleColor};margin-bottom:6px">${escapeHtml(cat)}</div>`
             : ''
           return `<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:10px 13px;min-width:160px;box-shadow:${shadow};color:${text}">
             ${titleHtml}${rows}

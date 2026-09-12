@@ -55,6 +55,9 @@ export default function CompactGaugeEcharts({ rows, config, loading, error }) {
         showMinMax:    config.showMinMax    ?? false,
         colorZones:    config.colorZones    ?? null,
         valueFontSize: config.valueFontSize ?? 15,
+        valueColor: config.valueColor,
+        valueFontWeight: config.valueFontWeight,
+        valueFontFamily: config.valueFontFamily,
         prefix:        config.prefix,
         suffix:        config.suffix,
         animEnabled:   config.animationEnabled !== false,
@@ -65,19 +68,16 @@ export default function CompactGaugeEcharts({ rows, config, loading, error }) {
     config.colorScheme,
     config.minValue, config.maxValue,
     config.arcWidth, config.gaugeSize, config.showMinMax,
-    config.valueFontSize,
+    config.valueFontSize, config.valueColor, config.valueFontWeight, config.valueFontFamily,
     config.prefix, config.suffix,
     config.animationEnabled,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify(config.colorZones),
   ])
 
-  if (loading) return <LoadingShimmer />
-  if (error)   return <EmptyState error={error} />
-
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} />
+      {loading ? <LoadingShimmer /> : error ? <EmptyState error={error} /> : !rows?.length ? <EmptyState label={config.title || config.label} /> : <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} />}
     </div>
   )
 }

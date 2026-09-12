@@ -34,11 +34,17 @@ export default function CompactNarrative({ rows, config, loading, error }) {
     const measureName = config.measureName || config.title || 'Value'
     narrative = `${measureName} is currently ${formatted}.`
     if (val2 != null) {
-      const change = ((val - val2) / Math.abs(val2) * 100)
-      const direction = change >= 0 ? 'up' : 'down'
-      narrative += ` This is ${direction} ${Math.abs(change).toFixed(1)}% compared to the previous period.`
+      const comparisonName = config.secondaryMeasureName || 'the comparison value'
+      const comparison = fmtVal(val2, config.prefix, config.suffix)
+      if (val2 === 0) {
+        narrative += ` ${comparisonName} is ${comparison}; percentage change from zero is undefined.`
+      } else {
+        const change = ((val - val2) / Math.abs(val2) * 100)
+        const direction = change >= 0 ? 'higher' : 'lower'
+        narrative += ` This is ${Math.abs(change).toFixed(1)}% ${direction} than ${comparisonName} (${comparison}).`
+      }
     }
-    if (cat) narrative += ` Top category: ${cat}.`
+    if (cat) narrative += ` Category: ${cat}.`
   }
 
   if (loading) return <LoadingShimmer />

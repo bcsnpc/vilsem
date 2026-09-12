@@ -1,3 +1,4 @@
+import { metricFormatting } from '../shared/detailedCardSchemas.js'
 import React from 'react'
 import { pal } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
@@ -13,20 +14,22 @@ export default function CompactMetricTile({ rows, config, loading, error }) {
   const pct = val != null ? Math.min(Math.abs(val) / max, 1) : 0
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 12px', gap: 12 }}>
+    <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 12px', gap: config.contentGap ?? 12 }}>
       {/* Mini ring */}
-      <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
-        <svg viewBox="0 0 44 44" width={44} height={44}>
-          <circle cx="22" cy="22" r="18" fill="none" stroke={t.shimmerBg || 'rgba(255,255,255,0.06)'} strokeWidth="4" />
-          <circle cx="22" cy="22" r="18" fill="none" stroke={p.start} strokeWidth="4" strokeLinecap="round"
+      {config.showRing !== false && <div data-format-target="metric-ring" style={{ position: 'relative', width: config.ringSize ?? 44, height: config.ringSize ?? 44, flexShrink: 0 }}>
+        <svg viewBox="0 0 44 44" width={config.ringSize ?? 44} height={config.ringSize ?? 44}>
+          <circle cx="22" cy="22" r="18" fill="none" stroke={config.ringTrackColor || t.shimmerBg || 'rgba(255,255,255,0.06)'} strokeWidth={config.ringWidth ?? 4} />
+          <circle cx="22" cy="22" r="18" fill="none" stroke={config.ringColor || p.start} strokeWidth={config.ringWidth ?? 4} strokeLinecap="round"
             strokeDasharray={`${pct * 113} 113`} transform="rotate(-90 22 22)" />
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: p.text }}>{(pct * 100).toFixed(0)}%</div>
-      </div>
+        {config.showPercentage !== false && <div data-format-target="percentage" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: config.percentageFontSize ?? 9, fontWeight: 700, color: config.percentageColor || p.text }}>{(pct * 100).toFixed(0)}%</div>}
+      </div>}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: config.valueFontSize || 20, fontWeight: 800, color: p.text }}>{fmtVal(val, config.prefix, config.suffix)}</div>
+        <div style={{ fontSize: config.valueFontSize || 20, fontWeight: config.valueFontWeight ?? 800, color: config.valueColor || p.text, fontFamily: config.valueFontFamily || 'inherit' }}>{fmtVal(val, config.prefix, config.suffix)}</div>
         {(config.title || config.label) && <div style={{ fontSize: 10, color: t.textMuted, marginTop: 2 }}>{config.title || config.label}</div>}
       </div>
     </div>
   )
 }
+
+CompactMetricTile.schema = metricFormatting

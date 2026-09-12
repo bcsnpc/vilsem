@@ -1,13 +1,15 @@
 import React from 'react'
 import { pal } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
-import { LoadingShimmer } from '../shared/atoms.jsx'
+import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
 
 export default function CompactFunnel({ rows, config, loading, error }) {
   const p = pal(config.colorScheme)
   const t = config._T || getThemeTokens('dark')
   if (loading) return <LoadingShimmer />
+  if (error) return <EmptyState error={error} />
+  if (!rows?.length) return <EmptyState label={config.title || config.label} />
 
   // ── Deep customization ──
   const showValues      = config.showValues ?? true
@@ -20,7 +22,7 @@ export default function CompactFunnel({ rows, config, loading, error }) {
   const labelWidth      = config.labelWidth ?? 50
   const animEnabled     = config.animationEnabled !== false
 
-  const data = rows?.length ? rows : [{ _cat: 'Stage 1', _val: 100 }, { _cat: 'Stage 2', _val: 65 }, { _cat: 'Stage 3', _val: 40 }]
+  const data = rows
   const maxVal = Math.max(...data.map(r => Math.abs(r._val || 0)))
 
   return (

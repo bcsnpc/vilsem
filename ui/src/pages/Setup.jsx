@@ -125,7 +125,7 @@ function MsLogo({ size = 18 }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function Setup({ onComplete }) {
+export default function Setup({ onComplete, onLocalProject }) {
   const [step, setStep] = useState('auth')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -409,6 +409,7 @@ export default function Setup({ onComplete }) {
             </div>
           </>
         )}
+        {onLocalProject && <Button fullWidth variant="secondary" disabled={busy} onClick={onLocalProject} style={{ marginTop: 18 }}>Work with a local PBIP model</Button>}
       </Card>
     </div>
   )

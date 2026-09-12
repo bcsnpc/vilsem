@@ -100,6 +100,23 @@ export async function injectVisualsIntoReport({
   if (renderable.length === 0) {
     throw new Error('No injectable visuals — each visual needs at least one measure')
   }
+  if (renderable.length !== visuals.length) throw new Error('Every selected visual needs at least one measure; no visuals were inserted.')
+  const ids = new Set()
+  for (const visual of visuals) {
+    if (!visual.id || ids.has(visual.id)) throw new Error('Selected visuals must have distinct, non-empty IDs.')
+    ids.add(visual.id)
+  }
+  // Validate the destination before any query or semantic-model mutation.
+  const reportEntry = reportParts.find(p => isReportJsonPath(p.path))
+  const reportJson = reportEntry && safeParse(reportEntry.content)
+  if (!reportJson || typeof reportJson !== 'object' || Array.isArray(reportJson)) throw new Error('The existing report.json is missing or invalid; reload the report before inserting.')
+  if (format === 'PBIR') {
+    const page = reportParts.find(p => p.path === `definition/pages/${targetPageDir}/page.json`)
+    const pageJson = page && safeParse(page.content)
+    if (!pageJson || pageJson.name !== targetPageDir) throw new Error(`Target page "${targetPageDir}" is missing or invalid; reload the report before inserting.`)
+  } else if (!reportJson.sections?.some(s => s.name === targetPageDir || s.displayName === targetPageDir)) {
+    throw new Error(`Target page "${targetPageDir}" not found in legacy sections`)
+  }
   if (!window.semantica?.pbismGetDefinition) {
     throw new Error('pbismGetDefinition IPC unavailable (restart desktop app)')
   }
@@ -116,12 +133,10 @@ export async function injectVisualsIntoReport({
   const tertiaryMeasuresByVisualId  = {}
   const tableMeasureNamesByVisualId = {}
   const specsByVisualId             = {}  // primitiveSpec JSON per chart visual
-  // Injected charts use the PROVEN baked-HTML path, NOT the semanticaRenderer.
-  // Live-debug (2026-08-23) confirmed the 2026-04-17 finding: a modern-PBIR report
-  // cannot SERVE an embedded private custom visual — its binary 404s
-  // (…A3B7D.pbiviz.json), so the visual never loads (blank). New-project works only
-  // because it builds a LEGACY report, which can serve the embedded binary. There
-  // is no working PBIR equivalent, so inject stays on baked HTML (static, reliable).
+  // Existing-report insertion still uses static HTML. Modern PBIR private visuals
+  // now render in the isolated Service gallery after resource-path corrections
+  // (docs/qa/visual-cycles.md). Enabling primitives here also requires validating
+  // insertion bindings, resource registration and native-filter compatibility.
   const usePrimitive = false
   let done = 0
 
@@ -163,13 +178,13 @@ export async function injectVisualsIntoReport({
         const q = dim
           ? await window.semantica.queryTable({ groupBy: [v.dimension], measures: v.measures, filters: {}, limit: v.limit || 25, orderBy: v.orderBy || 'desc' })
           : await window.semantica.query({ measures: v.measures, filters: {} })
+        if (!q || q.error || q.success === false) throw new Error(q?.message || 'Data query failed')
         const html = renderVisualToHtml(v, q, theme) || ''
+        if (!html.trim()) throw new Error('Visual preparation returned empty content')
         const cn = measureNameForVisual(v.id)
         named.push({ name: cn, body: html, isRawDax: false }); measuresByVisualId[v.id] = cn
       } catch (e) {
-        console.warn('[injectorFlow] render failed for', v.id, e?.message)
-        const cn = measureNameForVisual(v.id)
-        named.push({ name: cn, body: '', isRawDax: false }); measuresByVisualId[v.id] = cn
+        throw new Error(`Could not prepare visual ${v.id}: ${e?.message || 'Unknown rendering error'}`)
       }
     }
     done++
@@ -279,7 +294,7 @@ function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, meas
       out.push({ path: part.path, content: JSON.stringify(updated, null, 2) })
       reportJsonHandled = true
     } else {
-      out.push({ path: part.path, content: part.content })
+      out.push({ ...part })
     }
   }
 
@@ -391,7 +406,6 @@ function injectIntoLegacyReport({ reportParts, targetPageId, visuals, measuresBy
   // displayName for safety.
   const section = report.sections.find((s) => s.name === targetPageId)
                || report.sections.find((s) => s.displayName === targetPageId)
-               || report.sections[0]
   if (!section) throw new Error(`Target page "${targetPageId}" not found in legacy sections`)
   if (!Array.isArray(section.visualContainers)) section.visualContainers = []
 

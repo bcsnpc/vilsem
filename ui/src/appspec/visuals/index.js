@@ -110,6 +110,11 @@ CompactPie.schema   = pieMarksSchema
 function CompactLine(props) { return React.createElement(CompactLineEcharts, props) }
 CompactLine.schema = lineMarksSchema
 
+function CompactArea(props) {
+  return React.createElement(CompactLineEcharts, { ...props, config: { ...props.config, chartType: props.config?.chartType || 'area' } })
+}
+CompactArea.schema = lineMarksSchema
+
 // StackedArea — wrapper supplies area+stacked defaults.
 function CompactStackedArea(props) { return React.createElement(CompactStackedAreaEcharts, props) }
 CompactStackedArea.schema = lineMarksSchema
@@ -155,7 +160,7 @@ CompactBarRace.schema = barRaceSchema
 
 export const VISUAL_MAP = {
   kpi: CompactKpi, bar: CompactBar, stacked_bar: CompactStackedBar,
-  line: CompactLine, area: CompactLine,
+  line: CompactLine, area: CompactArea,
   donut: CompactDonut, pie: CompactPie, gauge: CompactGauge, radar: CompactRadar,
   scatter: CompactScatter, bubble: CompactBubble, treemap: CompactTreemap,
   funnel: CompactFunnel, sankey: CompactChord,

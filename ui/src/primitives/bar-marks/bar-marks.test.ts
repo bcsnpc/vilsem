@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { BarMarks } from './index'
 import type { PrimitiveContext } from '../contract'
 
-function makeCtx(rows: Array<{ _cat: string; _val: number }> = [], selectedCat: string | null = null): PrimitiveContext {
+function makeCtx(rows: Array<{ _cat: string; _val: number }> = [], selectedCat: string | string[] | null = null): PrimitiveContext {
   return {
     data: { fields: [], rows },
     encoding: {},
@@ -139,4 +139,12 @@ describe('BarMarks', () => {
       expect(secondaryAlpha).toBeCloseTo(primaryAlpha, 2)
     }
   })
+})
+
+it('keeps both selected categories emphasized', () => {
+ const f = BarMarks({},makeCtx(SAMPLE_ROWS,['Alpha','Beta']))
+ const data = (f.option.series as any[])[0].data
+ expect(data[0].itemStyle.opacity).not.toBe(0.25)
+ expect(data[1].itemStyle.opacity).not.toBe(0.25)
+ expect(data[2].itemStyle.opacity).toBe(0.25)
 })

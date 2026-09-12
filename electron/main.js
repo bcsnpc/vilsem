@@ -291,6 +291,7 @@ async function startup() {
   llmHandlers.register()
   dashboardHandlers.register()
   exportHandlers.register()
+  require('./ipc/localPowerBI').register()
   powerbiHandlers.register()
   pbismHandlers.register()
   pbiRestylerHandlers.register()

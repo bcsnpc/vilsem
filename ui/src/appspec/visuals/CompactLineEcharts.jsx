@@ -12,24 +12,24 @@ export default function CompactLineEcharts({ rows, config, loading, error, group
   // Point click → category (x value), for click-to-drill / cross-filter.
   const handleClick = useCallback((params) => {
     const cat = params?.name
-    if (config._onBarClick && cat != null) config._onBarClick(String(cat))
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
-
-  if (loading) return <LoadingShimmer />
-  if (error)   return <EmptyState error={error} />
-  if (!rows?.length) return <EmptyState label={config.title || config.label} />
 
   // Pre-process rows: figure out the date grain, sort by it, and pre-format
   // each row's _cat as a display label. The primitive treats _cat as opaque
   // strings — all grain awareness lives at the wrapper layer.
   const preparedRows = useMemo(() => {
-    const grain      = resolveGrain(groupBy, rows)
-    const sortedRows = sortRowsForAxis(rows, grain)
+    const grain      = resolveGrain(groupBy, rows || [])
+    const sortedRows = sortRowsForAxis(rows || [], grain)
     return sortedRows.map(r => ({
       ...r,
       _cat: formatAxisLabel(r._cat, grain),
     }))
   }, [rows, groupBy])
+
+  if (loading) return <LoadingShimmer />
+  if (error)   return <EmptyState error={error} />
+  if (!rows?.length) return <EmptyState label={config.title || config.label} />
 
   // LineMarks reads ctx.theme.gridStroke for the splitLine color only, so we
   // override it with the user-resolved grid color (gridLinesColor + gridLinesOpacity).
@@ -49,6 +49,7 @@ export default function CompactLineEcharts({ rows, config, loading, error, group
     LineMarks({
       colorScheme: config.colorScheme,
       chartType:   effectiveChartType,
+      stacked:     config.stacked ?? false,
       smooth:      config.smooth === true,    // explicit opt-in; default is sharp (matches PBI / standard analytics)
       strokeWidth: config.strokeWidth ?? 2.5,
       fillOpacity: config.fillOpacity ?? 0.28,
@@ -73,7 +74,7 @@ export default function CompactLineEcharts({ rows, config, loading, error, group
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

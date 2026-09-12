@@ -1,3 +1,5 @@
+import { validateTemplate } from '../playground/instantiate.js'
+
 export const APP_SPEC_VERSION = '1.0'
 
 export const VISUAL_TYPES = [
@@ -7,7 +9,7 @@ export const VISUAL_TYPES = [
   'stat_card', 'metric_tile', 'sparkline_kpi', 'slope', 'bump', 'chord', 'sunburst',
   'narrative', 'insight', 'waffle', 'bar_race', 'nav_button',
   // Canvas objects — non-data authorable elements (no measures, no card chrome).
-  'text_box', 'shape', 'image', 'divider',
+  'text_box', 'shape', 'image', 'divider', 'custom',
 ]
 
 // Canvas object types — authorable elements that carry no data (no measures/query) and
@@ -20,7 +22,7 @@ export const isObjectType = (type) => OBJECT_TYPES.has(type)
 // the canvas objects plus the nav button (a web-style button, not a boxed visual).
 export const isBareVisual = (type) => OBJECT_TYPES.has(type) || type === 'nav_button'
 
-export const SLICER_TYPES = ['dropdown', 'buttons', 'date_range']
+export const SLICER_TYPES = ['dropdown', 'buttons', 'date_range', 'multi_select']
 
 export const THEMES = ['dark', 'light', 'midnight', 'slate']
 
@@ -55,10 +57,14 @@ export const PAGE_SIZE_LIMITS = {
 /** Default page size when AppSpec doesn't specify one. */
 export const DEFAULT_PAGE_SIZE = PAGE_SIZE_PRESETS['16:9']
 
-function validateVisuals(visuals, prefix, errors, warnings) {
+function validateVisuals(visuals, prefix, errors, warnings, customVisuals) {
   const ids = new Set()
   visuals.forEach((v, i) => {
     const p = `${prefix}[${i}]`
+    if (!v || typeof v !== 'object' || Array.isArray(v)) {
+      errors.push(`${p}: visual must be an object`)
+      return
+    }
     if (!v.id || typeof v.id !== 'string') {
       errors.push(`${p}: missing or invalid id`)
     } else if (ids.has(v.id)) {
@@ -92,6 +98,29 @@ function validateVisuals(visuals, prefix, errors, warnings) {
     if (!v.config || typeof v.config !== 'object') {
       warnings.push(`${p}: missing config block — defaults will be used`)
     }
+    if (v.type === 'custom') {
+      const template = customVisuals?.[v.customTemplateId] || v.customTemplate
+      try {
+        const result = validateTemplate(template)
+        errors.push(...result.errors.map(e => `${p}: custom template: ${e}`))
+        warnings.push(...result.warnings.map(e => `${p}: custom template: ${e}`))
+      } catch {
+        errors.push(`${p}: malformed custom template`)
+      }
+    }
+  })
+}
+
+function validateSlicers(slicers, prefix, errors) {
+  if (slicers === undefined) return
+  if (!Array.isArray(slicers)) { errors.push(`${prefix} must be an array`); return }
+  slicers.forEach((s, i) => {
+    const p = `${prefix}[${i}]`
+    if (!s || typeof s !== 'object' || Array.isArray(s)) { errors.push(`${p}: slicer must be an object`); return }
+    if (!s.id) errors.push(`${p}: missing id`)
+    if (!SLICER_TYPES.includes(s.type)) errors.push(`${p}: invalid type "${s.type}". Must be one of: ${SLICER_TYPES.join(', ')}`)
+    if (!s.dimension || typeof s.dimension !== 'object' || !s.dimension.table || !s.dimension.column) errors.push(`${p}: missing or invalid dimension (expected { table, column })`)
+    if (!s.position || typeof s.position !== 'object') errors.push(`${p}: missing position`)
   })
 }
 
@@ -146,43 +175,27 @@ export function validateAppSpec(spec) {
   // pages (multi-page mode) — validate each page's visuals/slicers
   if (Array.isArray(spec.pages) && spec.pages.length > 0) {
     spec.pages.forEach((page, pi) => {
+      if (!page || typeof page !== 'object' || Array.isArray(page)) { errors.push(`pages[${pi}]: page must be an object`); return }
       if (!page.id) errors.push(`pages[${pi}]: missing id`)
       if (!page.name) errors.push(`pages[${pi}]: missing name`)
       if (!Array.isArray(page.visuals)) {
         errors.push(`pages[${pi}]: visuals must be an array`)
       } else {
-        validateVisuals(page.visuals, `pages[${pi}].visuals`, errors, warnings)
+        validateVisuals(page.visuals, `pages[${pi}].visuals`, errors, warnings, spec.customVisuals)
       }
+      validateSlicers(page.slicers, `pages[${pi}].slicers`, errors)
     })
   } else {
     // Single-page (flat) mode — backward compat
     if (!Array.isArray(spec.visuals)) {
       errors.push('spec.visuals must be an array')
     } else {
-      validateVisuals(spec.visuals, 'visuals', errors, warnings)
+      validateVisuals(spec.visuals, 'visuals', errors, warnings, spec.customVisuals)
     }
   }
 
   // slicers (optional)
-  if (spec.slicers !== undefined) {
-    if (!Array.isArray(spec.slicers)) {
-      errors.push('spec.slicers must be an array')
-    } else {
-      spec.slicers.forEach((s, i) => {
-        const prefix = `slicers[${i}]`
-        if (!s.id) errors.push(`${prefix}: missing id`)
-        if (!s.type || !SLICER_TYPES.includes(s.type)) {
-          errors.push(`${prefix}: invalid type "${s.type}". Must be one of: ${SLICER_TYPES.join(', ')}`)
-        }
-        if (!s.dimension || typeof s.dimension !== 'object' || !s.dimension.table || !s.dimension.column) {
-          errors.push(`${prefix}: missing or invalid dimension (expected { table, column })`)
-        }
-        if (!s.position || typeof s.position !== 'object') {
-          errors.push(`${prefix}: missing position`)
-        }
-      })
-    }
-  }
+  validateSlicers(spec.slicers, 'slicers', errors)
 
   // connections (optional, informational)
   if (spec.connections !== undefined && !Array.isArray(spec.connections)) {

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { MULTI_COLORS } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
@@ -22,6 +22,11 @@ export const schema = [
 // (_val) at the left axis tick to its end value (_val2) at the right axis tick.
 // Needs two measures; renders an empty-state prompt otherwise.
 export default function CompactSlopeEcharts({ rows, config, loading, error }) {
+  const handleClick = useCallback(params => {
+    // Each series is a category; point names identify Start/End instead.
+    const cat = params?.seriesName
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
+  }, [config._onBarClick])
   const t = config._T || getThemeTokens('dark')
   const colors = config.customColors || MULTI_COLORS
 
@@ -49,6 +54,7 @@ export default function CompactSlopeEcharts({ rows, config, loading, error }) {
         lineStyle: { width: lineWidth, color, opacity: 0.85 },
         itemStyle: { color },
         emphasis: { focus: 'series' },
+        labelLayout: { hideOverlap: true },
         // Category name trailing the right-hand point.
         endLabel: showLegend
           ? { show: true, formatter: () => String(r._cat).slice(0, 18), color: t.textMuted, fontSize: 9, fontWeight: 600, distance: 4 }
@@ -61,6 +67,7 @@ export default function CompactSlopeEcharts({ rows, config, loading, error }) {
     })
 
     return {
+      animation: config.animations !== false && config.animationEnabled !== false,
       grid: { left: 24, right: showLegend ? 96 : 32, top: 26, bottom: 22 },
       xAxis: {
         type: 'category',
@@ -77,6 +84,7 @@ export default function CompactSlopeEcharts({ rows, config, loading, error }) {
     rows, t, colors,
     config.leftLabel, config.rightLabel, config.lineWidth, config.dotSize,
     config.showValues, config.showLegend, config.limit, config.prefix, config.suffix,
+    config.animations, config.animationEnabled,
   ])
 
   if (loading) return <LoadingShimmer />
@@ -85,7 +93,7 @@ export default function CompactSlopeEcharts({ rows, config, loading, error }) {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

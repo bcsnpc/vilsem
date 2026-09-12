@@ -1,0 +1,20 @@
+const fs=require('node:fs'),path=require('node:path'),{app,BrowserWindow}=require('electron/main')
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'docs/qa/evidence/visual-fix-regressions.json'),report={checks:[],events:[],expectedQueryErrors:[]}
+app.setPath('userData',path.join(root,'cache/qa-fix-regressions'));app.disableHardwareAcceleration();app.commandLine.appendSwitch('disable-features','CalculateNativeWinOcclusion')
+app.whenReady().then(async()=>{const w=new BrowserWindow({width:1500,height:1000,webPreferences:{contextIsolation:true,sandbox:true,backgroundThrottling:false}}),js=c=>w.webContents.executeJavaScript(c),call=(m,...a)=>js(`window.qaFull.${m}(...${JSON.stringify(a)})`);let scenario='startup';w.webContents.on('console-message',e=>{if(e.level==='error'){if(e.message==='[AppSpec qa] error: QA query failure')report.expectedQueryErrors.push({scenario,message:e.message});else report.events.push({scenario,message:e.message})}});const check=(name,pass,evidence)=>report.checks.push({name,pass,evidence});try{
+await w.loadURL('http://127.0.0.1:5173/qa/full-audit.html');await js(`new Promise(r=>{const f=()=>window.qaFullReady?r():requestAnimationFrame(f);f()})`)
+for(const host of ['editor','viewer']){
+ for(const type of ['line','area','stacked_area','bump']){
+  scenario=host+'/'+type;let r=await call('mount',type,host,{inspector:false});const s=r.charts[0]?.series||[];
+  check(scenario+' renders expected area mode',s.length===2&&s.every(s=>s.area===['area','stacked_area'].includes(type)),s)
+  if(type==='stacked_area'){check(scenario+' shares stack total',s.length===2&&s.every(s=>s.stack==='total'),s);r=await call('change',{stacked:false});check(scenario+' supports disabling stacking',r.charts[0]?.series.every(s=>!s.stack),r.charts)}
+  for(const fixture of ['empty','error','standard']){r=await call('setFixture',fixture);check(scenario+'/'+fixture,fixture==='standard'?r.charts[0]?.series.length===2:fixture==='empty'?r.text.includes('No data'):r.text.includes('QA query failure'),{text:r.text,charts:r.charts})}
+ }
+ scenario=host+'/funnel';await call('mount','funnel',host,{inspector:false});for(const fixture of ['empty','error','zero','standard']){const r=await call('setFixture',fixture);check(scenario+'/'+fixture,fixture==='empty'?r.text.includes('No data')&&!r.text.includes('Stage 1'):fixture==='error'?r.text.includes('QA query failure'):r.text.includes('North'),r.text)}
+ scenario=host+'/dimension-only-table';const table=await call('makeSpec','table');table.visuals[0].data.measures=[];let r=await call('mount','table',host,{spec:table,inspector:false});check(scenario,r.text.includes('North')&&!r.text.includes('REVENUE')&&r.requests.some(q=>q.params.measures?.length===0),{text:r.text,requests:r.requests})
+ scenario=host+'/heatmap';const heat=await call('makeSpec','heatmap');heat.visuals[0].position={x:0,y:0,w:12,h:(320+8)/88};await call('mount','heatmap',host,{spec:heat,width:480,inspector:false});const cells=await js(`(()=>{const root=document.getElementById('qa-host');return [...root.querySelectorAll('div[title]')].filter(e=>/North:|South:|East:|West:/.test(e.title)).map(e=>{const b=e.getBoundingClientRect();let p=e.parentElement;while(p&&p!==root){const s=getComputedStyle(p),r=p.getBoundingClientRect();if(s.overflow==='hidden'&&(b.bottom>r.bottom+1||b.top<r.top-1))return false;p=p.parentElement}return b.height>0})})()`);check(scenario+' keeps all four cells visible',cells.length===4&&cells.every(Boolean),cells)
+ scenario=host+'/gauge-empty';await call('mount','gauge',host,{inspector:false});r=await call('setData',{measures:[]});check(scenario,r.text.includes('No data')&&!r.charts.length,{text:r.text,charts:r.charts})
+ scenario=host+'/narrative';r=await call('mount','narrative',host,{inspector:false});check(scenario+' names comparison measure',r.text.includes('higher than Cost')&&!r.text.includes('previous period'),r.text)
+}
+report.complete=true;fs.writeFileSync(out,JSON.stringify(report,null,2));app.exit(report.events.length||report.checks.some(c=>!c.pass)?1:0)
+}catch(e){report.fatal=e.stack;fs.writeFileSync(out,JSON.stringify(report,null,2));app.exit(1)}})

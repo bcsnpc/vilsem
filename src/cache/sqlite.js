@@ -601,7 +601,9 @@ function saveAppSpec(name, datasetId, spec) {
   stmt.bind([name, datasetId]);
   let existingId = null;
   if (stmt.step()) existingId = stmt.getAsObject().id;
+  const ambiguous = stmt.step();
   stmt.free();
+  if (ambiguous) throw new Error('Multiple projects have this name. Rename them to unique names before saving.');
 
   if (existingId) {
     db.run(
@@ -624,6 +626,12 @@ function saveAppSpec(name, datasetId, spec) {
 
 function renameAppSpec(id, newName) {
   if (!db) return;
+  const stmt = db.prepare(`SELECT id FROM saved_app_specs
+    WHERE name = ? AND dataset_id = (SELECT dataset_id FROM saved_app_specs WHERE id = ?) AND id != ?`);
+  stmt.bind([newName, id, id]);
+  const collision = stmt.step();
+  stmt.free();
+  if (collision) throw new Error('A project with this name already exists in this dataset. Choose a different name.');
   db.run(`UPDATE saved_app_specs SET name = ?, updated_at = datetime('now') WHERE id = ?`, [newName, id]);
   persistDb();
 }

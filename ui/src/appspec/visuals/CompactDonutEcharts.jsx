@@ -10,7 +10,7 @@ export default function CompactDonutEcharts({ rows, config, loading, error }) {
   // Slice click → category, for click-to-drill / cross-filter (params.name = slice name)
   const handleClick = useCallback((params) => {
     const cat = params?.name
-    if (config._onBarClick && cat != null) config._onBarClick(String(cat))
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
 
   if (loading) return <LoadingShimmer />
@@ -48,7 +48,7 @@ export default function CompactDonutEcharts({ rows, config, loading, error }) {
       labelStyle:     config.labelStyle     ?? 'percent',
       showCenterText: config.showCenterText ?? true,
       centerColor:    config.centerColor || undefined,    // empty string in schema = use scheme color
-      centerFontSize: config.centerFontSize ?? (rows.length === 1 ? (config.valueFontSize || 32) : 22),
+      centerFontSize: config.centerFontSize ?? (rows.length === 1 && rows[0]._cat === undefined ? (config.valueFontSize || 32) : 22),
       // Single-measure radial progress
       maxValue:       config.maxValue       ?? 100,
       // Animation
@@ -62,7 +62,7 @@ export default function CompactDonutEcharts({ rows, config, loading, error }) {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

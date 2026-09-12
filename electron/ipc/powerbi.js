@@ -315,6 +315,7 @@ async function fetchDefinitionInFormat(workspaceId, reportId, fmt) {
     const parts = definition.parts.map((p) => ({
       path: p.path,
       payloadType: p.payloadType || 'InlineBase64',
+      payload: p.payload,
       content: decodePart(p),
     }))
 
@@ -337,7 +338,7 @@ function decodePart(part) {
 // ── v2: Update existing report definition ───────────────────────────────────
 
 /**
- * POST /v1/workspaces/{workspaceId}/reports/{reportId}/updateDefinition?updateMetadata=true
+ * POST /v1/workspaces/{workspaceId}/reports/{reportId}/updateDefinition
  *
  * Body: { definition: { parts: [{ path, payload: <base64>, payloadType: "InlineBase64" }] } }
  * Fabric responds with 202 + Location → poll until Succeeded.
@@ -348,10 +349,11 @@ async function updateReportDefinition({ workspaceId, reportId, parts }) {
 
   try {
     const body = { definition: { parts: encodeParts(parts) } }
+    const updateMetadata = parts.some(part => part.path === '.platform')
 
     const initial = await pbiRequest((token) =>
       axios.post(
-        `${FABRIC_BASE}/workspaces/${workspaceId}/reports/${reportId}/updateDefinition?updateMetadata=true`,
+        `${FABRIC_BASE}/workspaces/${workspaceId}/reports/${reportId}/updateDefinition?updateMetadata=${updateMetadata}`,
         body,
         {
           headers: {
@@ -464,7 +466,10 @@ async function createReport({ workspaceId, reportName, parts, description }) {
  */
 function encodeParts(parts) {
   return parts.map((p) => {
-    if (p.payload && (p.payloadType || 'InlineBase64')) {
+    // Preserve original bytes for untouched resources, including invalid UTF-8.
+    // Callers may retain payload while editing content via object spread.
+    const contentChanged = typeof p.content === 'string' && p.content !== decodePart(p)
+    if (typeof p.payload === 'string' && !contentChanged) {
       return {
         path: p.path,
         payload: p.payload,
@@ -931,6 +936,7 @@ function register() {
 }
 
 module.exports = {
+  getBundledCustomVisualParts,
   register,
   listReports,
   getReportDefinitionV2,

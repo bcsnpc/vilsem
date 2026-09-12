@@ -1,3 +1,4 @@
+import { buildLocalReportParts } from './powerbi/localReportBuilder.js'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import AppSpecRenderer from '../appspec/AppSpecRenderer.jsx'
 import CanvasEditor from '../appspec/CanvasEditor.jsx'
@@ -6,6 +7,7 @@ import { FieldsPanel } from '../vilsem/Panels.jsx'
 import VisualInspector from '../appspec/VisualInspector.jsx'
 import { validateAppSpec, ensureSpecIds } from '../appspec/schema.js'
 import { publishHtmlContentFlow } from './powerbi/publishHtmlContentFlow.js'
+import { isLocalReportSource } from './powerbi/outputPolicy.js'
 import { FLAGS } from '../appspec/shared/feature-flags.js'         // Deploy-to-Fabric spike (flag)
 import AppNavShell, { NAV_WIDTH, NAV_HEIGHT } from '../appspec/shared/AppNavShell.jsx'  // Phase 8 nav shell
 import PageModal from '../appspec/shared/PageModal.jsx'  // Phase 8b in-app popup
@@ -302,6 +304,8 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
   const [snapOn, setSnapOn]                   = useState(true)  // show the alignment grid guides behind visuals
   const canvasScrollRef = useRef(null)                          // scroll viewport, measured on "Fit"
   const [exportDialog, setExportDialog]       = useState(null) // null or { tenantId, clientId, clientSecret, workspaceId, datasetId, authMode, prefill }
+  const [localExport, setLocalExport] = useState(null)
+  const localExportBusy = useRef(false)
   const [outputChooser, setOutputChooser]     = useState(false) // S10 Export/Publish chooser
   const [fabricDialog, setFabricDialog]       = useState(null)  // Deploy-to-Fabric spike (feature-flagged, default OFF)
   // Publish-to-Power-BI dialog (Phase 3 of POWERBI_PARITY_MASTER_PLAN.md).
@@ -936,7 +940,10 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
   }
 
   // ── Output flows (S10 chooser opens these) ────────────────────────────────
+  const localReportSource = isLocalReportSource(externalConnInfo, generatedSpec || initialSpec)
+
   async function openExportDialog() {
+    if (localReportSource) return
     try {
       const ws = await window.semantica.getWorkspaceConfig()
       const savedWs = window.semantica.getSavedWorkspaces ? await window.semantica.getSavedWorkspaces() : []
@@ -956,7 +963,30 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
       setExportDialog({ authMode: 'unknown', tenantId: '', clientId: '', clientSecret: '', workspaceId: '', datasetId: '', prefill: false, exportFolderName: (appTitle || 'app').replace(/[^a-zA-Z0-9_\- ]/g, '').trim() || 'app' })
     }
   }
+  async function savePowerBIFile() {
+    if (localExportBusy.current) return
+    localExportBusy.current = true
+    setLocalExport({ busy: true })
+    try {
+      if (!window.semantica?.saveLocalPowerBIReport) throw Error('Restart Vilsem to load Power BI file saving.')
+      const connection = await window.semantica.getWorkspaceConfig()
+      if (!connection?.datasetId) throw Error('Connect a semantic model first.')
+      if (localReportSource && connection.kind !== 'local-pbip') throw Error('Reconnect this report to its local model before exporting.')
+      const sourceSpec = { ...generatedSpec, title: appTitle || generatedSpec.title, theme: { ...generatedSpec.theme, mode: canvasTheme } }
+      const measureResult = await window.semantica.getMeasures()
+      const measures = Array.isArray(measureResult) ? measureResult : measureResult.measures || []
+      const bundle = await window.semantica.pbiGetCustomVisualParts()
+      const reportParts = buildLocalReportParts({ spec: sourceSpec, measures, bundle })
+      const result = await window.semantica.saveLocalPowerBIReport({ reportParts, sourceSpec, datasetId: connection.datasetId })
+      if (result?.canceled) { setLocalExport(null); return }
+      if (!result?.success) throw Error(result?.error || 'Power BI file saving failed.')
+      setLocalExport({ projectPath: result.projectPath })
+    } catch (error) { setLocalExport({ error: error.message }) }
+    finally { localExportBusy.current = false }
+  }
+
   function openPbiDialog() {
+    if (localReportSource) return
     setPbiDialog({ reportName: generatedSpec?.title || 'App Generator Report', stage: '', progress: 0, publishing: false, reportId: null, error: null })
   }
 
@@ -971,6 +1001,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
       // pollute the spec used for rendering/publishing).
       const specWithChat = {
         ...generatedSpec,
+        ...(workspace.localSource ? { _localSource: workspace.localSource } : {}),
         theme: { ...(generatedSpec?.theme || {}), mode: canvasTheme || 'dark' },
         _chatMessages: messages.filter((m) => m.type === 'user' || m.type === 'ai').slice(-50),
       }
@@ -1477,6 +1508,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
               the pane (no longer a floating panel over the canvas). */}
           {rightTab === 'inspector' && selectedVisual && (
             <VisualInspector
+              allowPowerBIExport={!localReportSource}
               embedded
               visual={selectedVisual}
               customTemplate={selectedVisual?.type === 'custom' ? generatedSpec?.customVisuals?.[selectedVisual.customTemplateId] : null}
@@ -1770,7 +1802,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
         )}
 
         {/* ── Right Canvas ── */}
-        <div ref={canvasRef} style={{ flex: 1, minWidth: 0, background: canvasTheme === 'dark' ? '#0b0b12' : '#F1F5F9', backgroundImage: canvasTheme === 'dark' ? 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)', backgroundSize: '24px 24px', position: 'relative', overflow: 'auto', display: 'flex', flexDirection: 'column', transition: 'background 0.2s' }}>
+        <div ref={canvasRef} style={{ flex: 1, minWidth: 0, backgroundColor: canvasTheme === 'dark' ? '#0b0b12' : '#F1F5F9', backgroundImage: canvasTheme === 'dark' ? 'radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)' : 'radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)', backgroundSize: '24px 24px', position: 'relative', overflow: 'auto', display: 'flex', flexDirection: 'column', transition: 'background 0.2s' }}>
 
           {/* Generating overlay — matches the canvas (dashboard) theme, not chrome */}
           {generating && (
@@ -1984,7 +2016,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                           // scrollbars stay correct (unlike transform). Drag deltas are
                           // divided by this zoom inside CanvasEditor.
                           zoom: effZoom,
-                          background: canvasTheme === 'dark' ? '#0b0b12' : '#FFFFFF',
+                          backgroundColor: canvasTheme === 'dark' ? '#0b0b12' : '#FFFFFF',
                           border: canvasTheme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--v-text)',
                           borderRadius: 8,
                           boxShadow: canvasTheme === 'dark' ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.08)',
@@ -2432,7 +2464,14 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
             How do you want to ship <b style={{ color: 'var(--text-primary)' }}>{appTitle || 'this dashboard'}</b>?
           </div>
           <div style={{ display: 'grid', gap: 10 }}>
-            <button onClick={() => { setOutputChooser(false); openPbiDialog() }}
+            <button style={outputCardStyle} onClick={() => { setOutputChooser(false); setLocalExport({}) }}>
+              <div style={{ ...outputIconStyle, color: 'var(--text-secondary)' }}><Save size={18} /></div>
+              <div style={{ flex: 1, textAlign: 'left' }}>
+                <div style={{ fontSize: 'var(--fs-md)', fontWeight: 600 }}>Save as Power BI <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-muted)' }}>Preview</span></div>
+                <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginTop: 2 }}>Create a separate PBIP/PBIR project linked to your model. Toolbar Save keeps the Vilsem project.</div>
+              </div>
+            </button>
+            {!localReportSource && <button onClick={() => { setOutputChooser(false); openPbiDialog() }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-border)'; e.currentTarget.style.background = 'var(--surface-hover)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.background = 'var(--surface-sunken)' }}
               style={outputCardStyle}>
@@ -2442,8 +2481,8 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
                 <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.45 }}>Create a live report in your Fabric workspace. Each visual renders via the vilsem custom visual from auto-generated DAX.</div>
               </div>
               <ChevronRight size={16} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
-            </button>
-            {window.semantica?.exportAppPackage && (
+            </button>}
+            {!localReportSource && window.semantica?.exportAppPackage && (
               <button onClick={() => { setOutputChooser(false); openExportDialog() }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-border)'; e.currentTarget.style.background = 'var(--surface-hover)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.background = 'var(--surface-sunken)' }}
@@ -2457,7 +2496,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
               </button>
             )}
             {/* Deploy to Fabric — SPIKE, feature-flagged (default OFF). Additive card. */}
-            {FLAGS.fabricExport && window.semantica?.fabricDeploy && (
+            {!localReportSource && FLAGS.fabricExport && window.semantica?.fabricDeploy && (
               <button onClick={() => { setOutputChooser(false); setFabricDialog({ spec: generatedSpec, appTitle }) }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-border)'; e.currentTarget.style.background = 'var(--surface-hover)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.background = 'var(--surface-sunken)' }}
@@ -2474,13 +2513,22 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
         </Modal>
       )}
 
+      {localExport && <Modal title="Save as Power BI" onClose={() => { if (!localExport.busy) setLocalExport(null) }}>
+        <p>Create a new Power BI project folder containing your report and embedded Vilsem renderer. Your existing report and model are preserved.</p>
+        <p>Preview supports a subset of visuals and settings. Unsupported visual types, slicers and drill settings stop export. Complete formatting and interaction parity is still under testing.</p>
+        <p>Open the resulting .pbip in Power BI Desktop. To create a .pbix, use Desktop's Save As.</p>
+        {localExport.error && <p role="alert" style={{ color: 'var(--danger)' }}>{localExport.error}</p>}
+        {localExport.projectPath && <p role="status">Saved Power BI project: <code style={{ overflowWrap: 'anywhere' }}>{localExport.projectPath}</code></p>}
+        <Button onClick={savePowerBIFile} disabled={localExport.busy} loading={localExport.busy}>{localExport.busy ? 'Preparing report...' : localExport.projectPath ? 'Save another copy' : 'Choose destination and save'}</Button>
+      </Modal>}
+
       {/* Deploy-to-Fabric dialog — SPIKE, only mounts when the card opened it. */}
-      {fabricDialog && (
+      {!localReportSource && fabricDialog && (
         <FabricDeployDialog spec={fabricDialog.spec} appTitle={fabricDialog.appTitle} onClose={() => setFabricDialog(null)} />
       )}
 
       {/* Publish-to-PBI dialog (Phase 3) */}
-      {pbiDialog && (() => {
+      {!localReportSource && pbiDialog && (() => {
         const canClose = !pbiDialog.publishing
         const isDone   = pbiDialog.progress >= 100 && !pbiDialog.error
 
@@ -2631,7 +2679,7 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
       })()}
 
       {/* Export dialog */}
-      {exportDialog && (
+      {!localReportSource && exportDialog && (
         <Modal title="Export package" onClose={() => setExportDialog(null)}
           footer={<>
             <Button variant="secondary" onClick={() => setExportDialog(null)}>Cancel</Button>

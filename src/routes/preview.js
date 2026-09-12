@@ -17,6 +17,10 @@ function buildTableDAX(groupBy, measures, filters, limit, orderBy) {
   const measureParts = measures.map(m => `"${m}", [${m}]`);
   const args = [...groupCols, ...filterParts, ...measureParts];
   const summary = `SUMMARIZECOLUMNS(\n  ${args.join(',\n  ')}\n)`;
+  if (!measures.length) {
+    const sort = groupCols.map((col, i) => `${col} ${i === 0 ? order : 'ASC'}`).join(', ');
+    return `EVALUATE\nTOPN(${limit || 100}, ${summary}, ${sort})\nORDER BY ${sort}`;
+  }
   const sortMeasure = measures[0];
   const sortColumn = groupCols[0];
   const lim = limit || 100;
@@ -38,12 +42,12 @@ async function previewRoute(fastify) {
 
   // Query endpoint for web runtime (mirrors IPC query-table)
   fastify.post('/query-table', async (request, reply) => {
-    const { groupBy, measures, filters = {}, limit = 100, orderBy = 'desc' } = request.body || {};
+    const { groupBy, measures = [], filters = {}, limit = 100, orderBy = 'desc' } = request.body || {};
     if (!groupBy || !Array.isArray(groupBy) || !groupBy.length) {
       return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'groupBy required' });
     }
-    if (!measures || !Array.isArray(measures) || !measures.length) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'measures required' });
+    if (!Array.isArray(measures) || measures.some(m => typeof m !== 'string' || !m.trim())) {
+      return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'measures must be an array of names' });
     }
     try {
       const dax = buildTableDAX(groupBy, measures, filters, limit, orderBy);
@@ -74,8 +78,8 @@ async function previewRoute(fastify) {
   // Scalar query for KPI/gauge (mirrors IPC query)
   fastify.post('/query-scalar', async (request, reply) => {
     const { measures, filters = {} } = request.body || {};
-    if (!measures || !Array.isArray(measures) || !measures.length) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'measures required' });
+    if (!Array.isArray(measures) || measures.some(m => typeof m !== 'string' || !m.trim())) {
+      return reply.code(400).send({ error: 'VALIDATION_ERROR', message: 'measures must be an array of names' });
     }
     try {
       const dax = translateToDAX(measures, filters);

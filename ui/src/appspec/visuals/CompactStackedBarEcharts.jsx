@@ -1,3 +1,4 @@
+import { barValueDomain } from '../../primitives/bar-marks/domain'
 import React, { useMemo, useCallback } from 'react'
 import { pal, gridLineColor } from '../shared/palettes.js'
 import { BAR_SCROLL_THRESHOLD } from '../shared/formatters.js'
@@ -71,10 +72,7 @@ export default function CompactStackedBarEcharts({ rows, config, loading, error 
     const primaryVals    = chartRows.map(r => Number(r._val) || 0)
     const hasSecondary   = chartRows.some(r => r._val2 != null)
     const secondaryVals  = hasSecondary ? chartRows.map(r => Number(r._val2) || 0) : null
-    const dataMin = Math.min(0, ...primaryVals, ...(secondaryVals || []))
-    const dataMax = (stacked && hasSecondary && secondaryVals)
-      ? Math.max(...primaryVals.map((v, i) => v + (secondaryVals[i] || 0)), 0)
-      : Math.max(...primaryVals, ...(secondaryVals || [0]))
+    const { dataMin, dataMax } = barValueDomain(primaryVals, secondaryVals, stacked)
 
     const ctx = {
       data: { fields: [], rows: chartRows },
@@ -186,11 +184,12 @@ export default function CompactStackedBarEcharts({ rows, config, loading, error 
     labelPosition, barCategoryGap, stacked, secondaryColor, p.mid, p.start, p.text,
     config.colorScheme, config.limit, config.prefix, config.suffix,
     config.measureName, config.secondaryMeasureName, config.dataLabelColor,
+    config.showLegend, config.legendPosition, config.legendColor, config.legendFontSize,
   ])
 
   const handleClick = useCallback((params) => {
     const cat = params?.name
-    if (config._onBarClick && cat != null) config._onBarClick(String(cat))
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
 
   if (loading && !(rows && rows.length)) return <LoadingShimmer />
@@ -199,7 +198,7 @@ export default function CompactStackedBarEcharts({ rows, config, loading, error 
 
   return (
     <div style={{ height: '100%', overflow: 'hidden', borderRadius: 12 }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

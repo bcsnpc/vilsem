@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path'),{app,BrowserWindow}=require('electron/main')
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'docs/qa/evidence',process.argv.includes('--after')?'legend-control-semantics-after.json':'legend-control-semantics.json'),report={checks:[],events:[],expectedQueryErrors:[]}
+app.setPath('userData',path.join(root,'cache/qa-legend-control'));app.disableHardwareAcceleration();app.commandLine.appendSwitch('disable-features','CalculateNativeWinOcclusion')
+app.whenReady().then(async()=>{const w=new BrowserWindow({width:1500,height:1000,webPreferences:{contextIsolation:true,sandbox:true,backgroundThrottling:false}}),js=c=>w.webContents.executeJavaScript(c),call=(m,...a)=>js(`window.qaFull.${m}(...${JSON.stringify(a)})`);let scenario='startup';w.webContents.on('console-message',e=>{if(e.level==='error'){if(e.message==='[AppSpec qa] error: QA query failure')report.expectedQueryErrors.push({scenario,message:e.message});else report.events.push({scenario,message:e.message})}});const check=(name,pass,evidence)=>report.checks.push({name,pass,evidence});try{
+await w.loadURL('http://127.0.0.1:5173/qa/full-audit.html');await js(`new Promise(r=>{const f=()=>window.qaFullReady?r():requestAnimationFrame(f);f()})`)
+w.webContents.debugger.attach('1.3');const legends=()=>js(`(async()=>{const ec=await import('/node_modules/.vite/deps/echarts_core.js');return [...document.querySelectorAll('#qa-host [_echarts_instance_]')].flatMap(e=>ec.getInstanceByDom(e).getOption().legend||[]).map(l=>({show:l.show,top:l.top,bottom:l.bottom,left:l.left,right:l.right,orient:l.orient}))})()`);
+for(const type of ['pie','donut','stacked_bar','grouped_bar'])for(const host of ['editor','viewer']){
+ scenario=type+'/'+host;await call('mount',type,host,{inspector:true});await call('tab','text');
+ for(const position of ['bottom','right','top']){await js(`(()=>{const p=[...document.querySelectorAll('#qa-inspector span')].filter(e=>e.textContent==='Position').at(-1).parentElement,e=p.querySelector('select');e.value='${position}';e.dispatchEvent(new Event('change',{bubbles:true}))})()`);await call('settle');const ls=await legends();check(scenario+'/'+position,ls.length>0&&ls.every(l=>typeof l[position]==='number'&&l[position]>=0&&l.orient===(position==='right'?'vertical':'horizontal')),ls)}
+ if(process.argv.includes('--after')){const img=await w.webContents.capturePage();fs.writeFileSync(path.join(root,'docs/qa/evidence/screenshots',type+'-'+host+'-legend-top.png'),img.toPNG())}
+ for(const showLegend of [false,true]){await call('change',{showLegend});const ls=await legends();check(scenario+'/show '+showLegend,ls.length>0&&ls.every(l=>l.show===showLegend),ls)}
+}
+report.complete=true;fs.writeFileSync(out,JSON.stringify(report,null,2));app.exit(report.events.length||report.checks.some(c=>!c.pass)?1:0)
+}catch(e){report.fatal=e.stack;fs.writeFileSync(out,JSON.stringify(report,null,2));app.exit(1)}})

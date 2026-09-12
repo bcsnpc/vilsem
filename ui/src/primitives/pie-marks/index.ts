@@ -3,6 +3,7 @@ import { fmtVal } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { PieMarksProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 export const schema: PrimitiveFieldDef[] = [
   // Shape
@@ -15,6 +16,7 @@ export const schema: PrimitiveFieldDef[] = [
   { key: 'showLegend',      label: 'Legend',        type: 'boolean', default: true,                            group: 'Legend' },
   { key: 'legendPosition',  label: 'Position',      type: 'select',  default: 'right',
     options: [
+      { value: 'top', label: 'Above chart' },
       { value: 'right',  label: 'Right of chart' },
       { value: 'bottom', label: 'Below chart' },
     ],                                                                                                          group: 'Legend' },
@@ -34,10 +36,10 @@ export const schema: PrimitiveFieldDef[] = [
 ]
 
 // PieMarks — ECharts pie/donut series with two modes:
-//   1. Single-measure radial progress (when rows.length === 1): renders a 2-segment
+//   1. Scalar donut radial progress (one row without a category): renders a 2-segment
 //      pie acting as a circular progress arc — filled portion = value/maxValue,
 //      remainder rendered with a faint background color. Center text shows the value.
-//   2. Multi-segment donut/pie (rows.length > 1): standard pie with one segment per row.
+//   2. Categorical donut/pie: standard pie with one segment per row, including one row.
 //      Pie when innerRadius=0, donut when innerRadius>0. Optional legend, on-slice
 //      labels (percent/value/name), center text showing the total.
 export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
@@ -72,8 +74,9 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
   const p = pal(colorScheme)
   const palette = (customColors && customColors.length > 0) ? customColors : MULTI_COLORS
 
-  const isRadialProgress = rows.length === 1
+  const isRadialProgress = rows.length === 1 && rows[0]._cat === undefined && innerRadius > 0
   const isBottomLegend   = legendPosition === 'bottom'
+  const isTopLegend = legendPosition === 'top'
 
   // ── Mode 1: Single-measure radial progress ─────────────────────────────────
   if (isRadialProgress) {
@@ -84,8 +87,12 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
     return {
       option: {
         animation: animEnabled,
+        // Legend is merged independently of series in the app host. Clear the
+        // previous category names when field assignment switches to a scalar.
+        legend: { show: false, data: [] },
         series: [{
           type: 'pie',
+          left: 0, right: 0, top: 0, bottom: 0,
           radius: [`${Math.max(innerRadius - 8, 30)}%`, `${Math.min(outerRadius - 25, 50)}%`],
           center: ['50%', '50%'],
           startAngle: 90,
@@ -147,7 +154,17 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
     ? ['50%', '50%']
     : isBottomLegend
       ? ['50%', '40%']                       // chart upper-half, legend bottom
-      : ['35%', '50%']                       // chart left-leaning, legend right
+      : isTopLegend ? ['50%', '55%'] : ['35%', '50%']                       // chart left-leaning, legend right
+
+  // Radius percentages must use the space available beside the legend, not
+  // the full canvas. Keep the existing visual/title center while sizing the
+  // circle inside that rectangle. Explicit zeroes also reset merged options.
+  const chartBounds = {
+    left: 0,
+    right: showLegend && !isBottomLegend && !isTopLegend ? '30%' : 0,
+    top: showLegend && isTopLegend ? '10%' : 0,
+    bottom: showLegend && isBottomLegend ? '20%' : 0,
+  }
 
   const labelFormatter = (params: any): string => {
     if (labelStyle === 'percent') {
@@ -171,7 +188,7 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
         formatter: (params: any) => {
           const pct = total > 0 ? (params.value / total) * 100 : 0
-          return `${params.name}<br/>${fmtVal(params.value, prefix, suffix)} (${pct.toFixed(1)}%)`
+          return `${escapeHtml(params.name)}<br/>${escapeHtml(fmtVal(params.value, prefix, suffix))} (${pct.toFixed(1)}%)`
         },
       },
       // Always emit the legend block with explicit `show` flag — ECharts setOption
@@ -180,8 +197,8 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
       legend: {
         show: showLegend,
         type: 'scroll',
-        orient: isBottomLegend ? 'horizontal' : 'vertical',
-        ...(isBottomLegend ? { bottom: 4, left: 'center' } : { right: 8, top: 'middle' }),
+        orient: isBottomLegend || isTopLegend ? 'horizontal' : 'vertical',
+        ...(isBottomLegend ? { bottom: 4, left: 'center' } : isTopLegend ? { top: 4, left: 'center' } : { right: 8, top: 'middle' }),
         data: legendData,
         textStyle: { color: legendColor || t.echartsLegendText, fontSize: legendFontSize || 11 },
         itemWidth: 10,
@@ -193,7 +210,8 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
       series: [{
         type: 'pie',
         radius: [`${innerRadius}%`, `${outerRadius}%`],
-        center,
+        ...chartBounds,
+        center: ['50%', '50%'],
         startAngle: 90,
         padAngle: paddingAngle,
         data,

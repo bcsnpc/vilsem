@@ -25,7 +25,7 @@ export default function CompactTableEcharts({ rows, config, loading, error }) {
   const hasMultiDim = Array.isArray(first?._cats) && first._cats.length > 0
   const nDims = hasMultiDim ? first._cats.length : 1
 
-  const hasMultiVal = Array.isArray(first?._vals) && first._vals.length > 0
+  const hasMultiVal = Array.isArray(first?._vals)
   const nVals = hasMultiVal
     ? first._vals.length
     : safeRows.some(r => r._val3 != null) ? 3

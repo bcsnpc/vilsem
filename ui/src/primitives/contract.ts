@@ -31,7 +31,7 @@ export interface PrimitiveContext {
   data: { fields: FieldMeta[]; rows: Record<string, unknown>[] }
   encoding: { x?: FieldRef; y?: FieldRef | FieldRef[]; color?: FieldRef }
   theme: ThemeTokens
-  selection: { selectedCat: string | null }
+  selection: { selectedCat: string | string[] | null }
   dimensions: { width: number; height: number }
 }
 

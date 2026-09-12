@@ -10,7 +10,7 @@ export default function CompactTreemapEcharts({ rows, config, loading, error }) 
   // Tile click → category (node name), for click-to-drill / cross-filter.
   const handleClick = useCallback((params) => {
     const cat = params?.name
-    if (config._onBarClick && cat != null) config._onBarClick(String(cat))
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
   }, [config._onBarClick])
 
   if (loading) return <LoadingShimmer />
@@ -53,7 +53,7 @@ export default function CompactTreemapEcharts({ rows, config, loading, error }) 
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

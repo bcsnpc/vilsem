@@ -123,7 +123,7 @@ function buildExistingReportParts({ originalParts, pages, ctx }) {
     if (isPagesMetaPath(p.path))  return false
     if (semanticaPagesPartList.dropPaths.has(p.path)) return false
     return true
-  }).map((p) => ({ path: p.path, content: p.content }))
+  }).map((p) => ({ ...p }))
 
   return [
     ...passThroughs,

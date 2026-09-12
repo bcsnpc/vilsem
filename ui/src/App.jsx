@@ -137,6 +137,21 @@ export default function App() {
       ? (() => { try { return JSON.parse(raw) } catch { return null } })()
       : raw
 
+    if (spec?._localSource) {
+      const result = await window.semantica.connectLocalPowerBIModel({ path: spec._localSource.projectPath || spec._localSource.modelPath })
+      if (!result?.success) { window.alert(result?.error || 'Could not reconnect to local Power BI model.'); return }
+      setInfo(result.connection)
+      setKey(k => k + 1)
+      setActiveProject({ id: project.id, spec, name: project.name || spec.title || 'Untitled' })
+      setPage('project')
+      return
+    }
+
+    if (connectionInfo?.kind === 'local-pbip' && project.datasetId && !project.datasetId.startsWith('local:')) {
+      window.alert('Reconnect to the Fabric workspace before opening this Fabric report. The local model will not be used for it.')
+      return
+    }
+
     // Auto-connect to this project's dataset if not already connected.
     // Saved projects have a datasetId; we need the backend connected to it
     // for AppSpecRenderer to query data and render visual values.
@@ -207,7 +222,7 @@ export default function App() {
     return <Shell {...shellCommon} showRail={false}><Connect step={0} />{globalSettings}{cmdk}</Shell>
   }
   if (page === 'setup') {
-    return <Shell {...shellCommon} showRail={false}><Setup onComplete={handleSetupComplete} />{globalSettings}{cmdk}</Shell>
+    return <Shell {...shellCommon} showRail={false}><Setup onComplete={handleSetupComplete} onLocalProject={() => setPage('home')} />{globalSettings}{cmdk}</Shell>
   }
   if (page === 'aiSetup') {
     return <Shell {...shellCommon} showRail={false}><AiSetup onComplete={() => setPage('home')} />{globalSettings}{cmdk}</Shell>

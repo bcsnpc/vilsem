@@ -107,3 +107,13 @@ describe('GaugeMarks schema', () => {
     })
   })
 })
+
+
+it('explicit value typography preserves the arc and unclamped formatted value', () => {
+  const base = (GaugeMarks({ colorScheme: 'teal', max: 100, prefix: '$', suffix: ' USD' }, makeCtx(250)).option as any).series[0]
+  const styled = (GaugeMarks({ colorScheme: 'teal', max: 100, prefix: '$', suffix: ' USD', valueColor: '#d946ef', valueFontSize: 40, valueFontWeight: 500, valueFontFamily: 'Sora' }, makeCtx(250)).option as any).series[0]
+  expect(styled.detail).toMatchObject({ color: '#d946ef', fontSize: 40, fontWeight: 500, fontFamily: 'Sora' })
+  expect(styled.detail.formatter()).toBe('$250 USD')
+  expect(styled.data).toEqual(base.data)
+  expect(styled.progress).toEqual(base.progress)
+})

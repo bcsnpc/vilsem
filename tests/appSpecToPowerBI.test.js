@@ -46,18 +46,21 @@ describe('mapAppSpecToPages', () => {
     expect(pages[0].id).toBe('page_1')
   })
 
-  it('section-based layout: KPIs fill width equally, charts fill full width', () => {
+  it('preserves authored grid positions and spans in exported pixels', () => {
     const pages = mapAppSpecToPages(sampleSpec)
     const kpi = pages[0].visuals.find((v) => v.id === 'kpi_1')
     const bar = pages[0].visuals.find((v) => v.id === 'bar_1')
     // KPI: distributed equally across 1240px content width (1 KPI → full width)
     expect(kpi).toBeTruthy()
-    expect(kpi.width).toBeGreaterThan(400)
+    expect(kpi.width).toBe(304)
+    expect(kpi.x).toBe(20)
+    expect(kpi.y).toBe(20)
     // Bar: full width (proportional to its share of the row)
     expect(bar).toBeTruthy()
-    expect(bar.width).toBeGreaterThan(1000)
+    expect(bar.width).toBe(1240)
+    expect(bar.x).toBe(20)
     // Bar is below KPIs
-    expect(bar.y).toBeGreaterThan(kpi.y)
+    expect(bar.y).toBe(196)
     // h=5 → 5*80 + 4*8 = 432
     expect(bar.height).toBe(432)
   })
@@ -85,8 +88,8 @@ describe('mapAppSpecToPages', () => {
         data: { measures: ['M'] },
       }],
     })
-    // KPI placed at top (section layout puts KPIs first)
-    expect(pages[0].visuals[0].y).toBe(20) // chromePad / 2
+    // Missing layout defaults retain the authored y=1 row.
+    expect(pages[0].visuals[0].y).toBe(108) // chromePad/2 + rowHeight + gap
   })
 
   it('exposes page width/height on the returned page', () => {

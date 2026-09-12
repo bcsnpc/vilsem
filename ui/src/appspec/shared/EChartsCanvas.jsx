@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react'
+import { applyAxisTextConfig } from './axisTextConfig.js'
+import React, { useEffect, useRef, useMemo } from 'react'
 import * as echarts from 'echarts/core'
 import { RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart } from 'echarts/charts'
 // Playground Spike: MarkArea (qualitative bands — the bullet needs it), MarkPoint
@@ -10,11 +11,12 @@ import { RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart,
 import { PictorialBarChart, CandlestickChart, BoxplotChart, SankeyChart, GraphChart, ParallelChart, ThemeRiverChart, SunburstChart, TreeChart, FunnelChart, EffectScatterChart } from 'echarts/charts'
 import { TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+import { LabelLayout } from 'echarts/features'
 echarts.use([
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart,
   PictorialBarChart, CandlestickChart, BoxplotChart, SankeyChart, GraphChart, ParallelChart, ThemeRiverChart, SunburstChart, TreeChart, FunnelChart, EffectScatterChart,
   TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent,
-  CanvasRenderer,
+  CanvasRenderer, LabelLayout,
 ])
 
 // Dumb ECharts wrapper. Stays ECharts-shaped — forwards raw `params` from
@@ -27,7 +29,8 @@ echarts.use([
 //   resize   → ResizeObserver → rAF-coalesced chart.resize() (skips zero-dim)
 //   click    → chart.on('click', params => onClick(params))
 //   unmount  → chart.dispose() + observer disconnect
-export default function EChartsCanvas({ option, onClick, onChartReady, style }) {
+export default function EChartsCanvas({ option: sourceOption, config, onClick, onChartReady, style }) {
+  const option = useMemo(() => applyAxisTextConfig(sourceOption, config), [sourceOption, config?.axisTickColor, config?.axisFontSize, config?.axisFontFamily, config?.xAxisLabelFamily, config?.xAxisLabelWidth, config?.xAxisLabelOverflow, config?.xAxisLabelHideOverlap, config?.yAxisLabelFamily, config?.yAxisLabelWidth, config?.yAxisLabelOverflow, config?.yAxisLabelHideOverlap, config?.xAxisLabelColor, config?.xAxisLabelSize, config?.xAxisLabelWeight, config?.xAxisLabelRotation, config?.xAxisLabelSpacing, config?.yAxisLabelColor, config?.yAxisLabelSize, config?.yAxisLabelWeight, config?.yAxisLabelRotation, config?.yAxisLabelSpacing])
   const rootRef = useRef(null)
   const chartRef = useRef(null)
 

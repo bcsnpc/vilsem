@@ -91,6 +91,7 @@ export default function VisualPlayground({
   const [trialLog, setTrialLog] = useState([])
   const [showLog, setShowLog] = useState(false)
   const [editorCollapsed, setEditorCollapsed] = useState(false)
+  const savingRef = useRef(false)
   const preRef = useRef(null)
   const taRef = useRef(null)
   const aiInputRef = useRef(null)
@@ -194,6 +195,13 @@ export default function VisualPlayground({
 
   // ── preview query (debounced on binding change; reuses existing query layer) ──
   const data = useMemo(() => template ? bindingsToData(template, bindings) : { measures: [] }, [template, bindings])
+  const hasRequiredBindings = Object.entries(template?.slots || {}).every(([name, slot]) => {
+    if (slot.kind === 'measure') {
+      const minimum = typeof slot.count === 'number' ? slot.count : slot.count?.min ?? 1
+      return (bindings[name] || []).filter(Boolean).length >= minimum
+    }
+    return !!bindings[name]?.table && !!bindings[name]?.column
+  })
   const dataKey = useMemo(() => JSON.stringify(data), [data])
   useEffect(() => {
     if (!template || !data.measures.length || !window.semantica) { setRows([]); return }
@@ -232,6 +240,8 @@ export default function VisualPlayground({
     return instantiateVisual({ template, rows, params: paramValues, theme })
   }, [template, rows, tokens, paramValues])
 
+  const invalidCalendarRange = [option?.calendar].flat().filter(Boolean).some(calendar => !calendar.range || (Array.isArray(calendar.range) && calendar.range.length < 2))
+
   const syncScroll = useCallback(() => {
     if (preRef.current && taRef.current) {
       preRef.current.scrollTop = taRef.current.scrollTop
@@ -242,17 +252,20 @@ export default function VisualPlayground({
   const loadExample = (tpl) => { setText(JSON.stringify(tpl, null, 2)); setSaveState(null) }
 
   const doSave = async () => {
-    if (!template || validation.errors.length) return
+    if (!template || validation.errors.length || savingRef.current || !onSaveTemplate) return
+    savingRef.current = true
     setSaveState({ saving: true })
     try {
-      await onSaveTemplate?.(template)
+      await onSaveTemplate(template)
       setSaveState({ saved: true, name: template.meta?.name })
     } catch (e) {
       setSaveState({ error: e.message || String(e) })
+    } finally {
+      savingRef.current = false
     }
   }
 
-  const canSave = !!template && !jsonError && validation.errors.length === 0
+  const canSave = !!onSaveTemplate && !saveState?.saving && !!template && !jsonError && validation.errors.length === 0
 
   // shared bits of chrome
   const panel = { background: 'var(--v-surface)', border: '1px solid var(--v-border)', borderRadius: 'var(--v-r, 3px)' }
@@ -261,6 +274,15 @@ export default function VisualPlayground({
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'var(--v-bg-0)', color: 'var(--v-text)', display: 'flex', flexDirection: 'column', WebkitAppRegion: 'no-drag', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <style>{`
+        .vpg-body > * { min-width: 0; }
+        .vpg-header, .vpg-ai-controls { flex-wrap: wrap; }
+        .vpg-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .vpg-btn:focus-visible, .vpg-sel:focus-visible { outline: 2px solid var(--v-accent); outline-offset: 2px; }
+        @media (max-width: 1000px) {
+          .vpg-body { grid-template-columns: minmax(0, 1fr) !important; overflow-y: auto; grid-auto-rows: minmax(360px, auto); }
+          .vpg-body > * { min-height: 360px; }
+          .vpg-body > [title="Show the template JSON"] { min-height: 80px; }
+        }
         .vpg-editor-wrap { position: relative; flex: 1; min-height: 0; overflow: hidden; border-radius: 3px; }
         .vpg-editor-wrap pre, .vpg-editor-wrap textarea {
           margin: 0; padding: 12px 14px; border: 0; box-sizing: border-box;
@@ -281,7 +303,7 @@ export default function VisualPlayground({
       `}</style>
 
       {/* header */}
-      <div style={{ height: 46, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--v-border)', background: 'var(--v-surface)' }}>
+      <div className="vpg-header" style={{ minHeight: 46, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px', borderBottom: '1px solid var(--v-border)', background: 'var(--v-surface)' }}>
         <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em' }}>Visual Playground</span>
         <span style={{ fontSize: 10, color: 'var(--v-amber)', border: '1px solid var(--v-border)', borderRadius: 3, padding: '1px 6px', letterSpacing: '0.06em' }}>SPIKE</span>
         <div style={{ flex: 1 }} />
@@ -293,7 +315,7 @@ export default function VisualPlayground({
         <div style={{ width: 1, height: 22, background: 'var(--v-border)' }} />
         <button className="vpg-btn" onClick={doSave} disabled={!canSave}
           style={{ background: canSave ? 'var(--v-accent)' : 'var(--v-surface-2)', color: canSave ? 'var(--v-on-accent)' : 'var(--v-text-faint)', borderColor: canSave ? 'var(--v-accent)' : 'var(--v-border)', fontWeight: 600, cursor: canSave ? 'pointer' : 'not-allowed' }}>
-          Save to Library
+          {saveState?.saving ? 'Saving...' : 'Save to Library'}
         </button>
         <button className="vpg-btn" onClick={onClose}>✕ Close</button>
       </div>
@@ -301,7 +323,7 @@ export default function VisualPlayground({
       {/* AI prompt pane — canvas-style: controls row + prompt textarea */}
       <div style={{ flexShrink: 0, padding: '10px 16px 12px', borderBottom: '1px solid var(--v-border)', background: 'var(--v-bg-1)' }}>
         {/* controls row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div className="vpg-ai-controls" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: aiMode === 'refine' ? 'var(--v-amber)' : 'var(--v-accent)', border: `1px solid ${aiMode === 'refine' ? 'var(--v-amber)' : 'var(--v-accent-border)'}`, borderRadius: 3, padding: '3px 9px', whiteSpace: 'nowrap' }}>
             {aiMode === 'refine' ? '✎ Refine' : '✨ Create'}
           </span>
@@ -369,7 +391,7 @@ export default function VisualPlayground({
       )}
 
       {/* body */}
-      <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: editorCollapsed ? '38px 1.55fr 0.9fr' : '1.15fr 1.2fr 0.85fr', gap: 12, padding: 12 }}>
+      <div className="vpg-body" style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: editorCollapsed ? '38px 1.55fr 0.9fr' : '1.15fr 1.2fr 0.85fr', gap: 12, padding: 12 }}>
 
         {/* LEFT — template JSON editor (collapsible) */}
         {editorCollapsed ? (
@@ -394,7 +416,7 @@ export default function VisualPlayground({
           </div>
           <div className="vpg-editor-wrap">
             <pre ref={preRef} aria-hidden dangerouslySetInnerHTML={{ __html: highlightJson(text) + '\n' }} />
-            <textarea ref={taRef} value={text} spellCheck={false} onScroll={syncScroll}
+            <textarea aria-label="Visual template JSON" ref={taRef} value={text} spellCheck={false} onScroll={syncScroll}
               onChange={e => { setText(e.target.value); setSaveState(null) }} />
           </div>
           {/* validation output */}
@@ -422,8 +444,14 @@ export default function VisualPlayground({
                 <Centered>Bind at least one measure on the right →</Centered>
               ) : queryState.error ? (
                 <Centered tone="err">Query error: {queryState.error}</Centered>
+              ) : !hasRequiredBindings ? (
+                <Centered>Bind the required fields to preview this visual.</Centered>
+              ) : Object.keys(template?.slots || {}).length > 0 && !rows.length ? (
+                <Centered>No data to preview. Check the field bindings and filters.</Centered>
+              ) : invalidCalendarRange ? (
+                <Centered>No date values to preview. Bind a date field with valid dates.</Centered>
               ) : option ? (
-                <EChartsCanvas option={option} />
+                <EChartsCanvas key={template?.meta?.id} option={option} />
               ) : (
                 <Centered>{jsonError ? 'Fix the template JSON to preview' : 'No renderable option'}</Centered>
               )}
@@ -434,7 +462,7 @@ export default function VisualPlayground({
               </div>
             )}
             {saveState && (
-              <div style={{ marginTop: 8, fontSize: 11, color: saveState.error ? '#E06C6C' : saveState.saved ? '#6FBF8F' : 'var(--v-text-muted)' }}>
+              <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 11, color: saveState.error ? '#E06C6C' : saveState.saved ? '#6FBF8F' : 'var(--v-text-muted)' }}>
                 {saveState.saving ? 'Saving…' : saveState.saved ? `✓ Saved “${saveState.name}” to Library — drag it onto the canvas.` : saveState.error ? `Save failed: ${saveState.error}` : ''}
               </div>
             )}

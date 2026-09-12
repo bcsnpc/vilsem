@@ -1,3 +1,4 @@
+import { barValueDomain } from './primitives/bar-marks/domain'
 // compositions.ts — pure-TS composition layer for the .pbiviz renderer.
 //
 // Mirrors per-visual composition logic from ui/src/appspec/visuals/Compact*Echarts.jsx
@@ -96,10 +97,7 @@ function composeBarLike(rows: Row[], config: any, theme: any, variant: 'bar' | '
   const hasSecondary  = chartRows.some(r => r._val2 != null)
   const isMulti       = isStacked || isGrouped || hasSecondary
   const secondaryVals = hasSecondary ? chartRows.map(r => Number(r._val2) || 0) : null
-  const dataMin = Math.min(0, ...primaryVals, ...(secondaryVals || []))
-  const dataMax = (stacked && hasSecondary && secondaryVals)
-    ? Math.max(...primaryVals.map((v, i) => v + (secondaryVals[i] || 0)), 0)
-    : Math.max(...primaryVals, ...(secondaryVals || [0]))
+  const { dataMin, dataMax } = barValueDomain(primaryVals, secondaryVals, stacked)
 
   const refLines: any[] = []
   if (variant === 'bar') {
@@ -114,10 +112,11 @@ function composeBarLike(rows: Row[], config: any, theme: any, variant: 'bar' | '
   }
 
   const ctx = makeCtx(chartRows, theme)
-  const margin = isGrouped
-    ? { left: 4, right: showDataLabels ? 60 : 16,
-        top: (showDataLabels && labelPosition === 'top' && !isHorizontal) ? 28 : 4, bottom: 4 }
-    : { left: 4, right: showDataLabels ? 60 : 16, top: 4, bottom: 4 }
+  // Outside top labels need clearance for every vertical bar variant, not
+  // only grouped bars. Keep the data domain unchanged.
+  const margin = { left: 4, right: showDataLabels ? 60 : 16,
+    top: (showDataLabels && labelPosition === 'top' && !isHorizontal) ? 28 : 4, bottom: 4 }
+
 
   const barProps: any = {
     orientation, colorScheme: config.colorScheme,
@@ -243,7 +242,7 @@ function composeDonut(rows: Row[], config: any, theme: any, isPie: boolean): any
       maxLegendItems: cfg.maxLegendItems ?? 6,
       showLabels: cfg.showLabels ?? false, labelStyle: cfg.labelStyle ?? 'percent',
       showCenterText: cfg.showCenterText ?? true, centerColor: cfg.centerColor || undefined,
-      centerFontSize: cfg.centerFontSize ?? (rows.length === 1 ? (cfg.valueFontSize || 32) : 22),
+      centerFontSize: cfg.centerFontSize ?? (rows.length === 1 && rows[0]._cat === undefined ? (cfg.valueFontSize || 32) : 22),
       maxValue: cfg.maxValue ?? 100,
       animEnabled: cfg.animationEnabled !== false,
       prefix: cfg.prefix, suffix: cfg.suffix,
@@ -347,6 +346,7 @@ function composeSlope(rows: Row[], config: any, theme: any): any {
       lineStyle: { width: lineWidth, color, opacity: 0.85 },
       itemStyle: { color },
       emphasis: { focus: 'series' },
+      labelLayout: { hideOverlap: true },
       endLabel: showLegend
         ? { show: true, formatter: () => String(r._cat).slice(0, 18), color: theme?.textMuted, fontSize: 9, fontWeight: 600, distance: 4 }
         : { show: false },
@@ -357,6 +357,7 @@ function composeSlope(rows: Row[], config: any, theme: any): any {
   })
 
   return {
+    animation: config.animations !== false && config.animationEnabled !== false,
     grid: { left: 24, right: showLegend ? 96 : 32, top: 26, bottom: 22 },
     xAxis: {
       type: 'category', data: [leftLabel, rightLabel], boundaryGap: false,
@@ -404,6 +405,7 @@ function composeLollipop(rows: Row[], config: any, theme: any): any {
   const scatterData = chartRows.map((r, i) => (isH ? [vals[i], categories[i]] : [categories[i], vals[i]]))
 
   return {
+    animation: config.animations !== false && config.animationEnabled !== false,
     grid: { left: 8, right: isH ? 44 : 12, top: 14, bottom: isH ? 8 : 28, containLabel: true },
     xAxis: isH ? valAxis : catAxis,
     yAxis: isH ? catAxis : valAxis,

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { pal, gridLineColor } from '../shared/palettes.js'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
@@ -19,6 +19,10 @@ export const schema = [
 ]
 
 export default function CompactLollipopEcharts({ rows, config, loading, error }) {
+  const handleClick = useCallback(params => {
+    const cat = params?.value?.[config.orientation === 'vertical' ? 0 : 1]
+    if (config._onBarClick && cat != null) config._onBarClick(String(cat), { ctrlKey: !!params?.event?.event?.ctrlKey, metaKey: !!params?.event?.event?.metaKey })
+  }, [config._onBarClick, config.orientation])
   const t = config._T || getThemeTokens('dark')
   const p = pal(config.colorScheme)
 
@@ -76,6 +80,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
     })
 
     return {
+      animation: config.animations !== false && config.animationEnabled !== false,
       grid: { left: 8, right: isH ? 44 : 12, top: 14, bottom: isH ? 8 : 28, containLabel: true },
       xAxis: isH ? valAxis : catAxis,
       yAxis: isH ? catAxis : valAxis,
@@ -109,6 +114,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
     rows, t, p.start, p.text,
     config.orientation, config.dotSize, config.lineWidth, config.dataLabels, config.gridLines,
     config.limit, config.prefix, config.suffix, config.colorScheme,
+    config.animations, config.animationEnabled,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify(config.categoryColors),
   ])
@@ -119,7 +125,7 @@ export default function CompactLollipopEcharts({ rows, config, loading, error })
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas option={applyTooltipConfig(option, config)} />
+      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

@@ -2448,7 +2448,7 @@ function sanitizeAppSpec(spec) {
     const affects = s.affects != null ? s.affects : 'all'
 
     // Repair type: unknown value → dropdown
-    const validTypes = ['dropdown', 'buttons', 'date_range']
+    const validTypes = ['dropdown', 'buttons', 'date_range', 'multi_select']
     const type = validTypes.includes(s.type) ? s.type : 'dropdown'
 
     return { ...s, dimension: dim, affects, type, position: pos }
@@ -2599,24 +2599,26 @@ function collectMeasureNamesFromValue(value, acc = []) {
 function validatePatchOperations(currentSpec, patches, measureNames) {
   const measureSet = new Set(measureNames || [])
   const valid = []
-  for (const patch of patches || []) {
+  let workingSpec = JSON.parse(JSON.stringify(currentSpec))
+  for (const inputPatch of patches || []) {
+    const patch = inputPatch && { ...inputPatch }
     if (!patch || !['add', 'replace', 'remove'].includes(patch.op) || typeof patch.path !== 'string' || !patch.path.startsWith('/')) continue
 
     const parts = patch.path.split('/').filter(Boolean)
     const parentParts = parts.slice(0, -1)
     const lastPart = parts[parts.length - 1]
-    const parent = parentParts.length ? getValueAtPointer(currentSpec, parentParts) : currentSpec
-    if (parent == null) continue
+    const parent = parentParts.length ? getValueAtPointer(workingSpec, parentParts) : workingSpec
+    if (parent == null || typeof parent !== 'object') continue
 
     if (patch.op === 'remove') {
-      if (getValueAtPointer(currentSpec, parts) === undefined) continue
+      if (getValueAtPointer(workingSpec, parts) === undefined) continue
     }
     // For replace: allow setting new config properties (upsert behavior)
     // Only reject if the PARENT doesn't exist (i.e. the visual/config object itself)
     if (patch.op === 'replace') {
-      if (parent == null) continue
+      if (parent == null || typeof parent !== 'object') continue
       // If property doesn't exist yet, treat as add (upsert)
-      if (getValueAtPointer(currentSpec, parts) === undefined) {
+      if (getValueAtPointer(workingSpec, parts) === undefined) {
         patch.op = 'add'
       }
     }
@@ -2626,7 +2628,7 @@ function validatePatchOperations(currentSpec, patches, measureNames) {
       if (!Number.isInteger(index) || index < 0 || index > parent.length) continue
     }
 
-    const referencedMeasures = patch.path.includes('/data/measures')
+    const referencedMeasures = patch.op === 'remove' ? [] : patch.path.includes('/data/measures')
       ? (Array.isArray(patch.value) ? patch.value : [patch.value])
       : collectMeasureNamesFromValue(patch.value, [])
     if (referencedMeasures.some(name => typeof name !== 'string' || !measureSet.has(name))) {
@@ -2634,6 +2636,7 @@ function validatePatchOperations(currentSpec, patches, measureNames) {
     }
 
     valid.push(patch)
+    workingSpec = applyJsonPatch(workingSpec, [patch])
   }
   return valid
 }

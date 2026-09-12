@@ -1,8 +1,13 @@
 # vilsem
 
+Engineering audit: see the [verified fixes and remaining work](docs/qa/fix-status.md), [audit report](docs/qa/full-audit-report.md),
+[current architecture](docs/architecture.md), and [tested regression status](docs/qa/regression-status.md).
+The reproduced project-save overwrite and shared visual defects have verified local fixes. Remaining failures and acceptance gaps are documented; this is not a production-readiness certification.
+For reproducible development, isolated Electron checks, and build commands, see the [QA runbook](docs/qa/test-strategy.md).
+
 **A presentation layer for Power BI and Microsoft Fabric semantic models.**
 
-Build a dashboard once, render it in four places: the vilsem desktop app, a standalone web app, a Power BI report, or a Fabric app. Your semantic model stays the single source of truth — vilsem never copies your data.
+Build a dashboard once, render it in four places: the vilsem desktop app, a standalone web app, a Power BI report, or a Fabric app. Your semantic model remains the source for queries; vilsem caches query results locally and stores dashboard specifications.
 
 ![vilsem demo](VideoProject1-ezgif.com-video-to-gif-converter.gif)
 
@@ -18,7 +23,7 @@ vilsem treats the semantic model as an API. Dashboards are defined separately, i
 
 ## What it does
 
-- **Connects to an existing Power BI / Fabric semantic model** — no import, no duplicate storage, no separate refresh schedule
+- **Connects to an existing Power BI / Fabric semantic model** — queries the model without rebuilding it; local query caching is part of the desktop architecture
 - **Authors dashboards two ways** — a visual editor, or by describing what you want in plain English
 - **Compiles to an App Spec** — a portable JSON definition of layout, visuals, queries, and theme
 - **Renders that spec on four surfaces** from a single definition
@@ -138,3 +143,9 @@ Contributions are welcome.
 
 MIT License — see [LICENSE](LICENSE). Third-party attributions (including Apache ECharts, whose license requires it) are in [NOTICE](NOTICE).
 Copyright © 2026 Chiranjeevi Bhogireddy.
+
+
+### Local Power BI report export (preview)
+After updating, restart Electron so the new file-save IPC is available. In a Vilsem report, choose **Export / Publish -> Save as Power BI -> Choose destination and save**. Vilsem creates a separate timestamped folder with `Report.pbip`, enhanced PBIR definitions, and the bundled renderer, and displays the saved path. Open `Report.pbip` in Power BI Desktop; Desktop Save As can create PBIX. The toolbar **Save** still saves the Vilsem project.
+
+Local-model projects offer Power BI file output only; Fabric-backed projects retain cloud/web targets too. Preview export supports a subset of visuals/settings and rejects unsupported visual types, slicers and drill settings. Full formatting/interaction parity is still being tested. See [phase status](docs/qa/phase-status.md) and [local Power BI engineering notes](docs/engineering/local-power-bi-projects.md).

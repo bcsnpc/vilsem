@@ -31,13 +31,15 @@ export function getSourceSelectedCat(visual, globalFilters, filterSources) {
 // Merges only those global filter keys whose slicer affects this visual.
 export function buildAppliedFiltersForVisual(spec, visual, globalFilters, filterSources) {
   const applied = {}
+  const slicerKeys = new Set()
 
   // 1. Slicer-sourced filters — only applied to visuals the slicer affects
   for (const s of (spec.slicers || [])) {
-    if (!visualMatchesSlicer(s, visual.id)) continue
     const dim = s.dimension
     if (!dim?.table || !dim?.column) continue
     const key = `${dim.table}[${dim.column}]`
+    slicerKeys.add(key)
+    if (!visualMatchesSlicer(s, visual.id) || filterSources?.[key]) continue
     if (globalFilters[key] != null) applied[key] = globalFilters[key]
   }
 
@@ -48,6 +50,7 @@ export function buildAppliedFiltersForVisual(spec, visual, globalFilters, filter
     for (const key of Object.keys(globalFilters)) {
       if (applied[key] !== undefined) continue  // slicer already handled it
       const sourceId = filterSources[key]
+      if (!sourceId && slicerKeys.has(key)) continue // excluded slicer must not re-enter as a global filter
       if (sourceId && sourceId === visual.id) continue  // skip self-filter
       if (globalFilters[key] != null) applied[key] = globalFilters[key]
     }

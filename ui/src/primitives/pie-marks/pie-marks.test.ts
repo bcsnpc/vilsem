@@ -148,8 +148,8 @@ describe('PieMarks — multi-segment donut/pie mode', () => {
 })
 
 describe('PieMarks — single-measure radial progress mode', () => {
-  it('triggers when rows.length === 1', () => {
-    const f = PieMarks({ colorScheme: 'teal' }, makeCtx([{ _cat: '', _val: 50 }]))
+  it('triggers for a scalar measure without a category', () => {
+    const f = PieMarks({ colorScheme: 'teal' }, makeCtx([{ _val: 50 }]))
     const series = (f.option as any).series[0]
     expect(series.silent).toBe(true)
     expect(series.data).toHaveLength(2)         // [filled, remainder]
@@ -183,10 +183,9 @@ describe('PieMarks — single-measure radial progress mode', () => {
     expect((f.option as any).title.show).toBe(false)
   })
 
-  it('no legend in radial progress mode (single-measure mode never emits legend)', () => {
+  it('hides and clears the categorical legend in radial progress mode', () => {
     const f = PieMarks({ colorScheme: 'teal', showLegend: true }, makeCtx([{ _val: 42 }]))
-    // Radial progress mode skips the multi-segment branch entirely, so legend block isn't emitted.
-    expect((f.option as any).legend).toBeUndefined()
+    expect((f.option as any).legend).toEqual({ show: false, data: [] })
   })
 })
 
@@ -207,11 +206,11 @@ describe('PieMarks — schema', () => {
     })
   })
 
-  it('legendPosition options match the two documented positions', () => {
+  it('legendPosition options match all three inspector positions', () => {
     const field = schema.find(f => f.key === 'legendPosition')
     expect(field?.options).toBeDefined()
     const values = (field!.options as any[]).map(o => o.value)
-    expect(values).toEqual(['right', 'bottom'])
+    expect(values).toEqual(['top', 'right', 'bottom'])
   })
 
   it('labelStyle options match the three documented styles', () => {
@@ -224,4 +223,14 @@ describe('PieMarks — schema', () => {
     const f = PieMarks({ colorScheme: 'teal' }, makeCtx([]))
     expect((f.option as any).series[0].data).toHaveLength(0)
   })
+})
+
+
+it('top legend uses horizontal layout without changing slice values', () => {
+  const top = PieMarks({ colorScheme: 'teal', legendPosition: 'top' }, makeCtx(MULTI_ROWS)).option as any
+  const right = PieMarks({ colorScheme: 'teal', legendPosition: 'right' }, makeCtx(MULTI_ROWS)).option as any
+  expect(top.legend).toMatchObject({ top: 4, left: 'center', orient: 'horizontal' })
+  expect(top.series[0]).toMatchObject({center: ['50%', '50%'], top: '10%', bottom: 0})
+  expect(top.title).toMatchObject({left: '50%', top: '55%'})
+  expect(top.series[0].data).toEqual(right.series[0].data)
 })

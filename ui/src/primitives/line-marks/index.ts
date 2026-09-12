@@ -3,6 +3,7 @@ import { fmtAxisNumber, fmtVal } from '../../appspec/shared/formatters.js'
 import type { Primitive } from '../contract'
 import type { PrimitiveFieldDef } from '../schema'
 import type { LineMarksProps } from './types'
+import { escapeHtml } from '../escapeHtml'
 
 export const schema: PrimitiveFieldDef[] = [
   // Shape
@@ -235,8 +236,8 @@ export const LineMarks: Primitive<LineMarksProps> = (props, ctx) => {
         formatter: (params: any) => {
           const arr = Array.isArray(params) ? params : [params]
           const cat = arr[0]?.name || ''
-          const lines = arr.map((s) => `${s.marker} ${s.seriesName}: ${fmtVal(s.value, prefix, suffix)}`).join('<br/>')
-          return cat ? `${cat}<br/>${lines}` : lines
+          const lines = arr.map((s) => `${s.marker || ''} ${escapeHtml(s.seriesName)}: ${escapeHtml(fmtVal(s.value, prefix, suffix))}`).join('<br/>')
+          return cat ? `${escapeHtml(cat)}<br/>${lines}` : lines
         },
       },
       series,

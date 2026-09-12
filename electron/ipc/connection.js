@@ -675,8 +675,11 @@ function register() {
 }
 
 function getWorkspaceConfig() {
+  const local = require('../../src/powerbi/localRuntime').current();
+  if (local) return local.info;
   return {
     workspaceId: process.env.FABRIC_WORKSPACE_ID || '',
+    workspaceName: getActiveWorkspace()?.workspaceName || '',
     datasetId:   process.env.FABRIC_DATASET_ID   || '',
     datasetName: process.env.FABRIC_DATASET_NAME  || '',
   }
