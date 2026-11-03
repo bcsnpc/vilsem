@@ -57,4 +57,6 @@ describe('standalone core connections',()=>{
   finally{if(before===undefined)delete process.env.AUTH_MODE;else process.env.AUTH_MODE=before}
  })
 
+ it('exposes the same named connection API to ESM and CommonJS',async()=>{const esm=await import('./index.js');for(const name of ['connect','query','schema','createAuth','createConnector','bridge'])expect(typeof esm[name]).toBe('function')})
+
 })

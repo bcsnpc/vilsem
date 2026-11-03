@@ -54,7 +54,11 @@
       "default": "./dist/compositions.js"
     },
     "./spec/resolve": "./src/spec/resolve.js",
-    "./connect": "./src/connect/index.cjs",
+    "./connect": {
+      "types": "./src/connect/index.d.cts",
+      "import": "./src/connect/index.js",
+      "require": "./src/connect/index.cjs"
+    },
     "./connect/auth": "./src/connect/auth.cjs",
     "./connect/metadata": "./src/connect/metadata.cjs",
     "./connect/localRuntime": "./src/connect/localRuntime.cjs",
