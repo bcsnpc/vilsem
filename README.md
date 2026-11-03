@@ -155,3 +155,8 @@ Local-model projects offer Power BI file output only; Fabric-backed projects ret
 Direct existing-report insertion has been removed. Use the visual export workflow and import the exported custom visual into the destination Power BI report. Export compatibility and interaction coverage remain target-specific; consult docs/qa/target-coverage-by-visual.md.
 
 Focused visual and deployment regressions can be run with `npm run qa:native` after starting `npm run ui:dev`. To select suites, use `npm run qa:native -- race-controls waffle-audit fabric-dialog`. These use isolated synthetic data; see [QA strategy](docs/qa/test-strategy.md) and [current regression status](docs/qa/regression-status.md) for coverage and open gaps.
+
+
+## Custom visual authoring with MCP
+
+The shared `@vilsem/core` workspace powers [vilsem-mcp](https://github.com/bcsnpc/vilsem-mcp), a local stdio server for previewing and adding Vilsem custom visuals to existing PBIR report pages. It complements native Power BI report/model authoring tools. See its README for installation, supported compositions, model-connection setup and verification limits.
