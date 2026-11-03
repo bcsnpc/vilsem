@@ -35,4 +35,13 @@ describe('headless Microsoft OAuth protocol',()=>{
   const auth=createAuth({env:{},cacheDir:'nonexistent-cache-for-test',http:{post:async()=>({data:{device_code:'d',expires_in:0}})},onDeviceCode:()=>{}})
   await expect(auth.getToken()).rejects.toMatchObject({code:'AUTH_FAILED'})
  })
+ it('refreshes injected Electron PKCE tokens with the original public client even after switching from an SP workspace',async()=>{
+  const post=vi.fn(async()=>({data:{access_token:'new-pkce',refresh_token:'new-refresh',expires_in:3600}}))
+  const auth=createAuth({env:{AUTH_MODE:'interactive',FABRIC_TENANT_ID:'old-sp-tenant',FABRIC_CLIENT_ID:'old-sp-client',FABRIC_CLIENT_SECRET:'old-secret'},http:{post}})
+  auth.setInteractiveTokens('expired','pkce-refresh',-1)
+  expect(await auth.getToken()).toBe('new-pkce')
+  expect(post.mock.calls[0][0]).toBe('https://login.microsoftonline.com/common/oauth2/v2.0/token')
+  const body=new URLSearchParams(post.mock.calls[0][1]);expect(body.get('client_id')).toBe('ea0616ba-638b-4df5-95b9-636659ae5121');expect(body.has('client_secret')).toBe(false)
+ })
+
 })

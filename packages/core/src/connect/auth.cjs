@@ -8,14 +8,15 @@ function createAuth(options={}) {
  const sleep=options.sleep || (ms=>new Promise(r=>setTimeout(r,ms)));
  const now=options.now || Date.now;
  const resource=options.resource || RESOURCE;
- const tenant=env.FABRIC_TENANT_ID || 'common';
+ const interactive=String(env.AUTH_MODE || '').toLowerCase()==='interactive';
+ const tenant=interactive?'common':(env.FABRIC_TENANT_ID || 'common');
  if(!/^[a-zA-Z0-9.-]+$/.test(tenant))throw Error('Invalid FABRIC_TENANT_ID');
- const client=env.FABRIC_CLIENT_ID || CLIENT_ID;
+ const client=interactive?CLIENT_ID:(env.FABRIC_CLIENT_ID || CLIENT_ID);
  const base=`https://login.microsoftonline.com/${tenant}/oauth2/v2.0`;
  const cacheDir=options.cacheDir || path.join(os.homedir(),'.vilsem','auth');
  const cacheFile=path.join(cacheDir,crypto.createHash('sha256').update(`${tenant}:${client}:${resource}`).digest('hex')+'.json');
  let state=null,pending=null;
- const mode=()=>env.AUTH_MODE || (env.FABRIC_CLIENT_SECRET?'service_principal':'device_code');
+ const mode=()=>String(env.AUTH_MODE || (env.FABRIC_CLIENT_SECRET?'service_principal':'device_code')).toLowerCase();
  function read(){try{const stat=fs.lstatSync(cacheFile);if(!stat.isFile()||stat.isSymbolicLink())return null;return JSON.parse(fs.readFileSync(cacheFile,'utf8'))}catch{return null}}
  function save(){
   if(!state?.refreshToken)return;
@@ -29,7 +30,7 @@ function createAuth(options={}) {
  async function post(endpoint,params){return (await http.post(base+'/'+endpoint,new URLSearchParams(params).toString(),{headers:{'Content-Type':'application/x-www-form-urlencoded'},timeout:30000})).data}
  async function acquire(force){
   if(!force && state?.accessToken && now()<state.expiresAt-300000)return state.accessToken;
-  if(env.FABRIC_ACCESS_TOKEN && !force)return env.FABRIC_ACCESS_TOKEN;
+  if(env.FABRIC_ACCESS_TOKEN && !force && !interactive)return env.FABRIC_ACCESS_TOKEN;
   if(mode()==='service_principal'){
    if(!env.FABRIC_TENANT_ID||!env.FABRIC_CLIENT_ID||!env.FABRIC_CLIENT_SECRET)throw Error('AUTH_FAILED: service_principal requires FABRIC_TENANT_ID, FABRIC_CLIENT_ID, FABRIC_CLIENT_SECRET');
    return accept(await post('token',{grant_type:'client_credentials',client_id:client,client_secret:env.FABRIC_CLIENT_SECRET,scope:resource+'/.default'}));
