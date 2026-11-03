@@ -148,11 +148,13 @@ describe('shapeSlots — Next-D: two dimensions + matrix + >3 measures', () => {
     const { shaped } = shapeSlots(wide, { d: { kind: 'dimension', count: 1 }, m: { kind: 'measure', count: { min: 1, max: 4 } } })
     expect(shaped.m.series[3]).toEqual([40])
   })
-  it('validateTemplate now allows 2 dimensions, still rejects 3', () => {
+  it('validateTemplate allows up to six dimensions and rejects seven', () => {
     const two = { meta: { id: 'h', name: 'H' }, slots: { x: { kind: 'dimension', count: 1 }, y: { kind: 'dimension', count: 1 }, v: { kind: 'measure', count: 1 } }, template: { series: [{ data: '$slot.v.matrix' }] } }
     expect(validateTemplate(two).errors).toEqual([])
     const three = { meta: { id: 'h', name: 'H' }, slots: { x: { kind: 'dimension', count: 1 }, y: { kind: 'time', count: 1 }, z: { kind: 'dimension', count: 1 }, v: { kind: 'measure', count: 1 } }, template: { series: [] } }
-    expect(validateTemplate(three).errors.some(e => /at most two dimension/.test(e))).toBe(true)
+    expect(validateTemplate(three).errors).toEqual([])
+    const seven={...three,slots:{...three.slots,...Object.fromEntries(['a','b','c','d'].map(n=>[n,{kind:'dimension'}]))}}
+    expect(validateTemplate(seven).errors.some(e=>/at most six dimension/.test(e))).toBe(true)
   })
 })
 

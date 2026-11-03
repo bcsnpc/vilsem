@@ -17,7 +17,7 @@ export function resolveVisualSpec(spec, rows = []) {
       for (const [key, item] of Object.entries(value)) {
         if (key === 'formatterTemplate' && typeof item === 'string') {
           for (const match of item.matchAll(/\{([^{}]+)\}/g)) {
-            if (!/^((?:value|c)(?::(?:thousands|percent))?|name|seriesName|a|b|d|percent)$/.test(match[1])) errors.push(`${path}.${key}: unknown formatter {${match[1]}}`)
+            if (!/^((?:value|c)(?::(?:thousands|percent|date))?|name|seriesName|a|b|d|percent|label)$/.test(match[1])) errors.push(`${path}.${key}: unknown formatter {${match[1]}}`)
           }
         }
         check(item, `${path}.${key}`)

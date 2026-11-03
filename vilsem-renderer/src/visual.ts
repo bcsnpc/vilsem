@@ -32,7 +32,7 @@ import DataView = powerbi.DataView
 // regression — this commit is purely additive scaffolding.
 import * as echarts from "echarts/core"
 import {
-  RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart,
+  RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
 } from "echarts/charts"
 import {
   TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
@@ -42,7 +42,7 @@ import { CanvasRenderer } from "echarts/renderers"
 import { LabelLayout } from "echarts/features"
 
 echarts.use([
-  RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart,
+  RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
   TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
   MarkLineComponent, GraphicComponent, TitleComponent, CanvasRenderer, LabelLayout,
 ])
@@ -169,6 +169,7 @@ export class Visual implements IVisual {
   private currentSelectionIds: powerbi.visuals.ISelectionId[] = []
   private highlightIndexes: Set<number> | null = null
   private keyboardIndex = 0
+  private templateRowSources: number[] | null = null
   private radarHoveredIndex = -1
   // Click-to-drill state (interaction-plays).
   private drillExpanded: string | null = null // expand-in-place: which parent is open
@@ -548,12 +549,13 @@ export class Visual implements IVisual {
     let rows = drillBound ? this.buildBaseRowsFromDataView(dv) : this.buildRowsFromDataView(dv)
 
     rows = prepareVisualRows(rows, visualType, config, (spec as any).template)
+    this.templateRowSources = (spec as any).template ? rows.map((r: any, i: number)=>r._sourceIndex ?? i) : null
     this.primitiveVisualType = visualType
     this.primitiveCategoryNames = (dv?.categorical?.categories?.[0]?.values || []).map(v => String(this.normalizeCat(v) ?? ''))
     this.primitiveRowNames = rows.map(r => String(r._cat ?? ''))
     this.radarHoveredIndex = -1
 
-    if (['waffle', 'bullet', 'progress', 'stat_card', 'metric_tile', 'funnel', 'waterfall', 'heatmap', 'ranked_list', 'chord', 'sankey', 'sunburst', 'narrative', 'insight', 'shape', 'divider'].includes(visualType)) {
+    if (!(spec as any).template && ['waffle', 'bullet', 'progress', 'stat_card', 'metric_tile', 'funnel', 'waterfall', 'heatmap', 'ranked_list', 'chord', 'sankey', 'sunburst', 'narrative', 'insight', 'shape', 'divider'].includes(visualType)) {
       this.domVisual = mountPowerBIDomVisual(chartRoot, visualType, rows, {
         // AppSpecRenderer owns chart titles and removes them from component config.
         ...config, title: undefined, label: undefined, _T: getThemeTokens(themeMode),
@@ -589,7 +591,7 @@ export class Visual implements IVisual {
     // - textStyle.fontFamily: same stack as the web canvas (Inter primary).
     //   ECharts' default sans-serif looks visibly different, esp. for axis
     //   labels and tooltip text.
-    option.backgroundColor = "transparent"
+    option.backgroundColor = (spec as any).template ? (option.backgroundColor ?? "transparent") : "transparent"
     option.textStyle = {
       fontFamily: "Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
       ...(option.textStyle || {}),
@@ -707,7 +709,8 @@ export class Visual implements IVisual {
         if (value !== null && value !== undefined) this.highlightIndexes!.add(index)
       }))
       this.chart.on("contextmenu", (params: any) => {
-        const index = this.primitiveCategoryIndex(params)
+        const indexes = this.primitiveCategoryIndexes(params)
+        const index = indexes[0]
         const event = params?.event?.event
         event?.preventDefault?.()
         if (selectionIds[index]) this.selectionManager.showContextMenu(selectionIds[index], { x: event?.clientX || 0, y: event?.clientY || 0 })
@@ -717,22 +720,24 @@ export class Visual implements IVisual {
         this.chart.setOption({ tooltip: { show: false } }, false)
         this.lastOption = { ...this.lastOption, tooltip: { ...this.lastOption?.tooltip, show: false } }
         const showTooltip = (params: any) => {
-          const index = this.primitiveCategoryIndex(params)
+          const indexes = this.primitiveCategoryIndexes(params)
+          const index = indexes[0]
           if (!selectionIds[index]) return
           const event = params?.event?.event
-          const dataItems = (cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: String(column.values[index] ?? "(Blank)") }))
-          tooltip.show({ coordinates: [event?.clientX || 0, event?.clientY || 0], isTouchEvent: false, identities: [selectionIds[index]], dataItems })
+          const dataItems = this.templateRowSources !== null ? [{displayName: String(params?.data?.label ?? params?.name ?? params?.seriesName ?? "Value"), value: String(params?.value ?? params?.data?.value ?? "(Blank)")}] : (cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: String(column.values[index] ?? "(Blank)") }))
+          tooltip.show({ coordinates: [event?.clientX || 0, event?.clientY || 0], isTouchEvent: false, identities: indexes.map(i=>selectionIds[i]).filter(Boolean), dataItems })
         }
         this.chart.on("mouseover", showTooltip)
         this.chart.on("mousemove", showTooltip)
         this.chart.on("mouseout", () => tooltip.hide({ isTouchEvent: false, immediately: true }))
       }
       this.chart.on("click", (params: any) => {
-        const idx = this.primitiveCategoryIndex(params)
-        if (idx < 0 || idx >= selectionIds.length) return
+        const indexes = this.primitiveCategoryIndexes(params)
+        const idx = indexes[0]
+        if (idx == null || idx < 0 || idx >= selectionIds.length) return
         const ev = params?.event?.event as MouseEvent | undefined
         const multi = !!(ev && (ev.ctrlKey || ev.metaKey))
-        this.selectionManager.select(selectionIds[idx], multi).then((selected) => {
+        this.selectionManager.select(indexes.length > 1 ? indexes.map(i=>selectionIds[i]) : selectionIds[idx], multi).then((selected) => {
           this.applyChartSelection(selectionIds, selected as powerbi.visuals.ISelectionId[])
         })
       })
@@ -757,6 +762,15 @@ export class Visual implements IVisual {
 
   // ECharts indexes marks, whereas SelectionIds index the original DataView.
   // Sorting, treemap's virtual root and slope endpoints make these different.
+  private primitiveCategoryIndexes(params: any): number[] {
+    if(this.templateRowSources !== null) {
+      const indexes = Array.isArray(params?.data?.rowIndexes) ? params.data.rowIndexes : [params?.dataIndex]
+      return [...new Set<number>(indexes.filter((i: any)=>Number.isInteger(i)&&i>=0).map((i: number)=>this.templateRowSources![i]).filter((i: number)=>i!=null))]
+    }
+    const index=this.primitiveCategoryIndex(params)
+    return index<0?[]:[index]
+  }
+
   private primitiveCategoryIndex(params: any): number {
     let name: unknown
     if (this.primitiveVisualType === 'slope') name = params?.seriesName
@@ -826,7 +840,7 @@ export class Visual implements IVisual {
       }
       s.data = s.data.map((d: any, i: number) => {
         const categoryIndex = this.primitiveCategoryIndex({ dataIndex: i, data: d, name: d?.name, value: Array.isArray(d) ? d : d?.value, seriesName: s.name })
-        const isSelected = selectedSet.has(categoryIndex)
+        const isSelected = this.templateRowSources !== null ? this.primitiveCategoryIndexes({dataIndex:i,data:d}).some(index=>selectedSet.has(index)) : selectedSet.has(categoryIndex)
         const opacity = isSelected ? 1 : 0.25
         // Data items can be raw values (number/string) or objects with
         // {value, itemStyle, ...}. Normalize to the object form so we can
@@ -1282,8 +1296,11 @@ export class Visual implements IVisual {
     const n = Math.max(cats.length, primary.length)
     const rows: Array<{ _cat?: unknown; _val?: unknown; _val2?: unknown; _val3?: unknown }> = []
     for (let i = 0; i < n; i++) {
-      const row: { _cat?: unknown; _val?: unknown; _val2?: unknown; _val3?: unknown } = {
+      const row: any = {
         _cat: this.normalizeCat(cats[i]),
+        _sourceIndex: i,
+        _cats: (cat?.categories || []).map(column => this.normalizeCat(column.values[i])),
+        _cat2: this.normalizeCat(cat?.categories?.[1]?.values?.[i]),
         _val: primary[i],
       }
       if (secondary.length > i && secondary[i] != null) row._val2 = secondary[i]

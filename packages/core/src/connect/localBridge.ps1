@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference='Stop'
+$ErrorActionPreference='Stop'
 [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)
 $inputData=[Console]::In.ReadToEnd() | ConvertFrom-Json
 try {
@@ -40,7 +40,7 @@ try {
  } elseif($inputData.action -eq 'query') {
   $query=$conn.CreateCommand();$query.CommandText=[string]$inputData.dax;$query.CommandTimeout=30
   $reader=$query.ExecuteReader();$rows=@();$limit=if($inputData.maxRows){[int]$inputData.maxRows}else{100000}
-  try { while($rows.Count -lt $limit -and $reader.Read()){ $row=@{};for($i=0;$i -lt $reader.FieldCount;$i++){ $row[$reader.GetName($i)]=if($reader.IsDBNull($i)){$null}else{$reader.GetValue($i)} };$rows+=,$row } } finally {$reader.Close();$query.Dispose()}
+  try { while($rows.Count -lt $limit -and $reader.Read()){ $row=@{};for($i=0;$i -lt $reader.FieldCount;$i++){ $row[$reader.GetName($i)]=if($reader.IsDBNull($i)){$null}else{ $cell=$reader.GetValue($i);if($cell -is [DateTime]){$cell.ToString('yyyy-MM-ddTHH:mm:ss.fffffff',[Globalization.CultureInfo]::InvariantCulture)}else{$cell} } };$rows+=,$row } } finally {$reader.Close();$query.Dispose()}
   @{rows=$rows} | ConvertTo-Json -Depth 12 -Compress
  } else {throw 'Unknown local operation.'}
 } catch { @{error=$_.Exception.Message} | ConvertTo-Json -Compress;exit 1 } finally {if($conn){$conn.Dispose()}}

@@ -39,9 +39,9 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
   } })
   const ids = categories.map(name => ({ name, equals: (other: any) => other.name === name }))
   let restoreSelection: Function | undefined
-  const selection = { registerOnSelectCallback: vi.fn(fn => { restoreSelection = fn }), showContextMenu: vi.fn(), select: vi.fn(async (id: any) => [id]), getSelectionIds: () => [], clear: vi.fn(async () => []) }
+  const selection = { registerOnSelectCallback: vi.fn(fn => { restoreSelection = fn }), showContextMenu: vi.fn(), select: vi.fn(async (id: any) => Array.isArray(id) ? id : [id]), getSelectionIds: () => [], clear: vi.fn(async () => []) }
   const tooltip = { enabled: () => true, show: vi.fn(), hide: vi.fn(), move: vi.fn() }
-  const host = { tooltipService: tooltip, createSelectionManager: () => selection, createSelectionIdBuilder: () => ({ withCategory: (_: any, i: number) => ({ createSelectionId: () => ids[i] }) }) }
+  const host = { tooltipService: tooltip, createSelectionManager: () => selection, createSelectionIdBuilder: () => { let index=0;const builder={withCategory: (_: any,i:number)=>{index=i;return builder},createSelectionId:()=>ids[index]};return builder } }
   const visual = new exports.Visual({ element: node(), host })
   const dv = { categorical: { categories: [{ values: categories }], values: [{ source: { roles: { content: true } }, values: [12436, 13929, 57809] }, { source: { roles: { secondary: true } }, values: [269, 429, 1130] }] } }
   visual.renderPrimitiveChart(dv, { type, canvasTheme: 'dark', config: { cardStyle: 'plain', animationEnabled: false, ...configOverrides } })
@@ -349,4 +349,40 @@ describe('renderer template and keyboard contracts', () => {
     await Promise.resolve()
     expect(h.selection.clear).toHaveBeenCalledOnce()
   })
+})
+
+
+describe('declarative transformed visual identity routing',()=>{
+ it('preserves every category field through the renderer row boundary',()=>{
+  const h=harness()
+  const rows=h.visual.buildRowsFromDataView({categorical:{categories:[{values:['A']},{values:['B']},{values:['C']}],values:[{values:[7]}]}})
+  expect(rows[0]).toMatchObject({_cat:'A',_cat2:'B',_cats:['A','B','C'],_sourceIndex:0,_val:7})
+ })
+ it('selects all contributing source rows for aggregated marks after sorting, including Ctrl multi-select',async()=>{
+  const h=harness()
+  const template={meta:{id:'links-test'},slots:{a:{kind:'dimension'},b:{kind:'dimension'},v:{kind:'measure'}},transforms:[{links:{source:'a',target:'b',value:'v'},as:'flow'}],template:{series:[{type:'sankey',data:'$calc.flow.nodes',links:'$calc.flow.links'}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A','A','B']},{values:['X','Y','X']}],values:[{values:[2,10,5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const option=h.chart.setOption.mock.calls.at(-1)[0]
+  const node=option.series[0].data.find(d=>d.label==='A')
+  expect(node.rowIndexes).toEqual([0,2])
+  await h.events.click({data:node,dataIndex:0,event:{event:{ctrlKey:true}}})
+  expect(h.selection.select).toHaveBeenLastCalledWith([h.ids[1],h.ids[0]],true)
+  h.events.mouseover({data:node,dataIndex:0,value:12})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].identities).toEqual([h.ids[1],h.ids[0]])
+ })
+ it('supports explicit latest-period source identities instead of selecting the first row',async()=>{
+  const h=harness()
+  h.visual.templateRowSources=[2,0,1]
+  expect(h.visual.primitiveCategoryIndexes({dataIndex:0,data:{rowIndexes:[2]}})).toEqual([1])
+ })
+})
+
+
+it('preserves a declarative background on a white host page while legacy charts stay transparent',()=>{
+ const h=harness()
+ const template={meta:{id:'background-test'},slots:{v:{kind:'measure'}},template:{backgroundColor:'$theme.background',xAxis:{type:'category'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.v.values'}]}}
+ h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A']}],values:[{values:[7]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+ expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).not.toBe('transparent')
+ h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A']}],values:[{values:[7]}]}},{type:'bar',config:{cardStyle:'plain'}})
+ expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).toBe('transparent')
 })

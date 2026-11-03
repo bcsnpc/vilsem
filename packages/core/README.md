@@ -14,9 +14,9 @@ Composition resolution supports the ECharts composition types. DOM-adapter types
 
 Structured `buildVisualDax` bindings qualify and escape model identifiers. `prepareVisualRows` shares report ordering with previews, preserving time-slot chronology and value ordering for ranked compositions.
 
-## Standalone model connections (0.2.1)
+## Standalone model connections
 
-Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.2.1/vilsem-core-0.2.1.tgz`.
+Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.3.0/vilsem-core-0.3.0.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -31,3 +31,7 @@ Fabric uses `{kind:'fabric',workspaceId,datasetId}`. Credentials come from `FABR
 Desktop discovery uses CIM to identify `msmdsrv.exe` with a Desktop parent and reads its `-s` workspace `msmdsrv.port.txt`. No PBIP command-line argument is required. Multiple engines require an explicit port. ADOMD is loaded from the installed Desktop distribution. Metadata and DAX queries do not modify the model.
 
 `createMicrosoftLogin()` owns Microsoft authorization URL generation, S256 PKCE, state validation and authorization-code exchange. It exposes `authorizationUrl`, `matchesRedirect(url)` and `completeRedirect(url)`; the app owns its browser surface, and core has no Electron/UI dependency. Duplicate navigation callbacks exchange only once. `createAuth({resource})` supports other Microsoft resources such as Azure Storage while keeping cache scopes separate. Core auth failures preserve the application's AUTH_FAILED classification. Browser completion/cancel/failure handoff tests cover both first login and reauthentication.
+
+## Expressive template format 2
+
+Core 0.3 adds six category slots, ordered sum/lag/share windows, UTC dates, bounded samples, weighted links, hierarchies and facets with bounded repeat expansion. Renderer 4.14 registers native Sankey, sunburst and graph charts and preserves category bindings and transformed selection identities. See the MCP [spec-format reference](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/spec-format.md) and [expressiveness report](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/expressiveness-gaps.md). Templates never execute caller code; custom renderItem is rejected.

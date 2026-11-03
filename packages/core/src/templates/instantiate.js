@@ -21,6 +21,7 @@
 //   {value} {value:thousands} {value:percent} {name} {seriesName}
 
 import { pal, MULTI_COLORS } from '../shared/palettes.js'
+import { derive, validateTransforms, BLOCKED } from './transforms.js'
 
 // ── numeric formatting (deterministic, no Intl dependency) ──────────────────
 function fmtThousands(v) {
@@ -89,6 +90,7 @@ export function shapeValues(primary, cats) {
     dateRange: computeDateRange(c),
     count: 1,
     last, first, sum, avg,
+    lastIndex: p.findLastIndex(v=>typeof v==='number' && Number.isFinite(v)),
     min: nums.length ? Math.min(...nums) : null,
     max: nums.length ? Math.max(...nums) : null,
     delta, deltaPct,
@@ -134,7 +136,7 @@ export function evalExpr(expr, scope = {}) {
         i++; const args = []; skipWs()
         if (peek() !== ')') { args.push(parseExpr()); skipWs(); while (peek() === ',') { i++; args.push(parseExpr()); skipWs() } }
         if (peek() === ')') i++
-        const fn = CALC_FUNCS[id]
+        const fn = Object.hasOwn(CALC_FUNCS,id) ? CALC_FUNCS[id] : null
         return fn ? (Number(fn(...args)) || 0) : 0
       }
       const v = scope[id]
@@ -158,13 +160,16 @@ export function applyTransforms(transforms, shaped, cats, params) {
   const lens = Object.values(shaped).map(s => (Array.isArray(s?.values) ? s.values.length : 0))
   const rowCount = Math.max(0, ...(cats ? [cats.length] : []), ...lens)
   for (const t of transforms) {
-    if (!t || t.as == null || t.calculate == null) { warnings.push('transform needs { calculate, as }'); continue }
+    if (!t || t.as == null) { warnings.push('transform needs { calculate, as }'); continue }
+    if (t.calculate == null) { calc[t.as] = derive(t, shaped, calc, cats, shapeValues); continue }
     const out = []
-    for (let r = 0; r < rowCount; r++) {
+    const refs = [...String(t.calculate).matchAll(/[A-Za-z_]\w*/g)].map(m=>m[0]).filter(name=>Object.hasOwn(shaped,name)||Object.hasOwn(calc,name))
+    const length = refs.length ? Math.max(0,...refs.map(name=>(calc[name]||shaped[name]).values?.length||0)) : rowCount
+    for (let r = 0; r < length; r++) {
       const scope = { ...(params || {}) }
       for (const [name, s] of Object.entries(shaped)) if (Array.isArray(s?.values)) scope[name] = Number(s.values[r]) || 0
       for (const [name, s] of Object.entries(calc)) scope[name] = Number(s.values[r]) || 0 // chaining
-      out.push(evalExpr(t.calculate, scope))
+      out.push(refs.some(name=>(calc[name]||shaped[name]).values?.[r]==null) ? null : evalExpr(t.calculate, scope))
     }
     calc[String(t.as)] = shapeValues(out, cats)
   }
@@ -179,7 +184,7 @@ export function applyTransforms(transforms, shaped, cats, params) {
 export function shapeSlots(rows, slots) {
   const warnings = []
   const list = Array.isArray(rows) ? rows : []
-  // Next-D: up to 2 dimensions. The 1st dim/time slot → _cat, the 2nd → _cat2
+  // Up to six dimension/time slots consume _cats in declaration order.
   // (both provided by normaliseTableRows when dimensions[] is bound). Measures
   // read _vals[] first (multi-measure path), falling back to _val/_val2/_val3.
   const cats1 = list.map(r => (r?._cat != null ? String(r._cat) : ''))
@@ -215,8 +220,8 @@ export function shapeSlots(rows, slots) {
       shaped[name] = { ...shapeValues(primary, cats1), series, count: series.length, matrix }
     } else if (kind === 'dimension' || kind === 'time') {
       const which = dimCursor++
-      const perRow = which === 0 ? cats1 : cats2
-      const uniq = which === 0 ? uniq1 : uniq2
+      const perRow = list.map(r => String(r?._cats?.[which] ?? (which===0?r?._cat:which===1?r?._cat2:r?.['_cat'+(which+1)]) ?? ''))
+      const uniq = [...new Set(perRow)]
       // .categories is the UNIQUE axis list (identical to per-row for single-dim
       // groupBy); .values keeps the per-row labels for pairing.
       shaped[name] = { categories: uniq, values: perRow, series: [perRow], pairs: [], count: 1, dateRange: computeDateRange(uniq) }
@@ -255,6 +260,7 @@ function getPath(obj, keys) {
   let node = obj
   for (const k of keys) {
     if (node == null) return undefined
+    if (BLOCKED.has(k) || !Object.prototype.hasOwnProperty.call(node,k)) return undefined
     node = node[k] // string numeric keys index arrays fine ('0' → arr[0])
   }
   return node
@@ -275,6 +281,7 @@ export function resolveToken(token, ctx) {
   }
   if (root === 'param') return getPath(ctx.params, path.slice(1))
   if (root === 'theme') return getPath(ctx.theme, path.slice(1))
+  if (root === 'item') return getPath(ctx.item, path.slice(1))
   throw new Error(`unknown token root "$${root}" in "${token}" (expected slot|calc|param|theme)`)
 }
 
@@ -288,11 +295,14 @@ export function makeFormatter(tpl) {
       // by instinct: {c}=value, {b}=name/category, {a}=seriesName, {d}=percent (pie share).
       const key = rawKey === 'c' ? 'value' : rawKey === 'b' ? 'name' : rawKey === 'a' ? 'seriesName'
         : (rawKey === 'd' || rawKey === 'percent') ? 'percent' : rawKey
+      if (key === 'label') return p?.data?.label ?? p?.name ?? ''
       if (key === 'name') return p?.name ?? ''
       if (key === 'seriesName') return p?.seriesName ?? ''
       if (key === 'percent') return p?.percent != null ? String(p.percent) : '' // pie slice share-of-total
       if (key === 'value') {
-        const v = Array.isArray(p?.value) ? p.value[p.value.length - 1] : p?.value
+        const raw = (p && typeof p === 'object') ? p.value : p
+        const v = Array.isArray(raw) ? raw[raw.length - 1] : raw
+        if (fmt === 'date') { const ms=typeof v==='number'?v:Date.parse(String(v??''));return Number.isFinite(ms)?new Date(ms).toISOString().slice(0,10):'' }
         if (fmt === 'thousands') return fmtThousands(v)
         if (fmt === 'percent') return fmtPercent(v)
         return v == null ? '' : String(v)
@@ -319,8 +329,17 @@ export function deepResolve(node, ctx, warnings) {
   }
   if (Array.isArray(node)) return node.map(n => deepResolve(n, ctx, warnings))
   if (node && typeof node === 'object') {
+    if (Object.prototype.hasOwnProperty.call(node,'repeat')) {
+      const source=deepResolve(node.repeat,ctx,warnings)
+      if(!Array.isArray(source))throw Error('repeat must resolve to an array')
+      if(source.length>10000)throw Error('repeat limit is 10000 items')
+      const depth=(ctx.repeatDepth||0)+1;if(depth>4)throw Error('repeat nesting limit is 4')
+      ctx.budget ||= {remaining:20000}
+      return source.map(item=>{if(--ctx.budget.remaining<0)throw Error('repeat expansion limit is 20000 objects');return deepResolve(node.template,{...ctx,item,repeatDepth:depth},warnings)})
+    }
     const out = {}
     for (const [k, v] of Object.entries(node)) {
+      if (BLOCKED.has(k)) throw Error(`unsafe object key ${k}`)
       if (k === 'formatterTemplate' && typeof v === 'string') {
         out.formatter = makeFormatter(v)
         continue
@@ -359,6 +378,9 @@ export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteO
 // { template, rows, params, theme } → { option, warnings }
 export function instantiateVisual({ template, rows = [], params = {}, theme } = {}) {
   const warnings = []
+  const errors=validateTemplate(template).errors
+  if(errors.length)throw Error(errors.join('\n'))
+  if(!Array.isArray(rows)||rows.length>10000)throw Error('Template data limit is 10000 rows')
   const { shaped, warnings: slotWarns } = shapeSlots(rows, template?.slots || {})
   warnings.push(...slotWarns)
   const paramValues = resolveParams(template?.params || [], params)
@@ -367,6 +389,14 @@ export function instantiateVisual({ template, rows = [], params = {}, theme } = 
   warnings.push(...tWarns)
   const ctx = { slots: shaped, calc, params: paramValues, theme: theme || {} }
   const option = deepResolve(template?.template || {}, ctx, warnings)
+  // An absent reference measure is not a zero-valued line. ECharts cannot lay
+  // out null annotation coordinates, even when the underlying series is empty.
+  for(const series of Array.isArray(option.series)?option.series:[]) {
+    if(Array.isArray(series.markLine?.data))series.markLine={...series.markLine,data:series.markLine.data.filter(item=>{
+      const points=Array.isArray(item)?item:[item]
+      return points.every(point=>point && !['xAxis','yAxis'].some(key=>Object.hasOwn(point,key)&&point[key]==null) && (!Array.isArray(point.coord)||point.coord.every(v=>v!=null)))
+    })}
+  }
   return { option, warnings }
 }
 
@@ -403,6 +433,7 @@ export function validateTemplate(template) {
   const errors = []
   const warnings = []
   if (!template || typeof template !== 'object') { errors.push('template must be a JSON object'); return { errors, warnings } }
+  if(template.meta?.formatVersion!=null && ![1,2].includes(template.meta.formatVersion))errors.push(`Unsupported template formatVersion ${template.meta.formatVersion}`)
   if (!template.meta || !template.meta.id) errors.push('meta.id is required')
   if (!template.meta || !template.meta.name) warnings.push('meta.name is recommended')
 
@@ -420,8 +451,8 @@ export function validateTemplate(template) {
   if (measureSlots.length === 0) {
     errors.push('at least one measure slot is required — measure-less visuals are unsupported in this build')
   }
-  if (dimSlots.length > 2) {
-    errors.push(`at most two dimension/time slots are supported (found ${dimSlots.length}); the 1st maps to $slot.<d>.categories, the 2nd to a second axis / heatmap y`)
+  if (dimSlots.length > 6) {
+    errors.push(`at most six dimension/time slots are supported (found ${dimSlots.length}); the 1st maps to $slot.<d>.categories, the 2nd to a second axis / heatmap y`)
   }
   const totalMeasures = measureSlots.reduce((sum, s) => sum + slotCount(s?.count), 0)
   if (totalMeasures > 3) {
@@ -432,23 +463,44 @@ export function validateTemplate(template) {
     errors.push('template.template (the ECharts skeleton) is required')
   }
 
-  // transforms (optional): each { calculate: <expression string>, as: <name> }.
-  const transformNames = new Set()
-  if (template.transforms != null) {
-    if (!Array.isArray(template.transforms)) {
-      errors.push('template.transforms must be an array of { calculate, as }')
-    } else {
-      for (const t of template.transforms) {
-        if (!t || typeof t.calculate !== 'string' || !t.as) errors.push('each transform needs a string "calculate" and an "as" name')
-        else transformNames.add(String(t.as))
-      }
+  const checked = validateTransforms(Array.isArray(template.transforms)?template.transforms:[], slots, template.params)
+  errors.push(...checked.errors)
+  if(template.transforms!=null&&!Array.isArray(template.transforms))errors.push('template.transforms must be an array')
+  const transformNames = checked.names
+  const checkSafety=(node,depth=0)=>{
+    if(depth>64){errors.push('template nesting limit is 64');return}
+    if(Array.isArray(node))return node.forEach(v=>checkSafety(v,depth+1))
+    if(!node||typeof node!=='object')return
+    for(const [key,value] of Object.entries(node)) {
+      if(BLOCKED.has(key))errors.push(`unsafe object key ${key}`)
+      if(typeof value==='function')errors.push('executable functions are not supported')
+      if(key==='renderItem')errors.push('custom series requires imperative renderItem; executable callbacks are not supported by the declarative format')
+      checkSafety(value,depth+1)
     }
   }
+  checkSafety(template)
+  if(errors.length)return {errors,warnings}
+  const repeatShapes={panels:['name','index','categories','data','left','top','width','height'],pieData:['name','value'],nodes:['id','name','category','label','value','rowIndexes'],links:['source','target','value','rowIndexes'],children:['id','name','value','rowIndexes','children']}
+  const checkItems=(node,fields=null)=>{
+    if(typeof node==='string' && node.startsWith('$item.')) {
+      const property=node.split('.')[1]
+      if(!fields || !fields.includes(property))errors.push(`token "${node}" references an unknown repeat item field "${property}"`)
+    } else if(Array.isArray(node))node.forEach(item=>checkItems(item,fields))
+    else if(node && typeof node==='object') {
+      if(Object.hasOwn(node,'repeat')) {
+        checkItems(node.repeat,fields)
+        const property=typeof node.repeat==='string'?node.repeat.split('.').at(-1):''
+        const shape=Object.hasOwn(repeatShapes,property)?repeatShapes[property]:null
+        checkItems(node.template,shape||[])
+      } else Object.values(node).forEach(item=>checkItems(item,fields))
+    }
+  }
+  checkItems(template.template)
 
   for (const tok of collectTokens(template.template || {})) {
     // A token must be a plain dotted path. Reject expressions / ternaries /
     // arithmetic (the engine never evaluates them — they'd resolve to undefined).
-    if (!/^\$(slot|calc|param|theme)(\.[A-Za-z0-9_]+)+$/.test(tok)) {
+    if (!/^\$(slot|calc|param|theme|item)(\.[A-Za-z0-9_]+)+$/.test(tok)) {
       errors.push(`token "${tok}" is not a plain path — no expressions, comparisons, ternaries, arithmetic, or spaces are allowed. Use $slot.x.y / $calc.x / $param.x / $theme.x, and a visualMap for conditional colour.`)
       continue
     }
@@ -460,7 +512,7 @@ export function validateTemplate(template) {
     } else if (path[0] === 'param') {
       const declared = (template.params || []).some(p => p.name === path[1])
       if (!declared) warnings.push(`token "${tok}" references undeclared param "${path[1]}"`)
-    } else if (path[0] !== 'theme') {
+    } else if (path[0] !== 'theme' && path[0] !== 'item') {
       errors.push(`token "${tok}" has unknown root "$${path[0]}" (expected slot|calc|param|theme)`)
     }
   }
