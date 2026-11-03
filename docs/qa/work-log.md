@@ -692,3 +692,6 @@ FORMAT-PBI-068 reproduced in Service (`Value`/`Secondary` instead of bound field
 - Desktop core connection: port 61645, process-workspace-port-file, 13 tables / 39 measures. No model changes.
 - Initial app suite: 795 passed; focused final connection/auth suite: 8 passed; MCP suite: 28 passed. Fixed advisory Desktop process inspection timeout blocking insertion.
 - Releases, packaged smoke and live Desktop visual/reload/cross-filter acceptance remain in progress.
+
+- Final release gates: 797/797 tests passed in both private and sanitized public checkouts; nine connection/auth tests included. Full renderer/UI/standalone/Fabric/Electron installer build passed. Packaged Electron core bridge auto-discovered Desktop and returned 42 from real DAX. Standalone Fabric SP smoke read 20 tables/97 measures and returned 42. No credentials/model IDs/sample values published. Existing app dependency audit (45 findings) and unsigned installer are unchanged limitations.
+- Added explicit ESM entry point after import smoke found missing direct named exports. Public core tarball packed from the public release source. Desktop host reload/render/cross-filter acceptance is next after releases.
