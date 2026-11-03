@@ -1,11 +1,13 @@
 import { composeOption } from '../../dist/compositions.js'
 import { getThemeTokens } from '../../dist/theme.js'
 import { instantiateVisual, buildThemeContext, validateTemplate } from '../templates/instantiate.js'
+import { prepareVisualRows } from '../dax/row-normalize.js'
 
 // This boundary is deliberately declarative. It never accepts executable code.
 export function resolveVisualSpec(spec, rows = []) {
   if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw Error('spec must be an object')
   const mode = spec.canvasTheme === 'light' ? 'light' : 'dark'
+  rows = prepareVisualRows(rows,spec.type,spec.config,spec.template)
   if (spec.template) {
     const template = spec.template
     const { errors } = validateTemplate(template)

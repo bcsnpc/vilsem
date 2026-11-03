@@ -2,6 +2,14 @@
 // `{ _cat, _val, _val2 }` shape every Compact* component expects.
 // Verbatim extract from AppSpecRenderer.jsx (pre-Phase-1).
 
+export function prepareVisualRows(rows, type, config = {}, template) {
+  const timeTemplate = template && Object.values(template.slots || {}).some(slot => slot?.kind === 'time')
+  if (timeTemplate) return [...rows].sort((a,b)=>String(a._cat ?? '').localeCompare(String(b._cat ?? ''),undefined,{numeric:true}))
+  if (['line','area','stacked_area','bump'].includes(type)) return [...rows]
+  const sign = String(config.orderBy || 'desc').toLowerCase() === 'asc' ? 1 : -1
+  return [...rows].sort((a,b)=>sign*((Number(a._val)||0)-(Number(b._val)||0)))
+}
+
 // Extract a scalar value from query() response, handling both response formats
 export function getScalarValue(result, measureName) {
   if (!result || !measureName) return null

@@ -1,3 +1,4 @@
+import { prepareVisualRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
 /*
  * vilsem Renderer — Power BI custom visual
@@ -546,23 +547,7 @@ export class Visual implements IVisual {
     // parents (the bug where every parent repeated once per child).
     let rows = drillBound ? this.buildBaseRowsFromDataView(dv) : this.buildRowsFromDataView(dv)
 
-    // Phase 5.3 polish: PBI sorts categories alphabetically by default, but
-    // Semantica's web canvas sorts by primary measure desc (or whatever
-    // visual.orderBy specifies). Re-sort here so the PBI render matches the
-    // exact category order the user saw in Semantica. Date-axis visuals
-    // (line/area/stacked_area/bump) keep ascending category order so the
-    // x-axis flows left-to-right by time.
-    const isTimeSeries = visualType === "line" || visualType === "area" ||
-                        visualType === "stacked_area" || visualType === "bump"
-    if (!isTimeSeries) {
-      const orderBy = String(config.orderBy || "desc").toLowerCase()
-      const sign = orderBy === "asc" ? 1 : -1
-      rows = [...rows].sort((a, b) => {
-        const va = Number(a._val) || 0
-        const vb = Number(b._val) || 0
-        return sign * (va - vb)
-      })
-    }
+    rows = prepareVisualRows(rows, visualType, config, (spec as any).template)
     this.primitiveVisualType = visualType
     this.primitiveCategoryNames = (dv?.categorical?.categories?.[0]?.values || []).map(v => String(this.normalizeCat(v) ?? ''))
     this.primitiveRowNames = rows.map(r => String(r._cat ?? ''))

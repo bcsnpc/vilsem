@@ -1,3 +1,4 @@
+import { prepareVisualRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
 import { lollipop as templateExample } from '@vilsem/core/templates/examples'
 import { describe, it, expect, vi } from 'vitest'
@@ -23,6 +24,7 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
   const node = () => ({ style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
   const exports: any = {}
   vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, cancelAnimationFrame() {}, require: (name: string) => {
+    if (name === '@vilsem/core/dax/rows') return { prepareVisualRows }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
     if (name === 'echarts/core') return { use() {}, init: () => chart }
     if (name === './compositions') return { composeOption }

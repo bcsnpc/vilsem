@@ -11,3 +11,5 @@ Exports: `@vilsem/core/primitives`, `/templates`, `/templates/examples`, `/dax`,
 The published visual schema and its referenced schemas are vendored in `schemas/pbir-visual.json`, keyed by their original Microsoft URLs, for deterministic offline validation. Updating these schemas is an explicit versioned operation.
 
 Composition resolution supports the ECharts composition types. DOM-adapter types do not resolve to ECharts options and are rejected by this headless entry point. Declarative templates use the same resolver as the renderer; formatter functions are constructed from an allowlist, never evaluated from caller code.
+
+Structured `buildVisualDax` bindings qualify and escape model identifiers. `prepareVisualRows` shares report ordering with previews, preserving time-slot chronology and value ordering for ranked compositions.

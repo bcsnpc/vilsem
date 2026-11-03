@@ -680,3 +680,5 @@ FORMAT-PBI-068 reproduced in Service (`Value`/`Secondary` instead of bound field
 
 
 2026-11-02: Core/MCP kickoff underway on feat/core-package. Extracted headless workspace, renamed renderer preserving GUID/spec key, added native ECharts interaction contracts and additive PBIR insertion. Focused 50 checks passed; complete Electron build and packaged-core smoke passed. See docs/engineering/core-mcp-progress.md for scope and remaining work.
+
+2026-11-02: Core follow-up shares ranking/time-template ordering and adds structured escaped DAX bindings. Full suite 788 PASS. MCP fixture/stdio/template suite 26 PASS; live configured Fabric schema + all 79 column samples + PNG preview passed. No Desktop engine was running. Public and private core main/tag publication completed for 0.1.0; patch distribution underway.

@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -67,11 +67,14 @@
       ],
       "spec/resolve": [
         "src/spec/resolve.js"
+      ],
+      "dax/rows": [
+        "src/dax/row-normalize.js"
       ]
     }
   },
   "dependencies": {
-    "adm-zip": "^0.5.17",
+    "adm-zip": "^0.6.1",
     "ajv": "^8.18.0"
   }
 }
