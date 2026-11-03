@@ -1208,3 +1208,29 @@ Verified with the latest package in Service: **22/22 checks pass** across Line, 
 - 41 focused selection/parity tests PASS, renderer lint PASS. No capabilities or export bindings changed yet.
 - Exporter still omits alternate-axis fields; enabling fields indiscriminately risks changing distinct-count/ratio measure semantics. Independent per-axis query design and hosted slicer verification remain required.
 - The former failing source-string test demanded applyJsonFilter specifically; replaced with supported bound-Selection-API contract and runtime checks. This does not close the broader functionality gap.
+
+
+## MCP-SCHEMA-001 - Desktop engine identities and field-parameter samples
+- Visual / Area: MCP model schema discovery.
+- Category / Severity: Data / Medium.
+- Description: get_schema attempted VALUES queries for unqueryable engine RowNumber columns and composite-key field-parameter display columns.
+- Steps / Input: Open AdventureWorks PBIP in Desktop; connect_model with kind desktop and no port; call get_schema. The model has 13 tables, 39 measures, 96 columns, 13 internal row identities and two field-parameter display columns.
+- Expected: Return useful typed schema with bounded real samples, explicitly skip engine-only identities, and handle parameter display columns.
+- Actual: 15 sampleError entries in the first live run.
+- Evidence: Private MCP test-results/live-desktop-v020/02-get_schema.json; patched-schema-summary.json; fresh GitHub v0.2.1 stdio retest under live-desktop-v021.
+- Root cause: D:/vilsem-mcp/src/models.ts assumed every DMV column supported VALUES over a single column.
+- Status: Verified (live and automated).
+- Fix: Explicit RowNumber sampleSkipped metadata; composite-key fallback to bounded SELECTCOLUMNS/TOPN row projection, keeping data types and limiting distinct returned samples. No model changes.
+- Regression: MCP tests/server.test.ts, skips engine row identities and samples field-parameter composite keys through row projection. Live retests returned zero sampling failures; MCP suite 30 passed.
+
+## AUTH-REA-001 - Microsoft reauthentication did not resolve after redirect
+- Visual / Area: Electron Microsoft account reauthentication.
+- Category / Severity: Authentication / High.
+- Description: The handler claimed settled=true before closing the login window, then called a settle function that refused to resolve an already-claimed request.
+- Steps / Input: Invoke reauth-microsoft; deliver a valid Microsoft redirect and token response. Window close callback fires before the exchange completes.
+- Expected: Update the active workspace tokens and resolve success; return a clear failure or cancellation when appropriate.
+- Actual: The promise could remain pending after token exchange.
+- Evidence / Root cause: electron/ipc/connection.js reauth-microsoft callback; extracted and covered with fake browser-window lifecycle events.
+- Status: Verified (automated); real browser sign-in not performed in this cycle.
+- Fix: Protocol/PKCE/state/code exchange now resides in core createMicrosoftLogin; Electron owns only the browser lifecycle and resolves the claimed callback directly. Refresh retains the original public Microsoft client/common authority when switching from SP credentials.
+- Regression: tests/core-microsoft-ui.test.js success/failure/cancel for both login handlers; packages/core/src/connect/microsoft.test.ts protocol and workspace-switch refresh; tests/core-auth-route.test.js preserves AUTH_FAILED response classification.

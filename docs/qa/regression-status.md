@@ -195,3 +195,14 @@ INTERACTION-AXIS-080: 28 focused selection runtime tests PASS, including Ctrl/Co
 
 ### Bound alternate-axis selection checkpoint
 41 focused selection/parity tests PASS and renderer lint PASS. Bound alternate fields now use their own Selection IDs. The historical applyJsonFilter source-text failure is superseded by runtime identity tests; the full suite has not been rerun at this checkpoint. **Major axis gap remains open:** export field binding, independent measure semantics, switch/reset lifecycle and hosted slicer acceptance are pending. No additional export support or hosted verification is claimed.
+
+
+### 2026-11-02 - standalone core/MCP and actual Desktop acceptance
+- Scope: model connections and Microsoft auth extraction, custom-only MCP authoring, Desktop acceptance. This does not close the broader visual-product backlog above.
+- Requested core-v0.2.0 / MCP v0.2.0 tags published. Live sampling fix published as MCP v0.2.1. Remaining OAuth protocol extraction is included in core 0.2.1 follow-up; final package gates recorded in work-log.md.
+- Isolated GitHub MCP install: no Vilsem checkout, no app-path environment requirement. Desktop discovery used CIM -> Desktop-owned msmdsrv -> workspace port file. Checklist port 61645; after saved-report reopen, 62232 was auto-detected by the same method.
+- Live get_schema / explain_visual / preview_visual / commit_visual / validate_visuals: passed. Fresh installed v0.2.1 schema: 13 tables / 39 measures / 96 columns, 13 explicit internal skips, zero sample errors.
+- Desktop reload banner and confirmation observed and applied. Actual render captured. Accessories selection changed native revenue card $25M -> $907K (906673.107); empty-area click restored $25M. QA page saved/reopened successfully.
+- Additive MCP write: all 135 pre-existing report files byte-identical immediately after insertion. Source PBIP folder untouched. Desktop's culture rewrite was backed up/restored after normal close; all 19 model definition files match initial hashes after reopening.
+- Private evidence: D:/vilsem-mcp/test-results/live-desktop-v020 and live-desktop-v021; open report is the cache QA copy, page Vilsem MCP QA. Customer samples/credentials are not published.
+- Not live verified: browser device-code/PKCE sign-in, incoming cross-highlight variants, drill-through destinations, bookmarks and every tooltip configuration. These have narrower automated coverage; the cross-filter OUT checklist is live verified.
