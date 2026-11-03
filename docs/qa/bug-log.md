@@ -1278,3 +1278,14 @@ Verified with the latest package in Service: **22/22 checks pass** across Line, 
 - Status: Verified (automated); final live acceptance tracked in docs/expressiveness-gaps.md.
 - Fix: Honor an explicit background for templates; keep legacy composition transparency unchanged. Shipped examples explicitly request their theme background.
 - Regression: Renderer harness background/legacy-transparency test, plus real Desktop gallery acceptance.
+
+## EXP-DOMAIN-005 - Authored reference line was above the automatic profit domain
+- Visual / Area: Expressiveness dual-axis template in vilsem-mcp.
+- Category / Severity: Rendering / Medium.
+- Steps / Input: Bind monthly Total Revenue, Total Profit and Profit Target; preview and commit the scratch dual-axis spec with the profit axis left on automatic extent.
+- Expected: The reference measure remains visible on its own axis, including when it exceeds every plotted profit value.
+- Actual: Target 825,829.77 exceeded the automatically selected 800,000 maximum; the markLine existed in the option but was outside the visible plot.
+- Evidence / Root cause: Native Desktop before/after captures, desktop-dual-axis-check.png / desktop-dual-axis-fixed.png in ignored expressiveness evidence. The initial authored skeleton omitted a domain contribution from its unplotted reference measure.
+- Status: Verified (automated and actual Desktop).
+- Fix: Compose existing calculate `max(profit,target)*1.1` and bind its maximum to the profit axis. This is expressible in the existing arithmetic format; no custom callback or new core operation was needed.
+- Regression: vilsem-mcp/tests/expressiveness.test.ts checks the derived bound, retained reference coordinate and SVG reference label. Final native Desktop capture shows the target line at 825,829.77.
