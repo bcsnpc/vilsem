@@ -1,10 +1,11 @@
+import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import { applyAxisTextConfig } from '../shared/axisTextConfig.js'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
@@ -124,7 +125,7 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
     const fr = frames[Math.min(idx, frames.length - 1)]
     const items = [...fr.items].sort((a, b) => a.value - b.value).slice(-topN)
     const anim = Math.max(200, Math.min(560, speed - 60))
-    chart.setOption(applyAxisTextConfig({
+    chart.setOption(applyTooltipConfig(applyAxisTextConfig({
       grid: { left: 8, right: 74, top: 8, bottom: 16, containLabel: true },
       tooltip: { show: config.tooltipEnabled !== false, trigger: 'item', confine: true, valueFormatter: (v) => prefix + fmtVal(v) + suffix },
       xAxis: { type: 'value', axisLabel: { show: false }, axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, animationDurationUpdate: anim },
@@ -142,8 +143,8 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
         animationDurationUpdate: anim, animationEasingUpdate: 'linear',
       }],
       animationDurationUpdate: anim, animationEasingUpdate: 'linear',
-    }, config), { replaceMerge: ['xAxis', 'yAxis'] })
-  }, [config.xAxisLabelFamily, config.xAxisLabelWidth, config.xAxisLabelOverflow, config.xAxisLabelHideOverlap, config.yAxisLabelFamily, config.yAxisLabelWidth, config.yAxisLabelOverflow, config.yAxisLabelHideOverlap, config.xAxisLabelColor, config.xAxisLabelSize, config.xAxisLabelWeight, config.xAxisLabelRotation, config.xAxisLabelSpacing, config.yAxisLabelColor, config.yAxisLabelSize, config.yAxisLabelWeight, config.yAxisLabelRotation, config.yAxisLabelSpacing, config.axisTickColor, config.axisFontSize, config.axisFontFamily, idx, frames, topN, showLabels, prefix, suffix, colorFor, t.textMuted, speed, loading, error])
+    }, config), config), { replaceMerge: ['xAxis', 'yAxis', 'tooltip'] })
+  }, [config.tooltipEnabled, config.tooltipTrigger, config.xAxisLabelFamily, config.xAxisLabelWidth, config.xAxisLabelOverflow, config.xAxisLabelHideOverlap, config.yAxisLabelFamily, config.yAxisLabelWidth, config.yAxisLabelOverflow, config.yAxisLabelHideOverlap, config.xAxisLabelColor, config.xAxisLabelSize, config.xAxisLabelWeight, config.xAxisLabelRotation, config.xAxisLabelSpacing, config.yAxisLabelColor, config.yAxisLabelSize, config.yAxisLabelWeight, config.yAxisLabelRotation, config.yAxisLabelSpacing, config.axisTickColor, config.axisFontSize, config.axisFontFamily, idx, frames, topN, showLabels, prefix, suffix, colorFor, t.textMuted, speed, loading, error])
 
   // Play timer.
   useEffect(() => {
@@ -172,7 +173,7 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
       {/* Play bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '2px 2px 8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: '2px 2px 8px', flexShrink: 0, maxHeight: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
         <button
           onClick={() => { if (idx >= maxIdx) setIdx(0); setPlaying(v => !v) }}
           disabled={frames.length < 2}
@@ -187,13 +188,13 @@ export default function CompactBarRaceEcharts({ rows, config = {}, loading, erro
           {playing ? '❚❚ Pause' : '▶ Play'}
         </button>
         <input
-          type="range" min={0} max={maxIdx} step={1}
+          type="range" min={0} max={maxIdx} step={1} aria-label="Playback timeline"
           value={Math.min(idx, maxIdx)}
           onChange={e => { setPlaying(false); setIdx(Number(e.target.value)) }}
           disabled={frames.length < 2}
-          style={{ flex: 1, accentColor: accent, cursor: frames.length < 2 ? 'default' : 'pointer' }}
+          style={{ flex: '1 1 64px', width: 64, minWidth: 0, maxWidth: '100%', accentColor: accent, cursor: frames.length < 2 ? 'default' : 'pointer' }}
         />
-        <div style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontSize: 11, color: t.textMuted, minWidth: 64, textAlign: 'right' }}>
+        <div title={curLabel} style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontSize: 11, color: t.textMuted, minWidth: 0, maxWidth: '100%', marginLeft: 'auto', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {curLabel}
         </div>
       </div>

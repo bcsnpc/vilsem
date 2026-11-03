@@ -3,10 +3,10 @@ import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
-import { mergeFragments, RadarMarks } from '../../primitives/index'
+import { mergeFragments, RadarMarks } from '@vilsem/core/primitives'
 import { fmtVal } from '../shared/formatters.js'
-import { escapeHtml } from '../../primitives/escapeHtml'
-import { pal } from '../shared/palettes.js'
+import { escapeHtml } from '@vilsem/core/primitives/escapeHtml'
+import { pal } from '@vilsem/core/palettes'
 
 export default function CompactRadarEcharts({ rows, config, loading, error }) {
   const t = config._T || getThemeTokens('dark')

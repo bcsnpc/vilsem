@@ -1,8 +1,8 @@
 import {describe,it,expect} from 'vitest'
 import {createRequire} from 'node:module'
-import {composeOption} from '../pbiviz-semantica-renderer/src/compositions'
+import {composeOption} from '../vilsem-renderer/src/compositions'
 const require=createRequire(import.meta.url)
-const echarts=require('../pbiviz-semantica-renderer/node_modules/echarts')
+const echarts=require('../vilsem-renderer/node_modules/echarts')
 const theme={textMuted:'#888',textPrimary:'#fff',gridStroke:'#222'}
 describe('stacked bar ECharts runtime geometry',()=>{
  it.each(['slope','lollipop'])('%s honors both animation controls in Power BI',type=>{

@@ -499,7 +499,7 @@ export default function ReportEditor({
       const liveOriginalParts = originalPartsRef.current
       console.log('[PBI] originalParts at build time:', liveOriginalParts)
 
-      // Load the bundled Semantica Renderer .pbiviz so buildReportParts can
+      // Load the bundled vilsem Renderer .pbiviz so buildReportParts can
       // embed it in every report. This bypasses the tenant's org-visual
       // library entirely — every report is self-contained.
       let pbiviz = null

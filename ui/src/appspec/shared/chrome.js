@@ -1,4 +1,4 @@
-import { hexToRgb } from './palettes.js'
+import { hexToRgb } from '@vilsem/core/palettes'
 
 /**
  * Single source of truth for card chrome. Every render path (edit GridLayout,

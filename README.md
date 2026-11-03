@@ -40,7 +40,7 @@ vilsem treats the semantic model as an API. Dashboards are defined separately, i
 
 The interaction model — cross-filtering, drill-down, slicers — is designed to behave consistently across all four, so a dashboard doesn't quietly degrade when you move it.
 
-Because every surface queries the live semantic model at view time (except a static baked-HTML inject option), a dataset refresh is reflected wherever the dashboard is deployed.
+Because every surface queries the live semantic model at view time, a dataset refresh is reflected wherever the dashboard is deployed.
 
 ## Authoring
 
@@ -149,3 +149,9 @@ Copyright © 2026 Chiranjeevi Bhogireddy.
 After updating, restart Electron so the new file-save IPC is available. In a Vilsem report, choose **Export / Publish -> Save as Power BI -> Choose destination and save**. Vilsem creates a separate timestamped folder with `Report.pbip`, enhanced PBIR definitions, and the bundled renderer, and displays the saved path. Open `Report.pbip` in Power BI Desktop; Desktop Save As can create PBIX. The toolbar **Save** still saves the Vilsem project.
 
 Local-model projects offer Power BI file output only; Fabric-backed projects retain cloud/web targets too. Preview export supports a subset of visuals/settings and rejects unsupported visual types, slicers and drill settings. Full formatting/interaction parity is still being tested. See [phase status](docs/qa/phase-status.md) and [local Power BI engineering notes](docs/engineering/local-power-bi-projects.md).
+
+### Adding visuals to existing Power BI reports
+
+Direct existing-report insertion has been removed. Use the visual export workflow and import the exported custom visual into the destination Power BI report. Export compatibility and interaction coverage remain target-specific; consult docs/qa/target-coverage-by-visual.md.
+
+Focused visual and deployment regressions can be run with `npm run qa:native` after starting `npm run ui:dev`. To select suites, use `npm run qa:native -- race-controls waffle-audit fabric-dialog`. These use isolated synthetic data; see [QA strategy](docs/qa/test-strategy.md) and [current regression status](docs/qa/regression-status.md) for coverage and open gaps.

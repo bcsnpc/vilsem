@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { instantiateVisual, buildThemeContext } from '../ui/src/playground/instantiate.js'
-import { EXAMPLE_TEMPLATES, lollipop } from '../ui/src/playground/examples/index.js'
+import { instantiateVisual, buildThemeContext } from '@vilsem/core/templates'
+import { EXAMPLE_TEMPLATES, lollipop } from '@vilsem/core/templates/examples'
 
 // Replicates CompactCustom's resolution given a spec + a visual + rows + theme.
 function resolveCustomVisual(spec, visual, rows) {

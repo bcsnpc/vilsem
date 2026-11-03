@@ -1,5 +1,12 @@
 # Visual consistency matrix
 
+## Formatting update ? 2026-09-12
+
+Line and Area now share an opt-in **Secondary axis** section with 18 controls. It controls the second measure's independent automatic scale, visibility, title/font/color/spacing, label font/color/weight/rotation/spacing, axis line, grid, and axis number prefix/suffix. Stacked Area and Bump exclude this incompatible section. Stack/inversion and independent scale choices are mutually exclusive. Narrow dual-axis charts scroll horizontally instead of collapsing the plot.
+
+Native control/lifecycle/resize checks pass; shared Power BI composition tests pass. Hosted acceptance is tracked in `qa/work-log.md`. This does not establish UI/AI parity or support manual axis domains. The discovery-time matrix below retains its original field counts.
+
+
 Runtime follow-up: [all-type execution matrix](qa/runtime-test-matrix.md), [property results](qa/property-runtime-results.csv), [clipping review](qa/clipping-review.md), and [standard visual review](qa/visual-review-findings.md). Equivalent controls do not imply equivalent rendering: shared headers ignore title weight, Area misses type context, Stacked Area drops stacking, and Heatmap/Sunburst use incompatible label/size assumptions. Initial source references below are retained for traceability.
 
 Initial source evidence, not pass/fail certification. “Ref” means a source reference was found; absence may reflect host-owned behavior. All visuals share a host position/config contract, but chrome, axes, tooltip and marks do not share one universal implementation. Compare with [visual architecture](visual-architecture.md).

@@ -409,13 +409,13 @@ For each visual (line ~47 of `publishCustomVisualFlow.js`):
 
 ### 5.4 Custom visual — the `.pbiviz`
 
-[`pbiviz-semantica-renderer/`](../../pbiviz-semantica-renderer/) — single custom visual that handles every visual type.
+[`vilsem-renderer/`](../../vilsem-renderer/) — single custom visual that handles every visual type.
 
 - **GUID:** `semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D`
 - **Version:** `3.15.7.0` (see `pbiviz.json`)
 - **API version:** `5.3.0`
 
-[`capabilities.json`](../../pbiviz-semantica-renderer/capabilities.json) current state:
+[`capabilities.json`](../../vilsem-renderer/capabilities.json) current state:
 
 ```json
 {
@@ -437,7 +437,7 @@ For each visual (line ~47 of `publishCustomVisualFlow.js`):
 }
 ```
 
-[`visual.ts`](../../pbiviz-semantica-renderer/src/visual.ts) — ~491 lines. Class fields:
+[`visual.ts`](../../vilsem-renderer/src/visual.ts) — ~491 lines. Class fields:
 
 - `root: HTMLElement`
 - `host: IVisualHost`
@@ -509,7 +509,7 @@ Three render modes:
 
 [`electron/ipc/powerbi.js`](../../electron/ipc/powerbi.js):
 
-- `getBundledPbiviz()` (~608) — scans `pbiviz-semantica-renderer/dist/*.pbiviz`, picks newest by `mtime`, unzips via `adm-zip`, returns `{ guid, name, version, pieces: { metadata, js, css, icon } }`.
+- `getBundledPbiviz()` (~608) — scans `vilsem-renderer/dist/*.pbiviz`, picks newest by `mtime`, unzips via `adm-zip`, returns `{ guid, name, version, pieces: { metadata, js, css, icon } }`.
 - `getBundledCustomVisualParts()` (~716) — same scan + unzip, maps every entry to PBIR report parts under `CustomVisuals/<guid>/<path>` with `InlineBase64` payloads.
 - Both cache keyed by `filename|mtime` — rebuilds of the `.pbiviz` are picked up without restarting Electron (fix added in current session).
 - IPC handlers registered (~769–782): `pbi-get-bundled-pbiviz`, `pbi-get-custom-visual-parts`.
@@ -690,8 +690,8 @@ Anything that already looks reusable across visuals:
 | `buildAppliedFiltersForVisual(spec, visual, globalFilters, filterSources)` | [AppSpecRenderer.jsx:2357](../../ui/src/appspec/AppSpecRenderer.jsx#L2357) | Merges slicer-sourced filters with cross-filter state, excluding the filter sourced by `visual.id` itself |
 | `getSourceSelectedCat(visual, globalFilters, filterSources)` | [AppSpecRenderer.jsx](../../ui/src/appspec/AppSpecRenderer.jsx) (near the above) | Returns the category this visual sourced (for self-dim) |
 | `normalizeLayout(spec)` | [AppSpecRenderer.jsx](../../ui/src/appspec/AppSpecRenderer.jsx) | Normalizes `rowHeight`, fills missing positions, etc. |
-| Shared cursor-following tooltip | [visual.ts:289–318](../../pbiviz-semantica-renderer/src/visual.ts#L289) | `ensureTooltipEl()` + `positionTooltip(el, e)` — singleton `<div class="semantica-cursor-tt">` with viewport-edge flip |
-| `animateCountUp()` (PBI side) | [visual.ts:48–94](../../pbiviz-semantica-renderer/src/visual.ts#L48) | rAF counter animation; mirrors `useCountUp` for the DAX-HTML path |
+| Shared cursor-following tooltip | [visual.ts:289–318](../../vilsem-renderer/src/visual.ts#L289) | `ensureTooltipEl()` + `positionTooltip(el, e)` — singleton `<div class="semantica-cursor-tt">` with viewport-edge flip |
+| `animateCountUp()` (PBI side) | [visual.ts:48–94](../../vilsem-renderer/src/visual.ts#L48) | rAF counter animation; mirrors `useCountUp` for the DAX-HTML path |
 | `buildRowTemplate(axisDim, idx)` | [daxTemplateBuilder.js:581–623](../../ui/src/pages/powerbi/daxTemplateBuilder.js#L581) | Per-axis DAX row template generator; referenced from within `buildBarDax` |
 | `daxAbbrevFormat` (and sibling DAX string helpers) | [daxTemplateBuilder.js](../../ui/src/pages/powerbi/daxTemplateBuilder.js) | Emits DAX that formats scalars with B/M/k abbreviation — shared between `buildKpiDax` / `buildBarDax` / `buildTableDax` |
 | `cleanAffix(x)` | [daxTemplateBuilder.js](../../ui/src/pages/powerbi/daxTemplateBuilder.js) | Normalizes prefix/suffix strings (empties `'null'` / `'undefined'` text) |

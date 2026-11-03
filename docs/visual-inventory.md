@@ -1,5 +1,10 @@
 # Visual inventory
 
+## Current Line/Area formatting addition ? 2026-09-12
+
+Both types use `secondaryAxis.js` through `EChartsCanvas` and the Power BI composition formatter. They expose 18 new secondary value-axis controls; the original discovery-time schema counts below are historical. This is opt-in for the second measure, with an independent automatic right-side scale. Stacked/ranked visual types exclude it. Tests and target limits are recorded in `qa/work-log.md` under FORMAT-AXIS-048.
+
+
 Current runtime coverage and repair status: [verified fixes](qa/fix-status.md). Area now uses a dedicated `CompactArea` registry adapter over `CompactLineEcharts`; Stacked Area forwards its stack flag. Custom is accepted by the general schema with template validation. All 41 IDs were rerun in both hosts after fixes; the initial inventory below describes discovery-time implementation.
 
 Initial audit: 2026-09-07. Source registry has **41 IDs**, including aliases and non-data objects. This is an implementation inventory, not a claim of 41 fully validated chart products. Sources: `visuals/index.js`, runtime-attached schemas, leaf source imports, `schema.js`, authoring palettes and AI maps.
@@ -41,7 +46,7 @@ Status: all IDs exercised in an isolated renderer harness across nine scenarios;
 | sunburst | [CompactSunburst](../ui/src/appspec/visuals/CompactSunburst.jsx) | Recharts SVG | 0 | Live Recharts donut approximation, not a hierarchical sunburst. |
 | narrative | [CompactNarrative](../ui/src/appspec/visuals/CompactNarrative.jsx) | DOM/CSS | 0 | DOM sanitized narrative with optional generated text/number highlighting. |
 | insight | [CompactNarrative](../ui/src/appspec/visuals/CompactNarrative.jsx) | DOM/CSS | 0 | Alias of narrative. |
-| waffle | [CompactWaffle](../ui/src/appspec/visuals/CompactWaffle.jsx) | DOM/CSS | 0 | Fixed 10×10 DOM cells; multiple rows rounded to shares, scalar mode uses maxValue. |
+| waffle | [CompactWaffle](../ui/src/appspec/visuals/CompactWaffle.jsx) | DOM/CSS | 0 | Fixed 10×10 DOM cells; multiple rows use largest-remainder allocation totaling 100 cells, scalar mode uses maxValue. Shared component also bundled for Power BI. |
 | bar_race | [CompactBarRaceEcharts](../ui/src/appspec/visuals/CompactBarRaceEcharts.jsx) | ECharts Canvas | 9 | Own ECharts lifecycle and playback; _cats=[frame,category], cumulative mode, speed and top-N. |
 | nav_button | [CompactNavButton](../ui/src/appspec/visuals/CompactNavButton.jsx) | DOM/CSS | 0 | Bare navigation element, host callback required. |
 | text_box | [CompactTextBox](../ui/src/appspec/visuals/CompactTextBox.jsx) | DOM/CSS | 6 | Bare editable rich text; DOMPurify and text-edit bus. |
@@ -388,7 +393,7 @@ Status: all IDs exercised in an isolated renderer harness across nine scenarios;
 - Attached schema keys: None; manual/dynamic inspector configuration needs separate mapping.
 - Renderer config-key references: `cellGap`, `cellRadius`, `cellSize`, `colorScheme`, `customColors`, `maxValue`, `prefix`, `suffix`.
 - Selection callback reference: No _onBarClick found; do not assume cross-filter support. Tooltip reference: not found in leaf chain.
-- AI: shared patch pipeline exists; exact per-property parity not verified. Fixed 10×10 DOM cells; multiple rows rounded to shares, scalar mode uses maxValue.
+- AI: shared patch pipeline exists; exact per-property parity not verified. Fixed 10×10 DOM cells; multiple rows use largest-remainder allocation totaling 100 cells, scalar mode uses maxValue. Shared component also bundled for Power BI.
 
 ## bar_race
 
@@ -484,3 +489,9 @@ These are additional template designs behind the single `custom` renderer, not a
 ## Slicers and other surfaces
 
 Runtime branches handle dropdown, buttons, date_range and multi_select. `SLICER_TYPES` lists only the first three. Slicers are separate from VISUAL_MAP. Injector offers a deliberately restricted 16-type palette; custom templates expose additional ECharts series families. Legacy Power BI HTML templates and retained Recharts files must not be counted as new desktop visual IDs. A standalone `combo` ID is absent; line chart configuration provides related mixed-series options that need dedicated field-role validation.
+
+### Waffle implementation update (2026-09-12)
+`ui/src/standalone/powerbi-dom.jsx` bundles the existing component for Power BI; `visual.ts` supplies sorted primary category/value rows and theme tokens, and unmounts React before redraw/destroy. App, web, Fabric and Power BI use the same cell allocation and compact scroll layout. The library now exposes Waffle. Empty custom palettes fall back to default colors. Native formatting checks cover cell size/gap/radius, custom colors, prefix/suffix and maxValue; exhaustive settings acceptance is still pending.
+
+### Bullet / Progress implementation update (2026-09-12)
+Both are now available in the chart library and use the shared build-time React bridge in Power BI. Bullet has 9 visual-specific schema fields; Progress has 11 (in addition to shared card/value controls). Both have wrapping text and vertically scrollable content for compact bounds. No click/selection handlers exist. The package preserves Bullet secondary-measure targets and Progress configured maxima. Native style checks and actual Service/Desktop/local-file acceptance are recorded in the QA evidence.

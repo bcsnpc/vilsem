@@ -4,8 +4,8 @@ import { describe, it, expect } from 'vitest'
 import { validateAppSpec } from '../ui/src/appspec/schema.js'
 import { normalizeLayout } from '../ui/src/appspec/shared/layout.js'
 import { buildAppliedFiltersForVisual } from '../ui/src/appspec/shared/filters.js'
-import { Tooltip } from '../ui/src/primitives/tooltip/index.ts'
-import { normaliseRows, normaliseTableRows } from '../ui/src/appspec/shared/row-normalize.js'
+import { Tooltip } from '@vilsem/core/primitives/tooltip/index'
+import { normaliseRows, normaliseTableRows } from '@vilsem/core/dax/rows'
 
 const visual = (type='bar')=>({id:'qa',type,position:{x:0,y:0,w:6,h:4},data:{measures:['Revenue'],groupBy:{table:'QA',column:'Category'}},config:{title:'QA'}})
 const spec = v=>({version:'1.0',title:'QA',visuals:[v],slicers:[]})

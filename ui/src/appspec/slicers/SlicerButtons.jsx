@@ -1,5 +1,5 @@
 import React from 'react'
-import { getFilterValueKey } from '../shared/row-normalize.js'
+import { getFilterValueKey } from '@vilsem/core/dax/rows'
 
 export default function SlicerButtons({ slicer, values, onChange, globalFilters, theme }) {
   const dim = slicer.dimension

@@ -558,6 +558,11 @@ export default function AppGenerator({ initialSpec = null, initialProjectId = nu
     { type: 'lollipop',    label: 'Lollipop',     w: 6, h: 4 },
     { type: 'radar',       label: 'Radar',        w: 5, h: 4 },
     { type: 'bar_race',    label: 'Bar Race',     w: 6, h: 5 },
+    { type: 'waffle',      label: 'Waffle',       w: 4, h: 4 },
+    { type: 'bullet',      label: 'Bullet',       w: 4, h: 3 },
+    { type: 'progress',    label: 'Progress',     w: 4, h: 3 },
+    { type: 'stat_card',   label: 'Stat Card',    w: 4, h: 3 },
+    { type: 'metric_tile', label: 'Metric Tile',  w: 4, h: 3 },
     // Canvas objects — non-data authorable elements
     { type: 'text_box',    label: 'Text',         w: 3, h: 1 },
     { type: 'shape',       label: 'Shape',        w: 3, h: 2 },

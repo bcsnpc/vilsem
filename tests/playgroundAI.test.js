@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   stripFences, parseTemplateResponse, composeSystemPrompt, composeUserMessage, generateTemplate,
 } from '../ui/src/playground/playgroundAI.js'
-import { lollipop } from '../ui/src/playground/examples/index.js'
+import { lollipop } from '@vilsem/core/templates/examples'
 
 describe('stripFences', () => {
   it('strips ```json fences', () => {

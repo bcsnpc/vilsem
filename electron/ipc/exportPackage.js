@@ -192,7 +192,7 @@ function register() {
     const projectRoot = appRoot
     const missing = []
     for (const relPath of BACKEND_FILES) {
-      const srcFile = path.join(projectRoot, relPath)
+      const srcFile = relPath === 'src/fabric/translator.js' ? path.join(projectRoot, 'packages/core/src/dax/translator.cjs') : path.join(projectRoot, relPath)
       const destFile = path.join(exportDir, relPath)
       if (fs.existsSync(srcFile)) {
         fs.mkdirSync(path.dirname(destFile), { recursive: true })

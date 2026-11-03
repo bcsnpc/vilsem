@@ -318,7 +318,7 @@ Further all-visual findings and fixes: [error propagation, Bar Race and Gauge](c
 - Steps: export a multi-axis Bar; switch to a secondary axis; click a category alongside another visual.
 - Expected: sibling filters target the selected secondary dimension without breaking native slicer routing.
 - Actual: source implements section-local dim only. Prior filter approach was reverted because it broke routing. Runtime Power BI service scenario not tested here.
-- Evidence: pbiviz-semantica-renderer/src/visual.ts renderHtmlWithSelection, secondary-axis branch; existing axisSwitcherParity test remains failing.
+- Evidence: vilsem-renderer/src/visual.ts renderHtmlWithSelection, secondary-axis branch; existing axisSwitcherParity test remains failing.
 - Status: Open, source-confirmed capability gap; needs Power BI runtime verification.
 - Fix: Pending compatible multi-role binding/filter contract; do not restore reverted filter calls blindly.
 - Regression: retain failing tests/axisSwitcherParity.test.js expectation until behavior is implemented; add native Power BI integration coverage.
@@ -490,7 +490,7 @@ Further all-visual findings and fixes: [error propagation, Bar Race and Gauge](c
 
 ### EXPORT-LOCAL-018 update (2026-09-11)
 - Reproduced the layout defect in tests/power-bi-bar-layout.test.ts: default Column top labels received only 4px of plot clearance.
-- Source fix: pbiviz-semantica-renderer/src/compositions.ts applies 28px top clearance to all vertical bar variants with top labels, using the existing grouped-bar allowance. Domain unchanged.
+- Source fix: vilsem-renderer/src/compositions.ts applies 28px top clearance to all vertical bar variants with top labels, using the existing grouped-bar allowance. Domain unchanged.
 - Regression: 4/4 layout checks passed; 32 related builder/writer tests passed.
 - Status: Investigating / source fix tested. Packaged-renderer rebuild and Desktop screenshot verification still required before Verified.
 
@@ -684,8 +684,8 @@ Further all-visual findings and fixes: [error propagation, Bar Race and Gauge](c
 - **Reproduce / Input:** Create the three-measure category table in Vilsem, sort by a header or resize a column, then compare the exported primitive table in Service/Desktop.
 - **Expected:** Preserve supported table interaction capabilities across targets; document any persisted-width/sort limitations explicitly.
 - **Actual:** App CompactTableEcharts has toggleSort header handlers and column resize handles. Power BI renderTableIntoArea emits fixed-flex header/row HTML and hover handlers only; it has no header sorting or resize operation.
-- **Evidence / Root cause:** ui/src/appspec/visuals/CompactTableEcharts.jsx versus pbiviz-semantica-renderer/src/visual.ts renderTableIntoArea. Service and Desktop default table screenshots establish rendering, not this feature's parity.
-- **Status:** Open, source-confirmed missing implementation. Native comparative acceptance still required. Table is not included in the 16 mark-selection checks because neither reviewed table implementation provides row cross-filter selection.
+- **Evidence / Root cause:** ui/src/appspec/visuals/CompactTableEcharts.jsx versus vilsem-renderer/src/visual.ts renderTableIntoArea. Service and Desktop default table screenshots establish rendering, not this feature's parity.
+- **Status:** Verified for header sorting and resizing in production-method Electron tests and the live Service QA report (service-table-interactions.json). Sorting cycles descending/ascending/source order; widths align headers and rows, survive data updates, and reset when bound fields change. Mouse/keyboard resize tested locally; Service DOM sorting/keyboard resize tested on real model data. Saved-width/sort persistence and row cross-filter selection remain unsupported. Desktop-specific retest remains pending.
 
 ## TOOLTIP-TEXT-038 - Inline tooltip formatters interpret category markup
 - **Area / Category / Severity:** Pie/donut, line/area, scatter/bubble, treemap, radar / Data text integrity / High (P1).
@@ -735,10 +735,476 @@ Further all-visual findings and fixes: [error propagation, Bar Race and Gauge](c
 
 ## BUILD-LINT-043 - Power BI standalone lint command cannot load configuration
 - **Area / Category / Severity:** Power BI renderer release checks / Build tooling / Medium (P2).
-- **Reproduce / Input:** Run npm run lint in pbiviz-semantica-renderer using the installed dependencies.
+- **Reproduce / Input:** Run npm run lint in vilsem-renderer using the installed dependencies.
 - **Expected:** Lint source files and report actionable file/line violations.
 - **Actual:** ESLint 10.2.0 exits 1 because eslint.config.js/mjs/cjs is missing. The separate pbiviz package lint step reports four errors but continues packaging.
 - **Evidence:** Command output in this audit; package.json lint command invokes eslint src --ext .ts.
 - **Root cause:** Installed standalone ESLint and project configuration are not aligned; the package tool uses its own recommended configuration.
 - **Status:** Open. No dependency/configuration migration made without tracing package-tool compatibility.
 - **Regression test:** Pending a reproducible lint command and release failure gate.
+
+## FORMAT-TABLE-044 - Power BI table interprets formatting text as HTML
+- **Area / Category / Severity:** Power BI table / Text integrity / High (P1).
+- **Reproduce / Input:** Set a table value prefix to `<b data-qa="literal">$` and render values in the Power BI table method.
+- **Expected:** The prefix is displayed literally, as in the app's React renderer.
+- **Actual:** The formatter is inserted into innerHTML without escaping; the prefix creates markup.
+- **Evidence:** scripts/qa/powerbi-table.cjs, powerbi-table-before.json: literal-text assertion fails.
+- **Root cause:** renderTableIntoArea interpolates fmtV directly into row markup.
+- **Fix:** Escape formatted values at the HTML boundary.
+- **Status:** Verified in production-method Electron DOM test; live Service retest pending.
+- **Regression test:** scripts/qa/powerbi-table.cjs literal formatting text.
+
+## DATA-TABLE-045 - Measure-only Power BI table drops its values
+- **Area / Category / Severity:** Power BI table / Data / High (P1).
+- **Reproduce / Input:** Bind one scalar measure with value 42 and no category column.
+- **Expected:** Render one value row without inventing a category column.
+- **Actual:** Table renders zero rows because row count comes only from categories.
+- **Evidence:** powerbi-table.cjs measure-only test fails with 0 rows instead of 1.
+- **Root cause:** renderTableIntoArea derives nRows exclusively from catCols[0].
+- **Fix:** Derive row count from bound dimension and measure columns; omit the fabricated Category header when no category is bound.
+- **Status:** Verified through the production-method Electron regression; all seven table checks pass. Live scalar table export acceptance remains separate.
+- **Regression test:** scripts/qa/powerbi-table.cjs.
+
+## UX-INJECT-046 - Destination page picker overcounts visuals
+- **Area / Category / Severity:** Existing-report insertion / UX / Low (P3).
+- **Reproduce / Input:** Load a PBIR page with two visual folders, one containing both visual.json and a supporting mobile.json part.
+- **Expected:** Page picker reports two visuals regardless of part order.
+- **Actual:** Three visuals reported because every file increments the count.
+- **Evidence:** tests/injector-preservation.test.js reproduced expected 2 / actual 3 before the fix.
+- **Root cause:** extractPagesFromParts counts parts rather than distinct visual folders.
+- **Fix:** Track distinct folder IDs per page; preserve public page metadata shape.
+- **Status:** Verified through the production parser regression. All 13 insertion preservation tests pass; no live destination write required for this metadata-only change.
+- **Regression test:** tests/injector-preservation.test.js, distinct visual folders and reversed part order.
+
+### Existing-report insertion retired by product decision
+- User requested removal in favor of exporting .pbiviz visuals and importing them into existing reports.
+- Removed Home entry, command-palette command, and App route/import. Historical implementation is unlinked; shared model/report utilities remain used by other export flows.
+- EXPORT-INJECT-030 is retired from the active backlog, not verified as fixed. Historical insertion-only acceptance work is no longer a release requirement. Export/import parity remains required.
+
+## EXPORT-GUIDE-047 - Table custom-visual export guide omits measures
+- **Area / Category / Severity:** Export Visuals / Field binding UX / Medium (P2).
+- **Reproduce / Input:** Export a table with ten measures and read its field-binding guide.
+- **Expected:** All ten measures listed in authored order under Content, matching the renderer capabilities and local-report bindings.
+- **Actual:** Only three measures listed, using Content/Secondary/Tertiary; seven measures omitted.
+- **Evidence:** tests/visual-export-guide.test.js failed before the change with four guide entries instead of eleven including the category.
+- **Root cause:** bindingGuideFor applies chart three-measure roles to tables.
+- **Fix:** Table guide uses the ten-measure Content well; other chart roles are unchanged.
+- **Status:** Verified through guide/spec regression tests. Manual Power BI import with ten measures remains untested.
+- **Regression test:** tests/visual-export-guide.test.js (table ordered bindings/spec retention; scatter roles).
+
+## FORMAT-AXIS-048 - No independent secondary-axis typography contract
+- **Area / Category / Severity:** Cartesian formatting / Configuration consistency / Medium (P2).
+- **Reproduce / Input:** Pass two Y-axis entries to applyAxisTextConfig and set yAxisLabelColor.
+- **Expected:** Shared defaults may apply to both, with a separate supported override for secondary-axis styling when a visual has two axes.
+- **Actual:** The same Y-label override applies to both; the pane schema contains only X/Y settings, no secondary-axis overrides.
+- **Evidence:** ui/src/appspec/shared/axisTextConfig.js and axisFormattingSchema.js source trace.
+- **Root cause:** Configuration is keyed by axis orientation, not axis index/role.
+- **Status:** Open, source-confirmed; live dual-axis acceptance pending. Line/Area currently render one Y-axis, so exposing a secondary control alone would not deliver dual-axis support.
+- **Fix / Regression test:** Pending shared contract, consuming renderer support and independent-style/domain-preservation tests.
+
+## FORMAT-PBI-049 - Power BI compositions ignore shared axis typography
+- **Area / Category / Severity:** Power BI rendering parity / Formatting / High (P1).
+- **Reproduce / Input:** Compose bar, column, grouped/stacked bar, line, area, stacked area, scatter, bubble, slope or lollipop with explicit X-label color and Y-label font size/family.
+- **Expected:** Apply the same explicit typography contract as the app without changing domains, categories or series values.
+- **Actual:** Power BI composition does not call the shared axis helper; requested family/color/size are absent.
+- **Evidence:** tests/power-bi-axis-formatting.test.ts: all 11 cases failed before integration.
+- **Root cause:** EChartsCanvas applies axisTextConfig, while Power BI composeOption bypasses it.
+- **Fix:** Wrap the Power BI composition entry point with the shared helper; include helper in the build copy manifest. Drill paths calling composeOption also inherit the helper.
+- **Status:** Verified through production composition tests, 24 focused checks pass. Actual hosted/desktop rendering, playback-specific paths and package acceptance remain pending.
+- **Regression test:** tests/power-bi-axis-formatting.test.ts plus tests/axis-text-config.test.js.
+
+## FORMAT-RACE-050 - Power BI playback bypasses formatting overrides
+- **Area / Category / Severity:** Bar race / Formatting and interaction consistency / High (P1).
+- **Reproduce / Input:** Set yAxisLabelColor=#ff00ff, yAxisLabelSize=19 and tooltipEnabled=false, then scrub between two frames.
+- **Expected:** Initial and subsequent frames honor the chosen axis typography and hidden tooltip, preserving frame values.
+- **Actual:** Axis uses theme color/default size and tooltip remains enabled; playback bypasses the standard composition path.
+- **Evidence:** tests/power-bi-race-formatting.test.ts executes production renderBarRace and the scrub handler; failed before fix (#999 versus #ff00ff).
+- **Root cause:** draw() sends a raw option directly to setOption.
+- **Fix:** Apply shared axis and tooltip helpers on every frame draw.
+- **Status:** Verified through production-method regression with a mocked chart sink. Hosted Power BI/Desktop visual acceptance remains pending.
+- **Regression test:** tests/power-bi-race-formatting.test.ts verifies initial/scrubbed formatting and next-frame data.
+
+## DRILL-PBI-051 - Deeper hierarchy fields disappear or overwrite parents
+- **Area / Category / Severity:** Power BI drill / Data integrity / High (P1).
+- **Reproduce / Input:** Bind Region[Name], Product[Name], Product[SKU] and measure 25; prepare finest drill rows and aggregate at path West/Bikes.
+- **Expected:** Preserve West, Bikes and Road-1 as distinct hierarchy values; leaf aggregate is 25.
+- **Actual:** Preparation reads only two category columns and keys by bare column name, producing Bikes/Bikes/undefined.
+- **Evidence:** tests/power-bi-selection-runtime.test.ts failing-before reproduction.
+- **Fix:** Read all declared bound levels and use table-qualified keys with the matching colOf accessor.
+- **Status:** Verified through production data-preparation and leaf-aggregation regression; hosted multi-level navigation remains pending.
+- **Regression test:** preserves all drill levels including equal column names in different tables.
+
+## FORMAT-DRILL-052 - Drill redraw ignores axis/tooltip overrides
+- **Area / Category / Severity:** Power BI replace/panel drill / Formatting / Medium (P2).
+- **Reproduce / Input:** Apply explicit Y-label color and disable tooltip, then use drill redraw.
+- **Expected:** Redraw retains explicit settings and series data.
+- **Actual:** styleChartOption applies only background and base font; shared overrides bypassed.
+- **Evidence:** production-method regression failed with default #999 instead of #ff00ff.
+- **Fix:** Pass config into both redraw call sites and apply shared axis/tooltip helpers.
+- **Status:** Production-method regression verified; hosted click-to-drill acceptance pending.
+- **Regression test:** applies formatting to the shared drill redraw boundary in tests/power-bi-selection-runtime.test.ts.
+
+## EXPORT-CAPACITY-053 - Custom visual export silently exceeds field-well capacity
+- **Area / Category / Severity:** Single visual export / Data completeness / High (P1).
+- **Reproduce / Input:** Export a line with four measures, table with eleven measures, or table with seven category fields.
+- **Expected:** Reject unsupported capacity before writing, with actionable feedback.
+- **Actual:** Spec includes all fields, while the binding guide truncates fields beyond supported wells.
+- **Evidence:** Three failing-before cases in tests/visual-export-guide.test.js.
+- **Root cause:** specForExport does not validate guide/renderer capacity.
+- **Fix:** Explicit measure/category capacity errors before invoking package writer.
+- **Status:** Verified through five export-guide tests; no runtime import claimed for rejected inputs.
+- **Regression test:** tests/visual-export-guide.test.js.
+
+### BUILD-LINT-043 follow-up
+Standalone lint now runs and passes with the installed tool's recommended configuration. Empty container clears use textContent, race frame variable no longer triggers a filesystem false positive, and floating legacy tooltips clone existing nodes or use literal fallback text. Tooltip content preservation is covered in power-bi-selection-runtime.test.ts. Certificate generation and dependency findings remain separate open issues.
+
+## EXPORT-DRILL-054 - Custom visual import guide omits drill hierarchy fields
+- **Area / Category / Severity:** Export Visuals / Drill bindings / High (P1).
+- **Reproduce / Input:** Export grouped bar with Region[Name] -> Product[Name] -> Product[SKU], Sales, replace drill.
+- **Expected:** Guide lists all three category wells in hierarchy order and retains the same hierarchy in the baked spec.
+- **Actual:** Only the ordinary groupBy is listed; following the guide leaves drill fields unbound.
+- **Evidence:** visual-export-guide.test.js failed before fix, returning only Region[Name].
+- **Fix:** Bar-family export guides prioritize the complete declared hierarchy, with existing six-category capacity validation.
+- **Status:** Verified through binding-guide/spec tests; actual exported package import remains pending.
+- **Regression test:** guides all drill levels in hierarchy order instead of only the base dimension.
+
+## DRILL-BINDING-055 - Partially bound hierarchy enters drill rendering
+- **Area / Category / Severity:** Power BI drill / Incomplete field assignment / Medium (P2).
+- **Reproduce / Input:** Import a three-level bar hierarchy but bind only two category fields.
+- **Expected:** Actionable message identifies the required category count before attempting drill.
+- **Actual:** nCats>=2 passes the drill guard irrespective of declared depth.
+- **Evidence:** production renderer test observes no missing-field message before fix.
+- **Fix:** Require all hierarchy categories when drill is enabled; preserve explicit off behavior.
+- **Status:** Production entry-point regression verified; hosted UI acceptance pending.
+- **Regression test:** reports an incomplete imported drill hierarchy before drawing partial data.
+
+## FORMAT-TEXT-056 - Measure token insertion interprets field names as HTML
+- **Area / Category / Severity:** Text box / Text integrity / High (P1).
+- **Reproduce / Input:** Insert live measure names containing <b>Revenue</b>, literal &quot;, quotes/ampersands, or Unicode.
+- **Expected:** Visible label and data-measure attribute preserve the exact name; surrounding rich text is retained.
+- **Actual:** Visible name is interpolated into insertHTML without escaping; extraction also only decodes selected entities using a regex.
+- **Fix:** Build token markup with DOM attributes/textContent; extract names from inert parsed token elements.
+- **Status:** Five native Electron DOM cases pass. Full caret/editor interaction acceptance remains pending.
+- **Regression test:** scripts/qa/text-token.cjs, evidence/text-token.json.
+
+## FORMAT-RACE-057 - App bar race ignores tooltip trigger setting
+- **Area / Category / Severity:** App/web bar race / Formatting / Medium (P2).
+- **Reproduce / Input:** Set tooltipTrigger=axis via the live app configuration.
+- **Expected:** ECharts tooltip trigger becomes axis and resets to item for auto.
+- **Actual:** Live chart retained item while stored configuration said axis.
+- **Fix:** Apply shared tooltip helper, track tooltip settings in redraw dependencies, and replace tooltip option on update.
+- **Status:** Browser live-option validation passed hide/axis -> show/item -> show/auto. Broader native interaction rerun underway.
+- **Regression test:** scripts/qa/interaction-audit.cjs, bar race tooltip changes apply immediately and reset to auto.
+
+## QA-HOST-058 - Hosted visual verification can lose state during source edits
+- **Area / Category / Severity:** Hosted test harness / Verification reliability / Medium (P2).
+- **Reproduce / Input:** Service embed used the Vite full-audit page while application source changes trigger development updates.
+- **Expected:** Hosted acceptance is independent of development hot reload and fails on readiness timeout.
+- **Actual:** Latest run rendered four pages then lost frame readiness at grouped_bar; subsequent browser calls failed. HMR is a suspected cause, not established by the failed run.
+- **Fix:** Isolated static loopback host, explicit readiness timeout failure, navigation/crash diagnostics.
+- **Status:** Retry underway. Retained failure: evidence/cloud-gallery-before-static-host.json. No all-visual interaction pass claimed.
+
+## EXPORT-TEXT-059 - Replacement-sensitive text corrupts custom visual packages
+- **Area / Category / Severity:** Power BI package export / Serialization / High (P1).
+- **Reproduce / Input:** Export a visual with a title containing $&, $` or $'.
+- **Expected:** Bake the exact JSON spec literally into the bundled renderer and preserve valid JavaScript.
+- **Actual:** String.replace interprets replacement tokens; $& leaves the placeholder and other tokens insert unrelated bundle text. Three production writer tests failed before correction.
+- **Root cause:** String replacement value passed directly rather than through a callback.
+- **Fix:** Use a replacement callback returning JSON.stringify(spec).
+- **Status:** Four actual-template package-content tests pass, including generated JavaScript syntax validation; four report resource-preservation tests also pass. No hosted import of these special-title packages claimed.
+- **Regression test:** tests/visual-package-content.test.js. Requires a built renderer template; explicitly skipped on clean checkouts without one.
+
+### QA-HOST-058 retry result
+Isolated static-host retry passed all 16 selectable types' native category selection/deselection plus hosted table sorting/resize. Evidence: evidence/service-static-host-all-types.json. Prior failed run remains retained. This supports using the isolated host; the precise cause of the earlier lost state remains inferred rather than proven.
+
+## QA-FABRIC-060 — Gallery screenshots captured before data arrived
+- Area/category: Hosted Fabric QA / regression harness
+- Severity: High (invalid rendering evidence)
+- Description: Stable page titles could satisfy screenshot readiness while every chart remained unmounted.
+- Reproduction/input: Reload the deployed QA app, navigate its seven real-model gallery pages, run the former text/fingerprint stability loop.
+- Expected: Capture only after the page-specific data/chart contract is ready; timeout is a failing audit.
+- Actual: First four pages were recorded with zero charts; later revisiting page one rendered normally and interaction checks passed.
+- Evidence: `evidence/fabric-before-readiness-guard.json`.
+- Root cause: `scripts/qa/fabric-portal-audit.cjs` treated stable empty DOM as ready.
+- Fix: Require expected chart counts and data-bearing text before stability; fail on timeout. This validates fixture readiness, not all visual semantics.
+- Regression: `tests/fabric-page-readiness.test.js` (3 pass); rerun `evidence/fabric-portal-audit.json` (seven pages ready, real-model interactions pass).
+- Status: Verified (QA harness).
+
+## VIS-RACE-061 — Playback controls escape narrow visuals
+- Area/category: Bar race / clipping and interaction
+- Severity: Medium
+- Reproduction/input: Create bar race with time frames; resize editor/viewer to 120, 160 or 240 px width.
+- Expected: Play, timeline and current frame remain reachable within the visual; scrubbing still changes frames.
+- Actual: Range input's intrinsic 129 px minimum plus fixed date width forced controls beyond the visual. Six of eight width/host cases failed.
+- Evidence: `evidence/race-controls-before.json`.
+- Root cause: `CompactBarRaceEcharts.jsx` unwrapped flex row with intrinsic input minimum and fixed date minimum.
+- Fix: Allow control wrapping, shrink the timeline, truncate long dates with full title, and permit vertical control scrolling in very short containers. Added accessible timeline name.
+- Regression: `scripts/qa/race-controls.cjs`: eight editor/viewer widths pass and input-to-frame state remains responsive. `evidence/race-controls.json`.
+- Status: Verified for app editor/viewer; newly built web/Fabric and hosted validation pending. Separate Power BI renderer has its own controls.
+
+## VIS-WAFFLE-062 — Waffle allocation and compact layout need correction
+- Area/category: Waffle / data and clipping
+- Severity: Medium
+- Reproduction/input: Multiple equal categories, all-zero categories, or narrow 120/160 px cards; use long legend values as a separate case.
+- Expected: Finite displayed percentages, exactly 100 allocated cells for nonzero totals, and reachable legends within compact cards.
+- Actual: Source independently rounds each segment (three equal shares allocate 99 cells); zero total divides by zero. Broad runtime geometry places narrow-card legend text beyond the visible container.
+- Evidence: `evidence/visibility-broad-round.json` waffle cases; `CompactWaffle.jsx` segment count and fixed-width horizontal layout. Focused runtime regression pending.
+- Root cause: Independent Math.round allocation, no zero-total guard, fixed cell grid alongside unwrapped legend.
+- Status: Verified for multi-segment app editor/viewer cases; other targets and single-value compact layout remain pending.
+- Fix: Largest-remainder allocation fills 100 cells for nonzero totals; zero totals allocate none. Normalization prevents overflow. Legend wraps under the grid and scrolls in short cards. Negative-magnitude semantics preserved.
+- Regression: tests/waffle-allocation.test.js (5 pass); scripts/qa/waffle-audit.cjs (6 data + 12 layout cases pass). Evidence: waffle-audit-before.json, waffle-audit.json, visually inspected waffle-narrow.png.
+
+## EXPORT-FABRIC-063 — Fresh scaffold deleted an existing local app folder
+- Area/category: Fabric deployment / preservation
+- Severity: High (local file loss)
+- Reproduction/input: Place a file in parentDir/qa; deploy with appName qa and no explicit reuseExisting. Regression uses disposable temporary files only.
+- Expected: Preserve existing files and return an actionable collision error before starting any command.
+- Actual: The scaffold branch recursively removed the folder before invoking the CLI; the original test file disappeared.
+- Evidence: Failing-before/passing-after `tests/fabric-deploy-failures.test.js`, preservation test.
+- Root cause: `electron/fabric/runRayfin.js` unconditionally cleaned existing projectDir when reuseExisting was false/absent.
+- Fix: Removed recursive cleanup. Return PROJECT_EXISTS and preserve the folder on collision; explicit reuse retains the established pipeline.
+- Regression: Eight deployment prerequisite/preservation tests pass, including success with explicit reuse and failures before publishing. Real filesystem bytes preserved; subprocesses mocked in this test.
+- Status: Verified through automated filesystem regression. Native UI error display, blank-name guard, and rename/retry preservation now pass (scripts/qa/fabric-dialog.cjs; 3 checks).
+
+### VIS-RACE-061 Power BI follow-up
+The separate Power BI race method had the same intrinsic range-input overflow. Eight native-DOM size cases now pass after the matching wrapped-control change, with frame options still updating on scrub. Chart painting is mocked in this focused harness. Existing axis/tooltip frame regression passes; custom visual package build and lint pass. Hosted custom-package race import remains pending. Evidence: `powerbi-race-controls-before.json`, `powerbi-race-controls.json`.
+
+## EXPORT-TYPE-064 — Custom visual package silently substitutes unsupported types
+- Area/category: Power BI custom visual export / target correctness
+- Severity: High
+- Reproduction/input: Export Waffle, Sankey, KPI, text box or an unknown type through specForExport; feed the resulting type to Power BI composition.
+- Expected: Supported type retains its renderer; unsupported type returns an explicit message before opening Save or writing a package.
+- Actual: Export accepted all types, while composition's default branch drew a bar. Six focused assertions failed before repair.
+- Root cause: Custom-package export bypassed isPrimitiveCovered; renderer default silently composed bar marks.
+- Status: Verified for export-boundary behavior; missing renderers remain an open feature gap.
+- Fix/regression: Shared 19-type JSON manifest drives authoring and package-writer checks; unsupported composition now throws an explicit diagnostic. All 41 registry types pass native inspector export checks (19 accepted with exact type, 22 rejected without IPC). Seventy focused unit/integration tests pass, including malformed spec/no Save and four actual archive/spec cases. Native evidence: export-type-audit.json. This limitation is specific to baked-spec custom-package/local export; Service's legacy live-DAX path has separate coverage.
+
+## FORMAT-PBI-065 — Chart title weight and uppercase were ignored
+- Area/category: Power BI primitive header / formatting parity
+- Severity: Medium
+- Reproduction/input: Export a supported visual with titleFontWeight 900 or 300 and titleUppercase true. Compare the app header with Power BI's primitive header.
+- Expected: Explicit title weight and text transform match the saved configuration; default, hidden and plain-card behavior remain intact.
+- Actual: Production Power BI header always used weight 600 and no uppercase transformation. Two native DOM cases failed; font size/family/color already worked.
+- Evidence: `evidence/powerbi-title-before.json`; `scripts/qa/powerbi-title.cjs` loads the actual header and shared chrome helpers in native Electron DOM.
+- Root cause: `renderPrimitiveChart` hand-built a partial title style instead of using `chartTitleStyle`.
+- Status: Verified in native DOM; hosted title-variant acceptance remains pending.
+- Fix/regression: Power BI now uses the same chartTitleStyle helper as editor/viewer. Five native DOM cases pass, including default, explicit font/color/weight/uppercase, reset, hidden title and plain card. Evidence: powerbi-title.json. The helper is copied by the package build manifest.
+
+## FORMAT-AXIS-048 follow-up — 2026-09-12
+
+**Status: Partially tested.** Independent right value-axis support now exists for two-series, unstacked Line and Area. Eighteen controls cover scale enablement, visibility, title, title styling, label styling, axis line, grid and axis number prefix/suffix. Existing charts retain their shared scale by default. Stacked/rank/custom multi-axis options are excluded.
+
+**Evidence:** `evidence/secondary-axis.json` has 82 passing native checks (72 control assertions, four lifecycle checks, six resize checks); `tests/secondary-axis.test.js` and `tests/power-bi-axis-formatting.test.ts` validate shared and exported composition behavior. A 79px drawing width originally collapsed the plot; the app and package now provide a scrollable minimum drawing width when the independent axis is visible. Screenshot evidence is `evidence/secondary-axis-160.png`.
+
+**Remaining:** hosted Service/Fabric and local Desktop acceptance of this addition, extended extreme typography/height coverage, and independent number-format control beyond axis prefix/suffix. This is unrelated to the still-failing alternate category-axis cross-filter contract.
+
+## VIS-WAFFLE-062 follow-up: single-value compact layout
+
+**Status: Verified locally.** The single-value path also overflowed horizontally at 120px and lost its first cells/value text at 80px height. Preserved cell sizing and added reachable horizontal/vertical scrolling plus wrapping value text, matching the multi-segment layout policy.
+
+**Evidence:** `evidence/waffle-single-before.json` reproduces the compact failures; `evidence/waffle-audit.json` now passes all 30 checks, including 12 single-value size/host combinations. Hosted acceptance of this latest single-value change remains pending.
+
+## FORMAT-NUMBER-066 - Compact axis rounding hides distinct ticks
+
+- **Area/category/severity:** Shared numeric axis formatter / Formatting / Medium.
+- **Reproduce/input:** Render Line or Area with values 1,130 and an automatic tick range including 1,000 and 1,200. Also format 0.0001.
+- **Expected:** Representative adjacent ticks remain distinguishable; small nonzero values are not labelled zero.
+- **Actual:** 1,000 and 1,200 both display `1k`; 0.0001 displays `0` under default locale rounding.
+- **Evidence:** `evidence/axis-number-service-before.png`; seven of ten new `tests/axis-number-format.test.js` cases fail before repair.
+- **Root cause:** `ui/src/appspec/shared/formatters.js::fmtAxisNumber` uses whole thousands and the default three locale decimal places. Callers include linear/line/point primitives, Recharts fallbacks, and the copied Power BI helper.
+- **Status:** Verified for the regression cases described below.
+- **Fix/acceptance:** Retain compact units with up to six significant digits, preserving signs and finite-value guards. Data values and domains must remain unchanged. Retest caller suites and painted app/export labels.
+
+## FORMAT-NUMBER-066 verification update
+
+The shared formatter now retains up to six significant digits for compact units and small values. **Verified locally:** all ten dedicated unit cases pass (seven failed before), 218 related primitive/formatter/Power BI cases pass, and twelve native axis-label checks pass across Bar, Column, Line, Area, Scatter and Bubble with normal and tiny data. Evidence: `evidence/axis-number.json`, `evidence/axis-number-line-after.png`. Display precision remains finite; this is not an arbitrary-precision numeric formatter. Final hosted acceptance is pending.
+
+
+### Final target verification for FORMAT-NUMBER-066 / FORMAT-AXIS-048
+
+Latest app, standalone, Fabric and package builds pass. Service screenshot `service-page1.png` now shows distinct 1k/1.2k ticks. Compiled web/Fabric checks pass 86/86. Hosted Fabric uses the matching renderer hash and passes query, interaction, navigation and theme checks. Service independent-axis native selection evidence is retained in `service-independent-axis-interactions.json` (39 checks pass).
+
+The local Bar/Line report passes nine production UI/save/export checks and seven PBIR schema checks. Normal Power BI Desktop launch visibly renders both visuals and the saved Returns axis (`local-secondary-desktop-render.png`). The initial diagnostic-flag launch stayed at the splash screen; normal retry succeeded. This proves the observed default render, not all Desktop interactions. A final local file is being regenerated with the newest numeric formatter package.
+
+## FORMAT-AXIS-067 - Narrow dual-axis scrolling clips hover tooltips
+
+- **Area/category/severity:** Line/Area independent axes / Interaction and clipping / Medium.
+- **Reproduce:** Enable the new independent axis, narrow the visual to a 79px drawing viewport, and hover its first point.
+- **Expected:** The tooltip remains readable; drawing scrollbars must not clip a legitimate popup.
+- **Actual:** Tooltip bounds extend past the scrolling ancestor and are clipped.
+- **Evidence:** `evidence/secondary-axis-tooltip-before.json` records the failing native check, after earlier axis-control and resize checks passed.
+- **Root cause:** New drawing-width scroll container also contains ECharts' default HTML tooltip.
+- **Fix in verification:** Append the tooltip to its own document body and clamp its position to that viewport, accounting for chart scaling and scroll position. Shared helper covers app and Power BI iframe; preserve formatter, visibility, data and domains. Maximum popup dimensions wrap/scroll within the document.
+- **Status:** Verified in native app and hosted Service narrow-frame checks. `tests/secondary-axis.test.js` and native narrow hover checks cover the repair.
+
+## FORMAT-PBI-068 - Exported series use generic measure labels
+
+- **Area/category/severity:** Power BI primitive charts / Formatting and UX / Medium.
+- **Reproduce/input:** Export Line/Area with Quantity Sold and Quantity Returned; hover a category. Repeat grouped/stacked bars with bound measures.
+- **Expected:** Series/tooltip labels use bound display names unless the user explicitly overrides them; changing the binding updates the automatic label.
+- **Actual:** Service tooltip reads Value / Secondary. `service-secondary-tooltip.json` preserves the observed text.
+- **Root cause:** `renderPrimitiveChart` passes saved config directly to composers without the dynamic measure-name enrichment provided by Vilsem's canvas hosts.
+- **Status:** Verified in production-runtime tests and hosted Service. Regression cases exercise production rendering with bound names, rebinding and explicit overrides in `tests/power-bi-selection-runtime.test.ts`.
+
+### FORMATTING verification scope at end of latest builds
+
+- FORMAT-AXIS-067: **Verified in native app and hosted Service**. `secondary-axis.json`: 87 checks, including live opt-in after initial chart creation. `service-secondary-tooltip.json`: Line and Area tooltips remain in a 96px iframe, with category select/clear preserved. App/standalone/Fabric/package builds and latest 86 compiled checks pass. The Desktop screenshots predate this specific hover-placement patch; they verify independent axes and numeric labels, not narrow Desktop tooltips.
+- FORMAT-PBI-068: automatic bound display names are now supplied at the production renderer boundary; four failing-before/passing-after chart-family cases verify binding changes, explicit overrides, and unchanged input spec. Hosted label acceptance is underway.
+
+### FORMAT-PBI-068 hosted verification
+
+Verified with the latest package in Service: **22/22 checks pass** across Line, Area, Grouped Bar and Stacked Bar. Tooltips contain Quantity Sold / Quantity Returned, stay within the visual frame, and category selection/clear remain correct. Evidence: `evidence/service-measure-labels.json` and `service-native-*-tooltip.png`. Four production-runtime cases cover automatic labels, rebinding, explicit overrides and input-spec preservation. The label-only patch was not separately reopened in Desktop; Desktop's preceding axis/numeric/selection observations remain scoped to that prior exported package.
+
+
+## VIS-WAFFLE-069 - Empty custom palette hides Waffle cells
+- Area: Waffle; category: Rendering / Formatting; severity: Medium.
+- Reproduce: save config.customColors=[] and bind multiple nonzero categories (1,2,3).
+- Expected: absent custom colors use the default palette. Actual: all 100 cells have no background.
+- Evidence: evidence/waffle-empty-palette-before.json, empty palette check FAIL (colored=0).
+- Root cause: CompactWaffle.jsx treats an empty array as a valid palette and indexes modulo zero.
+- Status: Verified in native Chromium using the production Power BI adapter and actual app component (30 checks PASS).
+- Fix: absent/empty custom palettes use MULTI_COLORS. Regression: scripts/qa/powerbi-waffle.cjs, empty custom palette case. Hosted/Desktop screenshots from the pilot predate this fallback patch.
+
+
+## UX-WAFFLE-070 - Waffle missing from chart library
+- Area: Visual creation; category: UX / Functionality; severity: Medium.
+- Reproduce: open a project, open Library, look for Waffle. Existing renderer cannot be created from this menu.
+- Expected: supported Waffle renderer can be added through the library. Actual: hard-coded VISUAL_PALETTE omits it.
+- Evidence: evidence/local-waffle-library-before.json (native UI creation timeout and captured menu text).
+- Root cause: ui/src/pages/AppGenerator.jsx VISUAL_PALETTE. Status: Verified.
+- Fix: add Waffle to the library. Regression: local-report-ui.cjs --waffle; native creation, binding, save/reopen and actual PBIP/PBIR export PASS (evidence/local-waffle-ui.json).
+
+
+## DEP-FABRIC-071 - Generated Fabric project retains vulnerable tar lock entry
+- Area: Fabric deployment tooling; category: Dependencies; severity: High.
+- Reproduce: inspect generated QA project after ordinary npm install; npm ls tar resolves 7.5.16 under @microsoft/rayfin-tools-common 1.33.1 (~7.5.15).
+- Expected: regenerate the compatible tar lock entry to a patched version before deployment. Actual: npm install preserves the vulnerable locked version.
+- Evidence: evidence/fabric-dependencies-audit.json (one critical tar finding and other advisories). No exploit execution was attempted.
+- Source: https://github.com/isaacs/node-tar/security/advisories/GHSA-23hp-3jrh-7fpw and https://github.com/isaacs/node-tar/security/advisories/GHSA-r292-9mhp-454m .
+- Status: Verified for the generated-project tar dependency. npm update tar --ignore-scripts resolves 7.5.22; audit now has zero critical findings (43 others remain). Deployment prerequisite regression tests: 9 PASS. Hosted retry succeeded and portal bundle/query/interactions/theme checks passed; first upload fetch failure retained. Root dependencies and separate npx caches are outside this fix.
+
+
+## VIS-CARDS-072 - Bullet and Progress crop large text in compact containers
+- Area: Bullet / Progress; category: Clipping / Formatting; severity: High.
+- Input: widths 80/160/480, heights 60/120/320, value fonts 28/60, long title and Revenue prefix / USD suffix.
+- Expected: text wraps within width; all content remains reachable vertically. Actual: centered fixed-height content begins outside the top and/or ends outside the bottom; long text escapes horizontally.
+- Evidence: dom-card-bounds-before.json: 26 of 36 native bundled-component cases fail.
+- Root cause: CompactBullet.jsx and CompactProgressBar.jsx fixed-height centered flex layouts without scrolling/wrapping.
+- Status: Verified in native Chromium against the bundled app components. Fix: wrapping text and scrollable minimum-height content, retaining fixed track height. Regression: scripts/qa/dom-card-bounds.cjs, 44 checks PASS. Hosted targets pending for this change.
+
+
+## FORMAT-DOM-073 - Power BI repeats component titles beneath card header
+- Area: Bullet / Progress Power BI adapter; category: Cross-target formatting; severity: Medium.
+- Reproduce: export a titled Bullet or Progress; Power BI shows title in header and inside component while app/Fabric show it only in header.
+- Expected: same title ownership and visibility as AppSpecRenderer. Actual: adapter forwards config.title/config.label unchanged.
+- Evidence: service-dom-cards.png versus fabric-live-visuals-19-24.png.
+- Root cause: AppSpecRenderer clears title/label in chartConfig; new DOM bridge adapter did not.
+- Fix: clear component title/label after Power BI draws the shared header. Regression: six title ownership cases in powerbi-waffle.cjs. Status: Verified by six native title cases and actual Service title assertion (service-dom-title-final.json).
+
+
+## INTERACTION-AXIS-074 - Alternate-axis siblings stay dim after switching away and back
+- Visual / Area: Power BI legacy HTML category-axis switcher.
+- Category: Interaction. Severity: Medium.
+- Description: Switching axes resets the selected bar but retains opacity 0.35 on its siblings.
+- Steps: Select a bar on an alternate axis, switch to the primary axis, then return.
+- Input: Two axis sections; alternate section contains selected C and unselected D.
+- Expected: Returning shows all bars at normal opacity with no stale local selection.
+- Actual: D stays dim despite both bars being unselected.
+- Evidence: docs/qa/evidence/axis-switch-state-before.json (one failing native DOM assertion).
+- Root cause: wireAxisPills cleared only elements whose local-selected attribute was 1; dimmed siblings have value 0.
+- Fix: Clear all elements carrying the local selection attribute in the hidden section.
+- Regression: scripts/qa/axis-switch-state.cjs; two native Electron DOM checks pass in axis-switch-state.json.
+- Status: Verified in native Electron DOM using the production Power BI class. Service deployment not tested for this change. Alternate-axis host cross-filter support remains open.
+
+
+## VIS-TOOLTIP-075 - Legacy Power BI tooltip extends beyond frame
+- Area: HTML visual hover tooltip. Category: Edge Clipping. Severity: Medium.
+- Steps: Hover an 840-character category at either corner of a 386 x 197 viewport.
+- Expected: Tooltip stays inside the sandbox viewport with literal content preserved.
+- Actual: Tooltip reaches more than 4,000 pixels beyond the right edge.
+- Evidence: powerbi-tooltip-bounds-before.json: four of six native cases fail.
+- Root cause: nowrap content without maximum size; positioning only clamps minimum coordinates.
+- Fix: Wrap long content, bound popup dimensions, clamp both coordinate limits.
+- Regression: scripts/qa/powerbi-tooltip-bounds.cjs, six native Chromium bounds checks.
+- Status: Partially tested. Frame containment verified; long overflowing content still needs an accessible hover/scroll interaction (legacy tooltip uses pointer-events:none). Hosted Service verification pending.
+
+
+### VIS-TOOLTIP-075 interaction follow-up
+- Added pointer interaction, a short cancellable exit grace period, focusability, and Escape dismissal. Tooltip content can now scroll; switching render modes/destroying the visual cancels pending dismissal and removes the body-level popup.
+- Native regression now passes 10 checks: six containment/literal-content cases plus pointer-entry retention, focus/scroll capability, Escape dismissal and destruction cleanup.
+- Corrected the synthetic Unicode test string to explicit Unicode escapes (the original shell-written file contained question marks).
+- Scope: native DOM assertions, including programmatic focus and scroll; actual pointer travel/wheel and screen-reader workflows in Power BI Service remain untested. Full accessibility is not claimed.
+
+
+## INTERACTION-LIFETIME-076 - Background clear handlers accumulate after legacy redraws
+- Area: Power BI legacy HTML selection and fallback bar renderer.
+- Category: Interaction / lifecycle. Severity: Medium.
+- Steps: Render the legacy visual three times, then click its background once.
+- Input: One category A with value 10; repeated rendering into the same root container.
+- Expected: One host selection-clear request; none from a retired renderer after disposal.
+- Actual: Three clear requests from one click, retaining closures over detached marks.
+- Root cause: Both legacy render paths add an anonymous root click listener every render. Replacing child HTML does not remove root listeners.
+- Evidence: Failing regression: expected one clear call, received three.
+- Fix: Assign one owned root onclick handler and clear it at renderer disposal.
+- Regression: tests/power-bi-selection-runtime.test.ts exercises both HTML and fallback bar repeated rendering, background clear, and disposal.
+- Status: Verified through production-class runtime tests. Hosted acceptance remains pending.
+
+
+## DATA-CARDS-077 - Stat Card and Metric Tile ignore error and empty input
+- Area: Stat Card / Metric Tile. Category: Data / UX. Severity: High.
+- Steps: Render either component with a failed query and previous rows, or with an empty row array.
+- Input: error "QA connection unavailable" with stale value 98765; separately rows [].
+- Expected: Existing shared error/empty state, while a valid value of zero remains a rendered result.
+- Actual: Query error is ignored; stale values remain visible. Empty Metric Tile displays a zero-percent ring and Stat Card a normal value placeholder.
+- Evidence: Four failing-before assertions in tests/scalar-card-states.test.jsx; legitimate zero assertions passed before and after.
+- Root cause: Both components only checked loading and ignored their error prop and empty rows.
+- Fix: Use shared EmptyState after loading, before value output. Preserve legitimate zero and existing formatting.
+- Regression: Six component rendering assertions PASS. Native editor/viewer transport-state checks tracked in scalar-card-states.json.
+- Status: Component tests verified; running-app acceptance being recorded separately.
+
+
+## FORMAT-CARDS-078 - Editor duplicates Stat Card and Metric Tile titles
+- Area: CanvasEditor / scalar cards. Category: Cross-host formatting. Severity: Medium.
+- Steps: Create a titled Stat Card or Metric Tile; compare editor and viewer.
+- Expected: One shared title in both hosts, retaining value and comparison formatting.
+- Actual: Editor includes both shared header and component caption; viewer only has the header.
+- Evidence: scalar-card-states-before-title.json records duplicate text for editor standard/zero cases.
+- Root cause: CanvasEditor forwarded title/label to both cards after drawing the common header.
+- Fix: Clear component title/label for these two types only; authored config remains intact.
+- Regression: Native scalar-card-states.cjs asserts one title across both hosts and error/standard/zero states.
+- Status: Running-app verification in progress; other visual title contracts are not changed by this fix.
+
+
+### DATA-CARDS-077 / FORMAT-CARDS-078 verification
+- 24 native editor/viewer checks PASS: query-error/standard/zero states and single-title ownership for both visual types. Evidence: scalar-card-states.json.
+- Both issues VERIFIED within the app editor/viewer and component-test scope. Fabric and export artifacts were not deployed in this cycle.
+
+## DATA-STAT-079 - Missing current value fabricates comparison
+- Area: Stat Card. Category: Data correctness. Severity: High.
+- Steps: Render current value null or undefined with previous value 100.
+- Expected: Missing-value placeholder without a comparison percentage. A legitimate current zero must still show a 100 percent decrease.
+- Actual: null produces a fabricated 100 percent decrease; undefined produces NaN comparison.
+- Root cause: Trend calculation checked only previous value, allowing coercion of missing current values.
+- Fix: Require a present current value before computing trend. Existing comparison calculation unchanged for valid data.
+- Regression: tests/scalar-card-states.test.jsx: missing null/undefined and legitimate zero assertions. All nine scalar component checks PASS.
+- Evidence: scalar-card-null.json, two native editor/viewer checks PASS; before-fix assertions retained in unit-before-null-comparison-fix.json.
+- Status: VERIFIED in component tests and running editor/viewer. No hosted deployment acceptance claimed.
+
+
+## INTERACTION-AXIS-080 - Alternate-axis local selection ignores modifiers
+- Area: Legacy Power BI axis-switch bars. Category: Interaction. Severity: Medium.
+- Steps: Select A on an alternate axis, then Ctrl-click or Command-click B.
+- Expected: Both stay locally selected; modifier-click removes one; removing the last restores all opacity. Plain click replaces selection and repeated plain click clears it.
+- Actual: B replaces A even with the modifier; multi-selection cannot be created.
+- Root cause: Modifier value is read but ignored by the local fallback path.
+- Fix: Track the selected sibling set, apply modifier toggle or plain replacement, and derive dimming from the resulting set.
+- Regression: Two failing-before modifier scenarios in power-bi-selection-runtime.test.ts; all 28 selection runtime checks pass after fix.
+- Status: Verified through production-class runtime tests. This only fixes local highlighting; alternate-axis host cross-filtering and native-slicer acceptance remain open.
+
+
+### Alternate-axis cross-filter implementation checkpoint
+- Status: Investigating / partially implemented, not Verified.
+- Legacy renderer can now route bound alternate categories through field-specific Selection IDs. Test coverage includes duplicate category labels across different fields, absent/ambiguous bindings, modifier preservation and selected opacity.
+- 41 focused selection/parity tests PASS, renderer lint PASS. No capabilities or export bindings changed yet.
+- Exporter still omits alternate-axis fields; enabling fields indiscriminately risks changing distinct-count/ratio measure semantics. Independent per-axis query design and hosted slicer verification remain required.
+- The former failing source-string test demanded applyJsonFilter specifically; replaced with supported bound-Selection-API contract and runtime checks. This does not close the broader functionality gap.

@@ -1,5 +1,5 @@
 import React from 'react'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import getThemeTokens from '../getThemeTokens'
 import CompactKpi from './CompactKpi.jsx'
 

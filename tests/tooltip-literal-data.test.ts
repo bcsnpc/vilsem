@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest'
-import {PieMarks,LineMarks,PointMarks,TreemapMarks,RadarMarks} from '../ui/src/primitives'
+import {PieMarks,LineMarks,PointMarks,TreemapMarks,RadarMarks} from '@vilsem/core/primitives'
 const category='<b data-qa="category">A & B</b>'
 const ctx:any={data:{rows:[{_cat:category,_val:25,_val2:10},{_cat:'Other',_val:75,_val2:20}]},theme:{},dimensions:{width:400,height:300}}
 describe('literal dataset text in chart tooltips',()=>{

@@ -1,7 +1,7 @@
 {
   "name": "vilsem",
   "version": "1.0.0-beta.3",
-  "description": "vilsem — Microsoft Fabric desktop query engine",
+  "description": "vilsem \u00e2\u20ac\u201d Microsoft Fabric desktop query engine",
   "author": "vilsem",
   "license": "MIT",
   "main": "electron/main.js",
@@ -15,7 +15,13 @@
     "standalone:build": "cd ui && npx vite build --config vite.standalone.config.js",
     "fabric-embed:build": "cd ui && npx vite build --config vite.fabric-embed.config.js",
     "build": "npm run powerbi:build && npm run ui:build && npm run fabric-embed:build && electron-builder --publish never",
-    "powerbi:build": "npm --prefix pbiviz-semantica-renderer run package"
+    "powerbi:build": "npm --prefix vilsem-renderer run package",
+    "qa:native": "node scripts/qa/run-native.cjs",
+    "core:build": "npm run build --workspace @vilsem/core",
+    "pretest": "npm run core:build",
+    "preui:build": "npm run core:build",
+    "prepowerbi:build": "npm run core:build",
+    "postpowerbi:build": "node packages/core/scripts/copy-renderer.mjs"
   },
   "build": {
     "appId": "com.semantica.app",
@@ -29,7 +35,7 @@
       "dist/ui/**/*",
       "dist/app/**/*",
       "dist/fabric-embed/**/*",
-      "pbiviz-semantica-renderer/dist/*.pbiviz",
+      "vilsem-renderer/dist/*.pbiviz",
       "node_modules/**/*",
       "package.json",
       "!.env",
@@ -43,7 +49,8 @@
       "!dist/app/win-unpacked/**",
       "!dist/app/builder-debug.yml",
       "!release/**",
-      "!export/**"
+      "!export/**",
+      "packages/core/**/*"
     ],
     "extraResources": [
       {
@@ -53,7 +60,7 @@
     ],
     "asarUnpack": [
       "src/powerbi/*.ps1",
-      "pbiviz-semantica-renderer/dist/**",
+      "vilsem-renderer/dist/**",
       "dist/fabric-embed/**"
     ],
     "win": {
@@ -82,7 +89,8 @@
     "dotenv": "^16.5.0",
     "fast-xml-parser": "^5.5.10",
     "fastify": "^5.3.3",
-    "sql.js": "^1.12.0"
+    "sql.js": "^1.12.0",
+    "@vilsem/core": "0.1.0"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^3.1.1",
@@ -92,5 +100,8 @@
     "electron-builder": "^25.1.8",
     "vitest": "^3.1.1",
     "wait-on": "^8.0.3"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

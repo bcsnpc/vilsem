@@ -1,3 +1,86 @@
+## Latest: Shape / Divider without data bindings
+
+**35 types supported, six still gated** (KPI, Sparkline KPI, navigation button, text box, image, custom).
+
+- Full unit suite: **766 PASS / 0 FAIL**. This does not close alternate-axis export/host acceptance; its remaining requirements are outside the implemented bound-selection contract.
+- Native adapter: **137 PASS**, including 11 shape variants and six divider orientation/style cases without data.
+- Service: **35 visuals / six pages**, standard/one/empty states exercised; no-data Shape/Divider visibly rendered. `service-35-visuals.json`, `service-static-objects.png`.
+- Actual local Vilsem create/save/reopen/PBIR export: **10 PASS**, **8 Microsoft schemas PASS**, zero data projections for Shape/Divider. `local-static-objects-ui.json`.
+- Original PBIP: **157/157 hashes unchanged**. Package build PASS; existing development certificate/tooling warnings remain.
+- First Service upload failed ECONNRESET; preserved in service-static-first-upload-failure.json. Retry completed. New Desktop opening, full legacy generated-measure publish parity and newest Fabric deployment remain unverified.
+
+Earlier sections are historical.
+
+## Latest coverage: 33 Power BI types, eight still gated
+
+Nine additional types now reuse the actual app renderer in Power BI: Funnel, Waterfall, Heatmap, Ranked List, Chord, Sankey, Sunburst, Narrative and Insight.
+
+- 120 native adapter checks PASS (including 72 new data/theme cases).
+- 70 export-guide/package tests PASS; package build PASS.
+- Service gallery: 33 visuals / six pages, standard/single-category/empty-filter runs completed. New pages visually reviewed. Evidence: `service-33-visuals.json`, `service-page5.png`, `service-page6.png`.
+- Existing semantics remain: Sankey uses the app Chord component; Sunburst uses one ring. These are export parity additions, not semantic redesigns or exhaustive interaction/property approval.
+- New Desktop/Fabric acceptance is not claimed. Eight types remain gated: KPI, Sparkline KPI, navigation button, text box, shape, image, divider, custom. Concrete dependencies: `docs/engineering/powerbi-remaining-renderers.md`.
+
+Earlier counts below are historical.
+
+## Latest export coverage cycle: Stat Card and Metric Tile
+
+Power BI support is now **24 supported / 17 rejected types**. Both added types use the actual app components inside the Power BI bundle.
+
+- Native adapter: **48 checks PASS**, including 12 new scalar-card dark/light, zero/null/value, formatting and title cases.
+- Export guide/package/scalar tests: **71 PASS**. Release-format custom visual package build PASS; existing certificate/tooling warnings remain.
+- Service: **24 visuals / four pages**, standard/single-category/empty filters exercised; both new cards render real model values. Evidence: `service-scalar-cards-gallery.json`, `service-scalar-cards.png` (visually reviewed).
+- Local Vilsem: **10 UI/IPC/save/reopen/export checks PASS**, **8 PBIR schema checks PASS**. Stat Card and Metric Tile created through the library and preserved in the new local report. Evidence: `local-scalar-cards-ui.json`.
+- Source PBIP: **157/157 original hashes unchanged**. New Desktop-file opening and hosted Fabric verification for these latest changes remain pending; do not infer them from Service or schema validation.
+- Neither scalar card has mark-selection behavior in the app; none is claimed for Power BI. Extreme-size/every-property acceptance remains separate.
+
+Earlier sections below retain their historical scope and counts.
+
+# Latest continuation evidence
+
+## Latest continuation ? 2026-09-12
+
+- Full unit suite: **748 pass / 1 existing failure**. The remaining alternate category-axis Power BI filter contract is still open; it was not skipped or weakened.
+- Line/Area independent value axis: **87 native inspector/lifecycle/resize/type-transition/tooltip checks pass**. Eighteen controls are opt-in; narrow dual-axis plots scroll. PBI composition and real Service/Fabric screenshots confirm independent scales.
+- Number formatting: **218 focused tests + 12 native tick cases pass**. The Service screenshot now shows distinct 1k/1.2k ticks. Tiny nonzero values remain nonzero. All caller data/domain semantics remain unchanged.
+- Waffle: **30 native data/layout cases pass**, including twelve single-value compact cases.
+- Compiled web/Fabric: **86 checks pass**, including four painted secondary-axis states, with no console errors. Latest bundles rebuilt after Bullet/Progress compact-layout fixes.
+- Service: full interaction run **39 checks pass**, including sixteen native select/clear pairs (`service-independent-axis-interactions.json`). A subsequent formatter-only update reran all four pages in standard/one/empty states (`cloud-gallery.json`).
+- Hosted Fabric: latest bundle hash matches the local build; seven pages settled, real query, bar/pie/radar selection, navigation and themes pass (`fabric-portal-audit.json`).
+- Local report: **9 UI/IPC/database/file checks + 7 Microsoft PBIR schema checks pass**. A new Bar/Line report created in Vilsem retains its independent-axis configuration in saved Vilsem state and exported PBIR. Power BI Desktop visibly renders both visuals and the saved Returns axis. Native Bar selection filters Line to Accessories; repeat click restores all categories. The initial diagnostic-flag launch stalled; normal launch succeeded.
+- Original PBIP source: **157/157 file hashes unchanged**. Existing model structure and measures preserved.
+
+
+### Latest DOM card / dependency cycles
+- Power BI support: **22 supported / 19 rejected types**. Waffle, Bullet and Progress reuse the actual app components; all three rendered in Service and Desktop and passed local Vilsem creation/save/reopen/PBIP export.
+- All 41 inspector export actions pass. Waffle adapter: 30 checks; Bullet/Progress data/format/compact bounds: 44 checks; package/binding/geometry: 62 tests. Local Bullet/Progress export passed 8 PBIR schema validations.
+- Latest Service gallery: 22 visuals / 4 pages, standard/one/empty states verified. Prior 16 select/clear flows remain recorded separately; these three DOM cards have no mark-selection handlers.
+- Generated Fabric dependency update: tar 7.5.22, zero critical findings; **43 findings remain**, including 12 high. Required dependency-update failures stop deployment. Upload fetch failures were retained; retries succeeded.
+- First full test run had an additional 5387ms tooltip-test failure. Isolated reruns passed; compiled test source is now reused with fresh per-test VM state. Final serial full suite: 737 pass / 1 unchanged alternate-axis failure. Assertions and timeout were not relaxed.
+
+Remaining: 19 unsupported package visual types, complete per-property/extreme-size acceptance, alternate category-axis cross-filtering, remaining target drill/multi-select states, placeholder semantics, generated Fabric dependency findings, release/installer acceptance, then AI editing and Ollama. This is not production certification.
+
+
+- Native app interactions: **41/41 pass**, including bar-race tooltip trigger/reset, modifier selection, drill and resize checks. `evidence/interaction-audit-after.json`.
+- Hosted Service: latest isolated static-host run passes all **16 selectable types** for native category selection and deselection, plus table sorting/resize. `evidence/cloud-gallery.json` now records the latest four-page reload, standard/single/empty states, and 39 passing checks. An earlier run lost its development-host state and remains preserved as a failure.
+- Text tokens: **5/5 native Electron DOM cases pass** for literal names, attributes, Unicode and surrounding formatting. Full caret workflow remains separate.
+- Power BI package writer: four actual-template archive/spec/JavaScript tests pass, including replacement-sensitive titles. Build the renderer first; this integration suite explicitly skips without a template.
+- Power BI package build succeeds; standalone lint now passes. Certificate/pwsh warning remains unresolved. Current fixes are not included in the published beta.3 installer.
+- Per-control sweep completed: **41 visual types, 3,924 attempts**, one deliberate query-failure event and no unexpected errors. State/fingerprint screening is not semantic property certification. See [control coverage](format-control-coverage.md).
+- Visibility sweep completed: **1,230 cases**, 36 deliberate query failures, no unexpected errors/image failures; **156 clipping candidates**, including 75 with non-ellipsis text. These remain review candidates, not 156 confirmed bugs.
+- Fabric deployed bundle hash matched the local build. All seven gallery pages reached expected content after correcting premature screenshot readiness. Real-model dimension query, bar/pie/radar filtering, navigation and light/dark theme checks passed. `evidence/fabric-portal-audit.json`. The deployed bundle includes the Waffle allocation/layout and bar-race control changes. This is a gallery/default-state pass, not all-state hosted certification.
+- Latest full unit suite: **711 pass / 1 known alternate-axis cross-filter failure** (712 total). Built web/Fabric smoke checks: **82/82**. Original PBIP source preservation: **157/157 hashes unchanged**.
+- Bar-race playback controls: **16 editor/viewer size cases pass** with timeline input retained, after reproducing overflow in six narrow cases. `evidence/race-controls-before.json` and `evidence/race-controls.json`.
+- Independent secondary-axis formatting/scales, legacy alternate-axis cross-filtering, unsupported local export types, all-state hosted acceptance and installer lifecycle remain open.
+
+- Additional verified export checks: every registry type through inspector export (**41/41**): 19 supported types preserve their type; 22 unsupported types reject before Save. Package writer rejects malformed specs and unsupported types. This is a correctness boundary, not new renderer support.
+- Waffle: **6 native data + 12 compact-layout cases pass**, with five allocation unit tests. Zero totals no longer show NaN and nonzero segments allocate exactly 100 cells. Current Fabric deployment shows the corrected real-data Waffle shares.
+- Power BI title header: **5 native DOM cases pass** after adopting shared title styling; related 33 runtime/axis/playback tests pass. Latest package/lint build succeeds. This title-specific change is newer than the last Service gallery reload.
+- Fabric existing-folder preservation: **8 automated deployment checks + 3 native dialog checks pass**. A new deployment cannot delete an existing local project folder; the dialog supports renaming and retrying.
+
+
+---
+
 # Current verification status ? 2026-09-11
 
 Current target evidence is tracked in [visual cycles](visual-cycles.md) and [work log](work-log.md). The older baseline below is historical; its blanket untested statements are superseded by these scoped results.
@@ -9,6 +92,10 @@ Current target evidence is tracked in [visual cycles](visual-cycles.md) and [wor
 - Fabric: isolated 41-object app loaded across seven pages inside the authenticated portal. Real dimension-only query, native bar selection/deselection/Ctrl-multiselection, radar selection/deselection, page navigation and theme switching pass. Pie clipping (VIS-PIE-034) is corrected and visually verified after deployment. Hosted pie native single/multi/remove/clear filtering also passes. Hosted scatter, bubble, lollipop and slope native selection/clear also pass (8 checks). Individual visual semantics, all formatting states and remaining interactions are not fully verified.
 - Local Power BI: all 19 supported primitives render across four Desktop pages, including dark theme. Saved and reopened the separate QA report. Original 157 source files match their hashes. Unsupported local types, slicers and drill remain gaps.
 - Build/package succeeds with unresolved pbiviz lint/certificate warnings. Latest unit suite: 625 passed, one known secondary-axis cross-filter failure (626 tests).
+
+## Post-beta.3 table cycle
+
+Seven production-method Electron table checks pass, including mouse resizing, sorting/reset, literal formatting and scalar values. Hosted Service sorting/reset and keyboard resize pass against the actual model. These changes are newer than the published beta.3 installer. Desktop-specific table retest and persistent widths/sort remain pending.
 
 ## Historical baseline
 
@@ -69,3 +156,42 @@ Next gate: inspect effective packaging config, then focused regressions and mini
 
 ### Formatting controls follow-up
 See [format control status](format-control-status.md) and [per-control matrix](control-acceptance-matrix.csv). Four reproduced issues repaired;326 applicable semantic assertions pass,126 applicability exclusions are not passes. Every exposed setting remains the acceptance target; the inventory is not a full-test claim.
+
+## Waffle cross-target acceptance update (2026-09-12)
+- Power BI export now supports 20 types (21 still rejected). Waffle shares the app component and was verified in native Chromium (30 checks), actual Service standard/one/empty states, Desktop default rendering, and local Vilsem creation/save/reopen/PBIP export (9 checks, 7 schema validations).
+- Expanded Service gallery: 20 visuals over 4 pages; 39 checks PASS, including 16 existing select/clear flows and table controls. Waffle does not implement mark selection.
+- App Waffle 30 PASS; inspector export all 41 types PASS; compiled web/Fabric 86 PASS with zero events; full unit suite 734 PASS / 1 unchanged alternate-axis cross-filter failure. Original PBIP 157/157 hashes unchanged.
+- DEP-FABRIC-071 dependency remediation is underway and is not yet verified.
+
+### Final Bullet / Progress verification
+Latest app/web/Fabric builds and 86 compiled smoke states PASS. Hosted Fabric bundle hash matches; seven pages settled and tested query/selection/navigation/theme flows PASS. Native Power BI DOM adapter now has 36 checks, including six header/title ownership cases. Latest full suite: 737 PASS / one known alternate-axis failure; subsequent title-only adapter change passed all 24 runtime tests. Final package build and actual Service title ownership assertion PASS (service-dom-title-final.json). Desktop screenshots predate this title-only correction.
+
+
+### Follow-up: legacy Power BI axis state and tooltip bounds
+- INTERACTION-AXIS-074: 2 native Electron checks PASS; returning to an alternate axis now clears all stale dimming. Existing 24 selection runtime checks PASS and renderer lint PASS.
+- VIS-TOOLTIP-075: 6 native tooltip bounds checks PASS after four reproduced failures. Long overflowing hover content accessibility and hosted acceptance remain pending.
+- These checks exercise the production legacy class in Electron DOM; they do not resolve the known alternate-axis host cross-filter failure.
+
+
+### Tooltip interaction follow-up
+Legacy Power BI tooltip native coverage is now **10 PASS** (six bounds cases plus hover retention, focus/scroll capability, Escape and lifecycle cleanup). Selection runtime **24 PASS**; renderer lint **PASS**. Pointer travel/wheel and screen-reader acceptance in the hosted Service remain pending; keyboard discovery from the chart marks is not yet covered.
+- Power BI export package rebuild: PASS. Development-certificate generation and optional-feature warnings remain.
+
+
+### Legacy selection handler lifecycle
+INTERACTION-LIFETIME-076: repeated legacy HTML/fallback bar rendering now retains one background-clear handler and removes it on disposal. Focused production-class regressions cover both paths; native tooltip suite remains 10 PASS. Hosted acceptance remains pending.
+
+
+### Scalar card correctness and consistency
+- DATA-CARDS-077 / FORMAT-CARDS-078: 24 native editor/viewer assertions PASS for error/standard/zero state and one title.
+- DATA-STAT-079: two native missing-current cases PASS without fabricated comparison; legitimate zero comparison retained by component regression.
+- Nine scalar component tests PASS. Native deterministic transport exercises actual editor/viewer renderers, not live Fabric data.
+- Power BI support count remains 22 supported / 19 rejected. No additional target enabled or published in this cycle.
+- Final-source full unit suite: 748 PASS / 1 known alternate-axis failure. App and standalone web export builds PASS after all three card fixes.
+
+### Alternate-axis modifier selection
+INTERACTION-AXIS-080: 28 focused selection runtime tests PASS, including Ctrl/Command addition, removal, plain replacement and deselection. Renderer lint PASS. Alternate-axis host cross-filtering remains open; full-suite baseline above predates these two added tests.
+
+
+### Bound alternate-axis selection checkpoint
+41 focused selection/parity tests PASS and renderer lint PASS. Bound alternate fields now use their own Selection IDs. The historical applyJsonFilter source-text failure is superseded by runtime identity tests; the full suite has not been rerun at this checkpoint. **Major axis gap remains open:** export field binding, independent measure semantics, switch/reset lifecycle and hosted slicer acceptance are pending. No additional export support or hosted verification is claimed.

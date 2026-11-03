@@ -7,11 +7,10 @@ import Connect from './pages/Connect.jsx'
 import Home from './pages/Home.jsx'
 import AppGenerator from './pages/AppGenerator.jsx'
 import PbiRestyler from './pages/PbiRestyler.jsx'
-import PbiInjector from './pages/PbiInjector.jsx'
 import SettingsModal from './pages/SettingsModal.jsx'
 import Shell from './vilsem/Shell.jsx'
 import CommandPalette from './vilsem/CommandPalette.jsx'
-import { Home as HomeIcon, Upload, Wand2, Plus, Settings as SettingsIcon, LogOut } from 'lucide-react'
+import { Home as HomeIcon, Wand2, Plus, Settings as SettingsIcon, LogOut } from 'lucide-react'
 
 /**
  * App — root component.
@@ -208,7 +207,6 @@ export default function App() {
   const paletteCommands = [
     ...(page !== 'home' ? [{ id: 'home', label: 'Go to Home', group: 'Go', icon: <HomeIcon size={15} />, run: () => setPage('home') }] : []),
     { id: 'new', label: 'New project', group: 'Create', icon: <Plus size={15} />, run: () => handleCreateProject() },
-    { id: 'inject', label: 'Inject visuals into a report', group: 'Go', icon: <Upload size={15} />, run: () => setPage('injector') },
     { id: 'improve', label: 'Improve a report', group: 'Go', icon: <Wand2 size={15} />, run: () => setPage('restyler') },
     { id: 'settings', label: 'Open Settings', group: 'App', icon: <SettingsIcon size={15} />, run: () => setShowSettings(true) },
     { id: 'signout', label: 'Sign out', group: 'App', icon: <LogOut size={15} />, run: () => handleLogout() },
@@ -242,7 +240,6 @@ export default function App() {
           }}
           onOpenProject={handleOpenProject}
           onRestyleReport={() => setPage('restyler')}  // S13/S14 "Improve a report" (stub path)
-          onInjectVisuals={() => setPage('injector')}
           onSettings={() => setShowSettings(true)}
           onLogout={handleLogout}
         />
@@ -278,18 +275,6 @@ export default function App() {
       <Shell {...shellCommon} showRail={false} breadcrumb={[{ label: 'Home', onClick: () => setPage('home') }, { label: 'Restyle' }]}>
         <div style={fill}>
           <PbiRestyler authCreds={authCreds} connectionInfo={connectionInfo} onBack={() => setPage('home')} />
-        </div>
-        {globalSettings}{cmdk}
-      </Shell>
-    )
-  }
-
-  // ── PBI Injector ─────────────────────────────────────────────────────
-  if (page === 'injector') {
-    return (
-      <Shell {...shellCommon} breadcrumb={[{ label: 'Home', onClick: () => setPage('home') }, { label: 'Inject into Power BI' }]}>
-        <div style={fill}>
-          <PbiInjector authCreds={authCreds} connectionInfo={connectionInfo} onBack={() => setPage('home')} />
         </div>
         {globalSettings}{cmdk}
       </Shell>

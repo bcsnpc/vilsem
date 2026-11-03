@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest'
 import {createRequire} from 'node:module'
-import {PieMarks} from '../ui/src/primitives/pie-marks'
+import {PieMarks} from '@vilsem/core/primitives/pie-marks'
 const require=createRequire(import.meta.url)
 const echarts=require('../ui/node_modules/echarts')
 

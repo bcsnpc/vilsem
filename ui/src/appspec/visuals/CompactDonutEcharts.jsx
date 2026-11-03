@@ -3,7 +3,7 @@ import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
-import { mergeFragments, PieMarks } from '../../primitives/index'
+import { mergeFragments, PieMarks } from '@vilsem/core/primitives'
 
 export default function CompactDonutEcharts({ rows, config, loading, error }) {
   const t = config._T || getThemeTokens('dark')

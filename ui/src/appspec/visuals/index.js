@@ -60,13 +60,13 @@ import CompactDivider from './CompactDivider.jsx'
 import CompactBarRaceEcharts, { schema as barRaceSchema } from './CompactBarRaceEcharts.jsx'
 
 import { FLAGS } from '../shared/feature-flags.js'
-import { schema as barMarksSchema }     from '../../primitives/bar-marks/index'
-import { schema as radarMarksSchema }   from '../../primitives/radar-marks/index'
-import { schema as gaugeMarksSchema }   from '../../primitives/gauge-marks/index'
-import { schema as pointMarksSchema }   from '../../primitives/point-marks/index'
-import { schema as treemapMarksSchema } from '../../primitives/treemap-marks/index'
-import { schema as pieMarksSchema }     from '../../primitives/pie-marks/index'
-import { schema as lineMarksSchema }    from '../../primitives/line-marks/index'
+import { schema as barMarksSchema }     from '@vilsem/core/primitives/bar-marks/index'
+import { schema as radarMarksSchema }   from '@vilsem/core/primitives/radar-marks/index'
+import { schema as gaugeMarksSchema }   from '@vilsem/core/primitives/gauge-marks/index'
+import { schema as pointMarksSchema }   from '@vilsem/core/primitives/point-marks/index'
+import { schema as treemapMarksSchema } from '@vilsem/core/primitives/treemap-marks/index'
+import { schema as pieMarksSchema }     from '@vilsem/core/primitives/pie-marks/index'
+import { schema as lineMarksSchema }    from '@vilsem/core/primitives/line-marks/index'
 
 // Phase 6 (2026-04-25, modified scope): every wrapper hardcodes the ECharts
 // component. The Recharts variants stay imported so the source files remain
@@ -107,17 +107,17 @@ CompactPie.schema   = pieMarksSchema
 
 // Line + Area — wrapper resolves chartType from config (legacy visual.type='area'
 // still triggers area mode).
-function CompactLine(props) { return React.createElement(CompactLineEcharts, props) }
+function CompactLine(props) { return React.createElement(CompactLineEcharts, { ...props, allowSecondaryAxis: true }) }
 CompactLine.schema = lineMarksSchema
 
 function CompactArea(props) {
-  return React.createElement(CompactLineEcharts, { ...props, config: { ...props.config, chartType: props.config?.chartType || 'area' } })
+  return React.createElement(CompactLineEcharts, { ...props, allowSecondaryAxis: true, config: { ...props.config, chartType: props.config?.chartType || 'area' } })
 }
 CompactArea.schema = lineMarksSchema
 
 // StackedArea — wrapper supplies area+stacked defaults.
 function CompactStackedArea(props) { return React.createElement(CompactStackedAreaEcharts, props) }
-CompactStackedArea.schema = lineMarksSchema
+CompactStackedArea.schema = lineMarksSchema.filter(field => field.group !== 'Secondary axis')
 
 // StackedBar — Inspector exposes "Stack series" toggle and "Secondary color"
 // picker via the extended barMarksSchema.
@@ -127,7 +127,7 @@ CompactStackedBar.schema = barMarksSchema
 // BumpChart — reuses LineMarks with invertY:true. Real multi-series rank-
 // tracking bump chart deferred to Phase 8 per KB-015.
 function CompactBumpChart(props) { return React.createElement(CompactBumpChartEcharts, props) }
-CompactBumpChart.schema = lineMarksSchema
+CompactBumpChart.schema = lineMarksSchema.filter(field => field.group !== 'Secondary axis')
 
 // GroupedBar — sibling of StackedBar. Wrapper opts out of stacking so two
 // series render side-by-side per category.

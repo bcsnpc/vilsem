@@ -1,6 +1,6 @@
 import React from 'react'
 import DOMPurify from 'dompurify'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'

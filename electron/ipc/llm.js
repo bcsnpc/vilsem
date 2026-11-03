@@ -972,7 +972,7 @@ EXAMPLES:
   { "op": "replace", "path": "/visuals/0/data/orderBy", "value": "desc" }
 ] }`
 
-// ── Visual schema map — mirrors ui/src/primitives/*/index.ts field definitions ──
+// ── Visual schema map — mirrors packages/core/src/primitives/*/index.ts field definitions ──
 // Used to inject exact config key names into PATCH prompt so LLM uses `barRadius`
 // not `borderRadius`, `fillOpacity` not `opacity`, etc. Update when schemas change.
 const _barSchema = [

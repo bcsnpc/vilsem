@@ -1,9 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { fmtVal } from '../shared/formatters.js'
-import { getScalarValue } from '../shared/row-normalize.js'
+import { getScalarValue } from '@vilsem/core/dax/rows'
 import { setTextEditActive, setTextEditInactive, setTextEditMeasures, saveTextRange } from '../shared/textEditBus.js'
 import DOMPurify from 'dompurify'
+import { measureTokenHtml, extractMeasureTokens } from '../shared/measureToken.js'
 
 // ── Canvas object: rich, in-place-editable text with live measure/value tokens ──────
 // Double-click on the canvas to edit directly (multi-line, mixed fonts/sizes/colours).
@@ -29,16 +30,7 @@ const sanitizeRich = (html) => DOMPurify.sanitize(html || '', { ADD_ATTR: ['cont
 
 // Measure names referenced by data-measure token spans in the stored html.
 function extractMeasures(html) {
-  const out = new Set()
-  if (html) {
-    const re = /data-measure="([^"]*)"/g
-    let m
-    while ((m = re.exec(html))) {
-      const v = m[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&')
-      if (v) out.add(v)
-    }
-  }
-  return [...out]
+  return extractMeasureTokens(html)
 }
 
 export default function CompactTextBox({ config = {} }) {
@@ -56,8 +48,7 @@ export default function CompactTextBox({ config = {} }) {
   const insertToken = (name) => {
     if (!name || !ref.current) return
     ref.current.focus()
-    const safe = String(name).replace(/"/g, '&quot;')
-    document.execCommand('insertHTML', false, `<span data-measure="${safe}" contenteditable="false" style="${TOKEN_STYLE}">${name}</span>&nbsp;`)
+    document.execCommand('insertHTML', false, measureTokenHtml(name, TOKEN_STYLE))
   }
 
   const html = c.html != null ? c.html : (c.text ? escapeHtml(c.text) : '')

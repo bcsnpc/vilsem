@@ -71,20 +71,23 @@ describe('Axis Switcher — render-path parity', () => {
   })
 
   it('visual.ts has wireAxisPills to toggle sections on pill click', () => {
-    const visualTs = fs.readFileSync(path.join(REPO, 'pbiviz-semantica-renderer/src/visual.ts'), 'utf-8')
+    const visualTs = fs.readFileSync(path.join(REPO, 'vilsem-renderer/src/visual.ts'), 'utf-8')
     expect(visualTs).toMatch(/wireAxisPills/)
     expect(visualTs).toMatch(/data-axis-section/)
     expect(visualTs).toMatch(/data-axis-idx/)
   })
 
-  it('non-primary axis bar click uses host.applyJsonFilter for cross-visual filter', () => {
-    const visualTs = fs.readFileSync(path.join(REPO, 'pbiviz-semantica-renderer/src/visual.ts'), 'utf-8')
-    expect(visualTs).toMatch(/applyJsonFilter/)
-    expect(visualTs).toMatch(/data-axis-table/)
-    expect(visualTs).toMatch(/data-axis-column/)
+  it('bound alternate axes use field-specific selection identities without a JSON-filter side effect', () => {
+    const visualTs = fs.readFileSync(path.join(REPO, 'vilsem-renderer/src/visual.ts'), 'utf-8')
+    expect(visualTs).toMatch(/boundHtmlAxisSelection\(cat, sectionEl!, catName\)/)
+    expect(visualTs).toMatch(/withCategory\(category, index\)/)
+    expect(visualTs).not.toMatch(/this\.host\.applyJsonFilter\(/)
+    // Runtime cases in power-bi-selection-runtime.test.ts verify matching field
+    // identity, identical labels across dimensions, modifiers, and safe fallback.
+    // This is not an assertion that the exporter binds alternate axes yet.
   })
 
-  it('DAX emits axis table+column on each section for applyJsonFilter targeting', () => {
+  it('DAX emits axis table+column on each section for bound-field identity matching', () => {
     expect(PBIVIZ_BAR_DAX).toMatch(/data-axis-table/)
     expect(PBIVIZ_BAR_DAX).toMatch(/data-axis-column/)
   })

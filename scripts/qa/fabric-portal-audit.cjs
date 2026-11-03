@@ -1,6 +1,7 @@
 // Attach to the already authenticated QA browser. Never reads cookies or tokens.
 const fs = require('node:fs');
 const path = require('node:path');
+const { galleryPageReady } = require('./fabric-page-readiness.cjs');
 const endpoint = process.argv[2];
 if (!endpoint?.startsWith('ws://127.0.0.1:')) throw Error('Provide the local QA browser CDP URL');
 const ws = new WebSocket(endpoint), pending = new Map(); let id = 0;
@@ -32,6 +33,21 @@ ws.onopen = async () => {
       if (r.exceptionDetails) throw Error(r.exceptionDetails.text);
       return r.result.value;
     };
+    if (process.argv.includes('--latest-bundle')) {
+      await evaluate('location.reload(); true');
+      const deadline = Date.now() + 45000;
+      let ready = false;
+      while (Date.now() < deadline) {
+        try { ready = await evaluate(`document.querySelectorAll('button').length > 7 && !!document.querySelector('script[src*="vilsem-renderer.js"]')`); } catch {}
+        if (ready) break;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      if (!ready) throw Error('Fresh hosted renderer did not become ready');
+      const actual = await evaluate(`(async()=>{const url=document.querySelector('script[src*="vilsem-renderer.js"]').src;const response=await fetch(url,{cache:'reload'});if(!response.ok)throw Error('Renderer fetch failed');const bytes=await response.arrayBuffer();const hash=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(hash),v=>v.toString(16).padStart(2,'0')).join('')})()`);
+      const expected = require('node:crypto').createHash('sha256').update(fs.readFileSync('dist/fabric-embed/vilsem-renderer.js')).digest('hex');
+      report.rendererBundle = { expected, actual, status: expected === actual ? 'PASS' : 'FAIL' };
+      if (expected !== actual) throw Error('Hosted renderer differs from the latest local build');
+    }
     const names = await evaluate(`Array.from(document.querySelectorAll('button')).map(b=>b.innerText.match(/Visuals \\d+-\\d+/)?.[0]).filter(Boolean)`);
     if (names.length !== 7) throw Error(`Expected seven gallery navigation buttons; found ${names.length}. App is not ready.`);
     for (const name of names) {
@@ -40,7 +56,7 @@ ws.onopen = async () => {
       let previous = '', stable = 0, state; const deadline = Date.now() + 45000;
       while (Date.now() < deadline) {
         state = await evaluate(`(()=>{const text=document.body.innerText;const canvases=Array.from(document.querySelectorAll('canvas'));return {text,charts:document.querySelectorAll('[_echarts_instance_]').length,canvas:canvases.length,paint:canvases.map(c=>{try{let s=c.toDataURL(),h=0;for(let i=0;i<s.length;i+=97)h=(h*31+s.charCodeAt(i))|0;return h}catch{return null}}),loading:/Loading|Connecting to|Signing in/i.test(text)}})()`);
-        const signature = JSON.stringify(state); stable = signature === previous && !state.loading ? stable + 1 : 0; previous = signature;
+        const signature = JSON.stringify(state); stable = signature === previous && galleryPageReady(name, state) ? stable + 1 : 0; previous = signature;
         if (stable >= 3) break;
         await new Promise(r => setTimeout(r, 250));
       }
@@ -53,6 +69,7 @@ ws.onopen = async () => {
       report.pages.push({ name, status: stable >= 3 ? 'SETTLED_REQUIRES_REVIEW' : 'UNSETTLED', ...state, screenshot: file });
       fs.writeFileSync(path.join(output, 'fabric-portal-audit.json'), JSON.stringify(report, null, 2));
       console.log(JSON.stringify({ name, charts: state.charts, status: report.pages.at(-1).status }));
+      if (stable < 3) throw Error(`${name}: expected gallery content did not render before timeout`);
     }
     report.dimensionOnly = await evaluate(`window.semantica.queryTable({groupBy:['Product Categories Lookup[CategoryName]'],measures:[],filters:{},limit:10,orderBy:'asc'}).then(r=>({error:r.error,message:r.message,rows:r.rows}))`);
     // The dimension includes Components, which has no sales in the measure gallery.

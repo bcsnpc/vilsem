@@ -820,7 +820,7 @@ function InjectTab({
           T={T} teal={teal}
           checked={renderer === 'semantica'}
           onChange={() => setRenderer('semantica')}
-          label="Semantica Renderer (.pbiviz)"
+          label="vilsem Renderer (.pbiviz)"
           sub="Custom visual — requires admin install"
         />
       </div>
@@ -835,7 +835,7 @@ function InjectTab({
         }}>
           Download and send to your Power BI Admin to install in your org.
           <button
-            onClick={() => alert('Semantica Renderer .pbiviz build coming in a later step.')}
+            onClick={() => alert('vilsem Renderer .pbiviz build coming in a later step.')}
             style={{
               marginTop: 8, width: '100%', padding: '7px 10px',
               background: 'rgba(255,255,255,0.05)',
@@ -845,7 +845,7 @@ function InjectTab({
               cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
-            ↓ Download Semantica Renderer .pbiviz
+            ↓ Download vilsem Renderer .pbiviz
           </button>
         </div>
       )}

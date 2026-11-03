@@ -6,6 +6,12 @@ const visual={id:'bar1',type:'bar',data:{measures:['Sales'],groupBy:{table:'Prod
 const spec={title:'New report',visuals:[visual]}
 const build=s=>buildLocalReportParts({spec:s,measures,bundle})
 describe('new enhanced Power BI report',()=>{
+  it.each(['shape','divider'])('exports %s without creating a measure binding',type=>{
+    const parts=build({...spec,visuals:[{...visual,type,data:{},config:{shape:'triangle'}}]})
+    const v=JSON.parse(parts.find(p=>p.path.endsWith('/visual.json')).content)
+    expect(v.visual.query.queryState).toEqual({})
+    expect(JSON.stringify(v)).toContain(type)
+  })
   it('rejects a bar race without both playback and category fields',()=>{
     expect(()=>build({...spec,visuals:[{...visual,type:'bar_race'}]})).toThrow(/playback/i)
   })
@@ -25,7 +31,7 @@ describe('new enhanced Power BI report',()=>{
     expect(report.resourcePackages[0].items[0].path).toBe('renderer.pbiviz.json')
     expect(report.themeCollection).toBeDefined()
   })
-  it.each(['text_box','shape','sankey','custom'])('rejects unsupported %s instead of silently dropping it',type=>{
+  it.each(['text_box','custom'])('rejects unsupported %s instead of silently dropping it',type=>{
     expect(()=>build({...spec,visuals:[visual,{...visual,id:'other',type}]})).toThrow('does not yet support')
   })
   it('rejects missing measure metadata',()=>{

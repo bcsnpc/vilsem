@@ -7,10 +7,10 @@ module.exports=async function createPointLocator(){
  const server=await createServer({root,configFile:false,optimizeDeps:{noDiscovery:true,include:[]},server:{middlewareMode:true,watch:null},appType:'custom'})
  let composeOption,getThemeTokens
  try{
-  ;({composeOption}=await server.ssrLoadModule('/pbiviz-semantica-renderer/src/compositions.ts'))
+  ;({composeOption}=await server.ssrLoadModule('/vilsem-renderer/src/compositions.ts'))
   ;({default:getThemeTokens}=await server.ssrLoadModule('/ui/src/appspec/getThemeTokens.ts'))
  }finally{await server.close()}
- const echarts=require('../../pbiviz-semantica-renderer/node_modules/echarts')
+ const echarts=require('../../vilsem-renderer/node_modules/echarts')
  const parts=JSON.parse(fs.readFileSync(path.join(root,'cache/qa-target-gallery/report-parts.json')))
  const specs=parts.filter(p=>p.path.endsWith('/visual.json')).map(p=>{
   const value=JSON.parse(p.content).visual.objects.semantica[0].properties.primitiveSpec.expr.Literal.Value

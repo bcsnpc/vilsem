@@ -8,7 +8,7 @@
  * measures that return pre-rendered HTML strings as their values.
  *
  * Only used by the new HTML-Content-via-XMLA publish flow. The existing
- * Semantica Renderer (org-library visual) path is untouched and keeps
+ * vilsem Renderer (org-library visual) path is untouched and keeps
  * working as before.
  *
  * IPC channels:

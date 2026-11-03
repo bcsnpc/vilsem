@@ -3,7 +3,7 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { fmtAxisNumber } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'

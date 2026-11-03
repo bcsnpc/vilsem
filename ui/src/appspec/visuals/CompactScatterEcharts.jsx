@@ -3,8 +3,8 @@ import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
-import { mergeFragments, PointMarks } from '../../primitives/index'
-import { gridLineColor } from '../shared/palettes.js'
+import { mergeFragments, PointMarks } from '@vilsem/core/primitives'
+import { gridLineColor } from '@vilsem/core/palettes'
 
 export default function CompactScatterEcharts({ rows, config, loading, error }) {
   const handleClick = useCallback(params => {

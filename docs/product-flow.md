@@ -19,7 +19,7 @@ Initial audit, 2026-09-07. **Executed** means the real desktop UI was exercised;
 | Save | saveAppSpec(name,datasetId,spec) stores spec plus retained chat messages | Traced |
 | Reopen | Home lists saved specs; App passes initialSpec to AppGenerator and restores document/chat state | Traced |
 | Duplicate/delete | Visual and project actions alter document/database; test recovery and duplicate names | Not exercised |
-| Output | Web export/preview, Power BI injection/publish, Fabric deployment | Traced; builds tested separately, deployment not performed |
+| Output | Web export/preview, Power BI visual export/publish, Fabric deployment | Traced; builds tested separately, deployment not performed |
 | Other work | Report restyling with plans/backups; visual playground/templates; page navigation/modals | Traced, incomplete |
 
 The desktop synthetic test uses a new profile under cache/qa-profile and never reads the developer .env. Live data remains a separate test layer. Renderer fixture data is generated in ui/qa/renderer-audit.jsx, not loaded from client data.

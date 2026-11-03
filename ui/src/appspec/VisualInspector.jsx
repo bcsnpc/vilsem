@@ -4,7 +4,7 @@ import { settingsCapabilities, VALUE_TEXT_DEFAULTS } from './shared/settingsCapa
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { VISUAL_MAP } from './visuals/index.js'
-import { paramsToSchema, slotCount } from '../playground/instantiate.js' // Playground Spike — custom-visual param controls + slot binding
+import { paramsToSchema, slotCount } from '@vilsem/core/templates' // Playground Spike — custom-visual param controls + slot binding
 import { Input, Select, Toggle, Range } from '../ui/Input.jsx'
 import { useTheme } from '../ui/theme.js'
 import { FONTS } from './shared/fonts.js'
@@ -201,7 +201,8 @@ function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, 
   // Hide hardcoded-panel duplicates AND controls the renderer can't honor for this type.
   // bar_race has no generic "Chart Features" panel (its controls are bar/line-centric),
   // so it keeps its own schema fields even where a key overlaps HARDCODED_KEYS (dataLabels).
-  const visibleFields = schema.filter(f => (type === 'bar_race' || !HARDCODED_KEYS.has(f.key)) && !isFieldHidden(type, f.key))
+  const visibleFields = schema.filter(f => (type === 'bar_race' || !HARDCODED_KEYS.has(f.key)) && !isFieldHidden(type, f.key)
+    && (!f.key.startsWith('secondaryAxis') || f.key === 'secondaryAxisEnabled' || cfg.secondaryAxisEnabled))
   if (visibleFields.length === 0) return null
 
   // Group fields by schema[i].group (defaults to "Other")
@@ -257,6 +258,7 @@ function SchemaFields({ schema, type, cfg, updateConfig, baseColor, mutedColor, 
     <>
       {Object.entries(byGroup).map(([groupName, fields]) => (
         <ElementPanel key={groupName} label={groupName} isDark={isDark}>
+          {fields.find(f => f.description)?.description && <div style={{ fontSize: 11, color: mutedColor, marginBottom: 8 }}>{fields.find(f => f.description).description}</div>}
           {fields.map(renderField)}
         </ElementPanel>
       ))}
@@ -758,6 +760,8 @@ export default function VisualInspector({ visual, isDark: _isDarkProp, canvasThe
       const v = s.visuals.find(vi => vi.id === selectedVisualId)
       if (!v) return
       v.config = { ...(v.config || {}), [key]: value }
+      if (key === 'secondaryAxisEnabled' && value === true) { v.config.stacked = false; v.config.invertY = false }
+      if ((key === 'stacked' || key === 'invertY') && value === true) v.config.secondaryAxisEnabled = false
     })
   }
   const updateData = (key, value) => {

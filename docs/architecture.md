@@ -23,7 +23,7 @@ Vilsem authors portable App Spec dashboards over Power BI/Fabric semantic models
 | Persistence | electron/ipc/dashboard.js → src/cache/sqlite.js | sql.js database exported to disk; saved specs keyed by dataset/name for update |
 | Web transport | standalone/index.jsx + src/app.js/exportPackage.js | HTTP window.semantica adapter and local/self-hosted service |
 | Fabric embed | standalone/fabric-embed.jsx → StandaloneApp.jsx | Same React viewer with host-installed query transport |
-| Power BI | pages/powerbi/*, AppSpecToPowerBI.js, pbiviz-semantica-renderer | App Spec mapping, PBIR/DAX/HTML generation, custom host selection/filter APIs |
+| Power BI | pages/powerbi/*, AppSpecToPowerBI.js, vilsem-renderer | App Spec mapping, PBIR/DAX/HTML generation, custom host selection/filter APIs |
 
 Legacy navigation pages and renderer alternatives remain on disk. Their existence does not establish reachability from the current router. `CompactTableEcharts` is HTML, and `CompactSunburst` still uses Recharts. Dependencies alone are not an architecture diagram.
 

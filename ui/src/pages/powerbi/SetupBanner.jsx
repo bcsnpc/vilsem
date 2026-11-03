@@ -16,7 +16,7 @@ import { COLOR_SCHEMES } from '../../appspec/colorSchemes'
 
 const STORAGE_KEY = 'pbi-setup-banner-dismissed'
 // Link to Fabric admin portal where admins upload the .pbiviz. The actual
-// .pbiviz file lives at pbiviz-semantica-renderer/dist/ inside the Semantica
+// .pbiviz file lives at vilsem-renderer/dist/ inside the Semantica
 // install directory; admins download it from there and upload here.
 const ADMIN_PORTAL_URL = 'https://app.fabric.microsoft.com/admin-portal/organizationalVisuals'
 
@@ -69,7 +69,7 @@ export default function SetupBanner() {
           fontSize: 12, fontWeight: 700, color: T.textPrimary,
           marginBottom: 4,
         }}>
-          One-time setup: install Semantica Renderer
+          One-time setup: install vilsem Renderer
         </div>
         <div style={{
           fontSize: 11, color: T.textSecondary, lineHeight: 1.55,
@@ -77,7 +77,7 @@ export default function SetupBanner() {
           Power BI Mode publishes reports using Semantica's own custom visual. Your Power BI
           tenant admin must upload <code style={{ color: T.textPrimary, background: 'rgba(255,255,255,0.06)', padding: '1px 5px', borderRadius: 3 }}>semanticaHtmlRenderer.pbiviz</code> to
           the organizational visual library once. The file lives in the Semantica install
-          directory under <code style={{ color: T.textPrimary }}>pbiviz-semantica-renderer/dist/</code>.
+          directory under <code style={{ color: T.textPrimary }}>vilsem-renderer/dist/</code>.
           Without this step, viewers will see <code style={{ color: '#FCA5A5' }}>CustomVisualNotFound</code>.
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>

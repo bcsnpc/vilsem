@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { EXAMPLE_TEMPLATES } from '../ui/src/playground/examples/index.js'
-import { instantiateVisual, validateTemplate, buildThemeContext } from '../ui/src/playground/instantiate.js'
+import { EXAMPLE_TEMPLATES } from '@vilsem/core/templates/examples'
+import { instantiateVisual, validateTemplate, buildThemeContext } from '@vilsem/core/templates'
 
 const theme = buildThemeContext({ textPrimary: '#fff', textMuted: '#888', gridStroke: '#222' }, 'teal')
 

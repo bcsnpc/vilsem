@@ -2,7 +2,7 @@ import React from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
 

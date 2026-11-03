@@ -1,7 +1,7 @@
 // Single source of truth for the font families vilsem offers (visual inspector +
 // generator + web export). Previously duplicated in AppGenerator (PREMIUM_FONTS)
 // and VisualInspector (FONTS) as two identical 10-item lists. Keep the Power BI
-// embed (pbiviz-semantica-renderer/scripts/embed-fonts.js) in sync with
+// embed (vilsem-renderer/scripts/embed-fonts.js) in sync with
 // PBI_EMBED_FONTS so published reports render matching type.
 //
 // Each spec carries the exact Google Fonts weights that family actually ships, so

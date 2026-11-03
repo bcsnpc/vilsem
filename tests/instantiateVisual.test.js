@@ -23,7 +23,7 @@ import {
   evalExpr,
   applyTransforms,
   computeDateRange,
-} from '../ui/src/playground/instantiate.js'
+} from '@vilsem/core/templates'
 
 // A representative multi-slot template (lollipop-ish: 1 dimension + 1 measure).
 const lolliTemplate = {

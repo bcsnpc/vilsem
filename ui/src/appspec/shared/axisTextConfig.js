@@ -1,3 +1,4 @@
+import { applySecondaryAxis } from './secondaryAxis.js'
 // Apply only explicit inspector typography. Preserve scale, tick formatting,
 // visibility and renderer-specific defaults; never mutate the input option.
 export function applyAxisTextConfig(option, config = {}) {
@@ -19,5 +20,5 @@ export function applyAxisTextConfig(option, config = {}) {
     if (result === option) result = { ...option }
     result[key] = Array.isArray(option[key]) ? option[key].map(apply) : apply(option[key])
   }
-  return result
+  return applySecondaryAxis(result, config)
 }

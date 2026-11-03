@@ -3,7 +3,7 @@ import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
-import { mergeFragments, GaugeMarks } from '../../primitives/index'
+import { mergeFragments, GaugeMarks } from '@vilsem/core/primitives'
 
 export default function CompactGaugeEcharts({ rows, config, loading, error }) {
   const t = config._T || getThemeTokens('dark')

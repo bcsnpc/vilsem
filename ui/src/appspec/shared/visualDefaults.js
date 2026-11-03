@@ -5,7 +5,7 @@
 // the inspector display what actually renders (fixing "opacity says 100% but the
 // card is transparent" and "card is black but the font-color field shows teal").
 import getThemeTokens from '../getThemeTokens'
-import { pal } from './palettes.js'
+import { pal } from '@vilsem/core/palettes'
 
 // Centralised KPI-type set (was duplicated ~6×). KPI-family visuals render a
 // value card rather than a chart, so several defaults differ from charts.

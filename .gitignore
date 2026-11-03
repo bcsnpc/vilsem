@@ -4,6 +4,7 @@ node_modules/
 .env.*.local
 .auth/
 cache/
+vilsem-renderer/generated/
 *.db
 *.pptx
 
@@ -19,7 +20,7 @@ export/
 *.asar
 *.pak
 *.bin
-!pbiviz-semantica-renderer/dist/*.pbiviz
+!vilsem-renderer/dist/*.pbiviz
 
 # Local LLM binary + model (large files, not version-controlled)
 bin/

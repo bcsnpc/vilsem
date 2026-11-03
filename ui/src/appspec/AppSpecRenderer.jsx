@@ -5,7 +5,7 @@ import GridLayout from 'react-grid-layout'
 import AxisSwitchPills, { getEffectiveGroupBy } from './AxisSwitchPills.jsx'
 import getThemeTokens from './getThemeTokens'
 import './shared/animations.css'
-import { getColorValue } from './shared/palettes.js'
+import { getColorValue } from '@vilsem/core/palettes'
 import { isObjectType, isBareVisual } from './schema.js'
 import { getCardChromeStyle } from './shared/chrome.js'
 import { getCardAnimation, getHoverHandlers } from './shared/animation.js'
@@ -17,7 +17,7 @@ import VisualBoundary from './shared/VisualBoundary.jsx'
 import {
   getScalarValue, sortFilterValues, resolveMeasureKey, resolveRowKey,
   normaliseRows, normaliseTableRows,
-} from './shared/row-normalize.js'
+} from '@vilsem/core/dax/rows'
 import CompactKpi from './visuals/CompactKpi.jsx'
 import { VISUAL_MAP } from './visuals/index.js'
 import { SlicerDropdown, SlicerButtons, SlicerDateRange, SlicerMultiSelect } from './slicers/index.js'

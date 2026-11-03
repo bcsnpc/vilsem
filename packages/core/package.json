@@ -1,0 +1,77 @@
+{
+  "name": "@vilsem/core",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "src",
+    "dist",
+    "assets",
+    "schemas",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx"
+  ],
+  "exports": {
+    "./dax": "./src/dax/index.js",
+    "./dax/rows": "./src/dax/row-normalize.js",
+    "./dax/preview": "./src/dax/previewDax.js",
+    "./templates": "./src/templates/instantiate.js",
+    "./palettes": "./src/shared/palettes.js",
+    "./spec": "./src/spec/index.js",
+    "./spec/types": "./src/spec/primitiveVisualTypes.json",
+    "./templates/examples": "./src/templates/examples/index.js",
+    "./primitives": {
+      "types": "./src/primitives/index.ts",
+      "default": "./dist/primitives.js"
+    },
+    "./primitives/*": "./src/primitives/*.ts",
+    "./formatters": "./src/shared/formatters.js",
+    "./theme": {
+      "types": "./src/shared/theme.ts",
+      "default": "./dist/theme.js"
+    },
+    "./primitives/bar-marks": "./src/primitives/bar-marks/index.ts",
+    "./primitives/cartesian-frame": "./src/primitives/cartesian-frame/index.ts",
+    "./primitives/categorical-axis": "./src/primitives/categorical-axis/index.ts",
+    "./primitives/gauge-marks": "./src/primitives/gauge-marks/index.ts",
+    "./primitives/legend": "./src/primitives/legend/index.ts",
+    "./primitives/line-marks": "./src/primitives/line-marks/index.ts",
+    "./primitives/linear-axis": "./src/primitives/linear-axis/index.ts",
+    "./primitives/pie-marks": "./src/primitives/pie-marks/index.ts",
+    "./primitives/point-marks": "./src/primitives/point-marks/index.ts",
+    "./primitives/radar-marks": "./src/primitives/radar-marks/index.ts",
+    "./primitives/tooltip": "./src/primitives/tooltip/index.ts",
+    "./primitives/treemap-marks": "./src/primitives/treemap-marks/index.ts",
+    "./dax/translator": "./src/dax/translator.cjs",
+    "./pbir": "./src/pbir/index.js",
+    "./pbir/project": "./src/pbir/localProject.cjs",
+    "./pbir/report": "./src/pbir/localReportBuilder.js",
+    "./pbir/layout": "./src/pbir/layout.js",
+    "./pbir/mapPages": "./src/pbir/mapPages.js",
+    "./compositions": {
+      "types": "./dist/compositions.d.ts",
+      "default": "./dist/compositions.js"
+    },
+    "./spec/resolve": "./src/spec/resolve.js"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "typesVersions": {
+    "*": {
+      "compositions": [
+        "dist/compositions.d.ts"
+      ],
+      "spec/resolve": [
+        "src/spec/resolve.js"
+      ]
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "ajv": "^8.18.0"
+  }
+}

@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   LabelList, Cell,
 } from 'recharts'
-import { pal, hexToRgb } from '../shared/palettes.js'
+import { pal, hexToRgb } from '@vilsem/core/palettes'
 import {
   BAR_SCROLL_THRESHOLD, PX_PER_BAR_ROW,
   fmtVal, fmtAxisNumber, truncateAxisLabel,

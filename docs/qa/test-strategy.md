@@ -102,3 +102,11 @@ A successful mount or absence of console errors is not visual approval. Fresh vi
 Acceptance: content must fit, intentionally truncate with access to full information, scroll accessibly, or present a deliberate compact/empty state. Losing labels above a header, centering long text outside the box, and silently ignoring a formatting control fail. Preserve data, selection, sorting, explicit formats and saved rich text during repairs.
 
 Dedicated text-box checks enter editing through the actual double-click handler, select text, operate inspector italic/size controls, inspect computed font size and commit using Escape. Long-paragraph checks cover both hosts. Subsequent coverage must include partial selection, all font/colour/alignment choices, keyboard-only use, live-value insertion/filter refresh, mixed-format persistence, and undo. These are not all covered by the initial text probe.
+
+## Running focused native QA
+
+Start `npm run ui:dev`, then run `npm run qa:native`. The runner executes isolated Electron suites sequentially, continues to collect results after a failed suite, and exits nonzero if any suite fails. It removes inherited Electron mode variables and uses each suite's separate QA profile. These suites do not publish or connect to client data.
+
+To run selected suites: `npm run qa:native -- race-controls waffle-audit fabric-dialog`.
+
+Available suites: race-controls, powerbi-race-controls, powerbi-title, waffle-audit, fabric-dialog, export-type-audit, text-token, text-format-audit, powerbi-table, interaction-audit. Evidence is written under `docs/qa/evidence`. Power BI method harnesses exercise production code with synthetic DataViews; they do not replace Desktop/Service acceptance. Hosted audits remain separate and restricted to the existing QA workspace/report/app.

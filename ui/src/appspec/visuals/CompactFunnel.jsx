@@ -1,5 +1,5 @@
 import React from 'react'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'

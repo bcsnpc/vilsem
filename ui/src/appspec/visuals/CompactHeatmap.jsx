@@ -1,5 +1,5 @@
 import React from 'react'
-import { pal, hexToRgb } from '../shared/palettes.js'
+import { pal, hexToRgb } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'

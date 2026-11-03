@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
-import { pal, gridLineColor } from '../shared/palettes.js'
+import { pal, gridLineColor } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'

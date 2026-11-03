@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fabric deployment dialog QA</title></head><body>
+<div id="root"></div><script type="module">
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import FabricDeployDialog from '../src/pages/fabric/FabricDeployDialog.jsx'
+import '../src/index.css'
+import '../src/ui/tokens.css'
+import '../src/ui/components.css'
+import '../src/vilsem/tokens.css'
+window.qaFabricCalls=[]
+window.semantica={
+  fabricPrereqCheck:async()=>({ok:true,results:{},missing:[]}),
+  fabricConfigInfo:async()=>({}),onFabricOutput:()=>()=>{},
+  fabricDeploy:async payload=>{window.qaFabricCalls.push(payload);return payload.opts.appName==='Existing report'
+    ?{ok:false,stage:'scaffold',error:{code:'PROJECT_EXISTS',message:'A local app folder with this name already exists. Choose another app name. Its files have been preserved.'}}
+    :{ok:true,projectDir:'QA/new-report'}}
+}
+createRoot(document.getElementById('root')).render(React.createElement(FabricDeployDialog,{spec:{title:'Original report',visuals:[]},appTitle:'Existing report',datasetId:'qa-model',onClose(){}}))
+</script></body></html>

@@ -1,5 +1,10 @@
 # AI / UI parity matrix
 
+## New UI capability requiring AI acceptance ? 2026-09-12
+
+Line/Area now expose 18 `secondaryAxis*` settings in the primitive schema. UI control and shared renderer tests pass. **AI editing is not verified** for these new keys: prompt/tool discovery, sanitizer behavior, mutual-exclusion semantics, generated patches and user feedback still require explicit acceptance. Do not infer prompt parity from schema presence. Non-AI work remains the current priority.
+
+
 Repair update: multi_select preservation and custom validation now pass production regressions. The after-fix contract suite has 11 passes / 4 failures: config type/key rejection, measure removal and sequential patches remain unresolved. The tables below preserve before-fix parity evidence; see [current fix status](qa/fix-status.md).
 
 ## Runtime contract results

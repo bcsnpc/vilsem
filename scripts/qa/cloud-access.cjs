@@ -79,7 +79,16 @@ app.whenReady().then(async () => {
       const {BrowserWindow}=require('electron/main')
       const win=new BrowserWindow({width:1600,height:1100,webPreferences:{contextIsolation:true,sandbox:true,backgroundThrottling:false}})
       app.commandLine.appendSwitch('disable-features','CalculateNativeWinOcclusion')
-      await win.loadURL('http://127.0.0.1:5173/qa/full-audit.html')
+      report.hostLifecycle=[]
+      win.webContents.on('render-process-gone',(_event,details)=>report.hostLifecycle.push({event:'render-process-gone',reason:details.reason,exitCode:details.exitCode}))
+      win.webContents.on('did-navigate',(_event,url)=>{try{const u=new URL(url);report.hostLifecycle.push({event:'did-navigate',origin:u.origin,path:u.pathname})}catch{}})
+      // A Vite application shell can reload when unrelated source edits arrive.
+      // Give hosted acceptance an isolated, static loopback document instead.
+      const hostServer=require('node:http').createServer((_req,res)=>{res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end('<!doctype html><html><head><title>Vilsem Service QA</title></head><body style="margin:0"></body></html>')})
+      await new Promise((resolve,reject)=>{hostServer.once('error',reject);hostServer.listen(0,'127.0.0.1',resolve)})
+      app.once('will-quit',()=>hostServer.close())
+      await win.loadURL(`http://127.0.0.1:${hostServer.address().port}/`)
+
       const sdk=await axios.get('https://cdn.jsdelivr.net/npm/powerbi-client@2.23.1/dist/powerbi.js',{timeout:30000})
       await win.webContents.executeJavaScript(sdk.data)
       const config={type:'report',id:created.reportId,embedUrl:meta.data.embedUrl,accessToken:auth.data.access_token,tokenType:0,settings:{panes:{filters:{visible:false}},visualRenderedEvents:true}}
@@ -93,8 +102,8 @@ app.whenReady().then(async () => {
         const deadline=Date.now()+30000;let frames=[],previousPaint='',stablePaint=0
         while(Date.now()<deadline){
           frames=[]
-          for(const frame of win.webContents.mainFrame.framesInSubtree){try{frames.push(await Promise.race([frame.executeJavaScript(`({text:document.body?.innerText?.slice(0,1400),charts:document.querySelectorAll('[_echarts_instance_]').length,svg:document.querySelectorAll('svg').length,canvas:document.querySelectorAll('canvas').length})`),new Promise((_,reject)=>setTimeout(()=>reject(Error('Frame unavailable')),1000))]))}catch{}}
-          if(frames.reduce((n,f)=>n+f.charts+(f.text?.startsWith('table\n')?1:0),0)>=expected){
+          for(const frame of win.webContents.mainFrame.framesInSubtree){try{frames.push(await Promise.race([frame.executeJavaScript(`({text:document.body?.innerText?.slice(0,1400),charts:document.querySelectorAll('[_echarts_instance_]').length,domCards:document.querySelectorAll('[data-powerbi-dom-visual]').length,waffle:Array.from(document.querySelectorAll('div')).filter(e=>e.style.gridTemplateColumns.includes('repeat(10')&&e.children.length===100).length,svg:document.querySelectorAll('svg').length,canvas:document.querySelectorAll('canvas').length})`),new Promise((_,reject)=>setTimeout(()=>reject(Error('Frame unavailable')),1000))]))}catch{}}
+          if(frames.reduce((n,f)=>n+f.charts+(f.domCards||0)+(f.text?.startsWith('table\n')?1:0),0)>=expected){
             // A chart instance exists before its animated lines reach their endpoints.
             // Require stable painted pixels, not just a host rendered event.
             const paint=[]
@@ -104,7 +113,8 @@ app.whenReady().then(async () => {
           }
           await new Promise(r=>setTimeout(r,250))
         }
-        return frames
+        const observed=frames.reduce((n,f)=>n+f.charts+(f.domCards||0)+(f.text?.startsWith('table\n')?1:0),0)
+        throw Error(`Service visual readiness timed out: expected ${expected} settled visuals, observed ${observed}; stable paint samples ${stablePaint}.`)
       }
       for(const page of process.argv.includes('--interactions-only')?[]:pages){
         await win.webContents.executeJavaScript(`qaEvents=[];qaReport.setPage(${JSON.stringify(page.name)})`)
@@ -126,6 +136,39 @@ app.whenReady().then(async () => {
         fs.writeFileSync(path.join(root,process.argv.includes('--interactions-only')?'docs/qa/evidence/cloud-interactions.json':'docs/qa/evidence/cloud-gallery.json'),JSON.stringify(report,null,2))
       }
       report.checks.push({name:stage,status:'PASS',note:'Rendered events and screenshots only; individual chart content and interactions require review.'})
+      if(process.argv.includes('--dom-title-check')) {
+        await win.webContents.executeJavaScript(`qaReport.setPage(${JSON.stringify(pages.at(-1).name)})`)
+        const expected=await win.webContents.executeJavaScript('qaReport.getActivePage().then(p=>p.getVisuals()).then(v=>v.length)')
+        await readyFrames(expected)
+        const cards=[]
+        for(const frame of win.webContents.mainFrame.framesInSubtree){try{
+          const card=await frame.executeJavaScript(`(()=>{if(!document.querySelector('[data-format-target="value-bar"]'))return null;const text=document.body.innerText,type=text.startsWith('bullet')?'bullet':text.startsWith('progress')?'progress':null;return type?{type,text,titles:text.split(type).length-1,caption:text.includes('(target:')}:null})()`)
+          if(card)cards.push(card)
+        }catch{}}
+        const pass=cards.length===2&&new Set(cards.map(c=>c.type)).size===2&&cards.every(c=>c.titles===1&&!c.caption)
+        report.checks.push({name:'DOM cards use one shared title',status:pass?'PASS':'FAIL',cards})
+        fs.writeFileSync(path.join(root,'docs/qa/evidence/service-dom-title-final.png'),(await win.webContents.capturePage()).toPNG())
+        if(!pass)throw Error('DOM title ownership mismatch')
+      }
+      if(process.argv.includes('--table-interactions')) {
+        await win.webContents.executeJavaScript(`qaReport.setPage(${JSON.stringify(pages[2].name)})`)
+        await readyFrames(6)
+        let tableFrame
+        for(const frame of win.webContents.mainFrame.framesInSubtree){try{if(await frame.executeJavaScript(`!!document.querySelector('[data-table-grid]')`)){tableFrame=frame;break}}catch{}}
+        if(!tableFrame)throw Error('Updated Service table controls not found')
+        const result=await tableFrame.executeJavaScript(`(()=>{
+          const rows=()=>Array.from(document.querySelectorAll('[data-table-row]')).map(r=>({category:r.children[1].textContent.trim(),values:Array.from(r.children).slice(2).map(c=>c.textContent.trim())}));
+          const before=rows(), states=[];
+          for(let i=0;i<3;i++){document.querySelector('[data-table-sort="val-0"]').click();states.push(rows())}
+          const handle=document.querySelector('[data-table-resize="dim-0"]');handle.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+          return {before,states,header:document.querySelector('[data-table-header]').style.gridTemplateColumns,row:document.querySelector('[data-table-row]').style.gridTemplateColumns,handles:document.querySelectorAll('[data-table-resize]').length}
+        })()`)
+        const pass=result.states[0][0].category==='Accessories'&&result.states[1][0].category==='Clothing'&&JSON.stringify(result.states[2])===JSON.stringify(result.before)&&result.header===result.row&&result.header.includes('160px')
+        fs.writeFileSync(path.join(root,'docs/qa/evidence/service-table-interactions.json'),JSON.stringify({status:pass?'PASS':'FAIL',scope:'Hosted Service DOM header clicks and keyboard resize, actual model',...result},null,2))
+        fs.writeFileSync(path.join(root,'docs/qa/evidence/service-table-interactions.png'),(await win.webContents.capturePage()).toPNG())
+        report.checks.push({name:'Hosted table sorting and resize',status:pass?'PASS':'FAIL'})
+        if(!pass)throw Error('Hosted table interaction assertion failed')
+      }
       if(process.argv.includes('--interactions')||process.argv.includes('--all-interactions')) {
         const requested=process.argv.find(a=>a.startsWith('--selection-type='))?.split('=')[1]||'bar'
         const selectionTypes=process.argv.includes('--all-interactions')?['bar','stacked_bar','grouped_bar','column','line','area','stacked_area','bump','donut','pie','scatter','bubble','treemap','radar','slope','lollipop']:requested.split(',')
@@ -169,10 +212,18 @@ app.whenReady().then(async () => {
         report.nativeSelection.canvasBox=b
         await send('Input.dispatchMouseEvent',{type:'mouseMoved',x,y},barSession)
         if(process.argv.includes('--tooltip-check')){
+          // The first line dot extends left of the plot. Axis-trigger tooltips
+          // require a point inside the grid even though its outer dot is clickable.
+          if(['line','area'].includes(selectionType))await send('Input.dispatchMouseEvent',{type:'mouseMoved',x:x+5,y},barSession)
           const expected=!process.argv.includes('--tooltip-off')
-          const tooltip=(await send('Runtime.evaluate',{expression:`new Promise(resolve=>{const until=Date.now()+3000;let frames=0;const check=()=>{const visible=Array.from(document.querySelectorAll('div')).filter(e=>e.style.zIndex==='9999999'&&getComputedStyle(e).visibility!=='hidden'&&getComputedStyle(e).display!=='none'&&Number(getComputedStyle(e).opacity)>0).map(e=>e.innerText);if(${expected}&&visible.length||!${expected}&&++frames>=3||Date.now()>until)resolve({visible});else requestAnimationFrame(check)};requestAnimationFrame(check)})`,returnByValue:true,awaitPromise:true},barSession)).result.value
-          report.nativeSelection.tooltip={...tooltip,expectedVisible:expected,status:(tooltip.visible.length>0)===expected?'PASS':'FAIL'}
+          const tooltip=(await send('Runtime.evaluate',{expression:`new Promise(resolve=>{const until=Date.now()+3000;let frames=0;const check=()=>{const visible=Array.from(document.querySelectorAll('div')).filter(e=>e.style.zIndex==='9999999'&&getComputedStyle(e).visibility!=='hidden'&&getComputedStyle(e).display!=='none'&&Number(getComputedStyle(e).opacity)>0).map(e=>e.innerText);if(${expected}&&visible.length||!${expected}&&++frames>=3||Date.now()>until)resolve({visible,bounds:Array.from(document.querySelectorAll('div')).filter(e=>e.style.zIndex==='9999999'&&getComputedStyle(e).visibility!=='hidden'&&Number(getComputedStyle(e).opacity)>0).map(e=>{const r=e.getBoundingClientRect();let clipped=false;for(let p=e.parentElement;p&&p!==document.body;p=p.parentElement){const s=getComputedStyle(p),b=p.getBoundingClientRect();if(/auto|hidden|scroll/.test(s.overflowX)&&(r.left<b.left-1||r.right>b.right+1))clipped=true}return{left:r.left,right:r.right,top:r.top,bottom:r.bottom,clipped,inViewport:r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1}})});else requestAnimationFrame(check)};requestAnimationFrame(check)})`,returnByValue:true,awaitPromise:true},barSession)).result.value
+          report.nativeSelection.tooltip={...tooltip,expectedVisible:expected,status:(tooltip.visible.length>0)===expected&&(!expected||tooltip.bounds.every(b=>b.inViewport&&!b.clipped))?'PASS':'FAIL'}
           report.checks.push({name:`Native ${selectionType} tooltip ${expected?'shown':'hidden'}`,status:report.nativeSelection.tooltip.status})
+          if(process.argv.includes('--measure-label-check')){
+            const text=tooltip.visible.join('\n')
+            report.checks.push({name:`Native ${selectionType} bound measure labels`,status:['Quantity Sold','Quantity Returned'].every(name=>text.includes(name))?'PASS':'FAIL'})
+          }
+          fs.writeFileSync(path.join(root,`docs/qa/evidence/service-native-${selectionType}-tooltip.png`),(await win.webContents.capturePage()).toPNG())
         }
         await send('Input.dispatchMouseEvent',{type:'mousePressed',x,y,button:'left',clickCount:1},barSession)
         await send('Input.dispatchMouseEvent',{type:'mouseReleased',x,y,button:'left',clickCount:1},barSession)

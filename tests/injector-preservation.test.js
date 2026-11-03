@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 const render = vi.hoisted(() => vi.fn(() => '<div>QA visual</div>'))
 vi.mock('../ui/src/pages/powerbi/htmlTemplates/index.js', () => ({ renderVisualToHtml: render }))
-import { injectVisualsIntoReport } from '../ui/src/pages/injector/injectorFlow.js'
+import { extractPagesFromParts, injectVisualsIntoReport } from '../ui/src/pages/injector/injectorFlow.js'
 
 function setup() {
   render.mockReset().mockReturnValue('<div>QA visual</div>')
@@ -20,6 +20,20 @@ function setup() {
 }
 afterEach(() => vi.unstubAllGlobals())
 describe('existing report insertion preparation and preservation', () => {
+  it('counts distinct visual folders independently of supporting parts and part order', () => {
+    const parts = [
+      { path: 'definition/pages/one/visuals/chart/visual.json' },
+      { path: 'definition/pages/one/visuals/chart/mobile.json' },
+      { path: 'definition/pages/one/visuals/other/visual.json' },
+      { path: 'definition/pages/one/page.json', content: '{"displayName":"Overview"}' },
+      { path: 'definition/pages/empty/page.json', content: '{"displayName":"Empty"}' },
+    ]
+    for (const input of [parts, [...parts].reverse()]) {
+      const pages = extractPagesFromParts(input)
+      expect(pages.find(p => p.dirName === 'one').visualCount).toBe(2)
+      expect(pages.find(p => p.dirName === 'empty').visualCount).toBe(0)
+    }
+  })
   it.each(['missing page', 'invalid report JSON', 'missing report JSON', 'duplicate visual id', 'visual without measure'])('rejects %s before model mutation', async scenario => {
     const {semantica,args}=setup()
     if(scenario==='missing page')args.targetPageDir='deleted-page'

@@ -287,7 +287,7 @@ function injectVisualPartsIntoReport({ reportParts, targetPageDir, visuals, meas
   for (const part of reportParts) {
     if (isReportJsonPath(part.path)) {
       // Register the custom visual(s) in publicCustomVisuals (idempotent).
-      // HTML-Content for baked visuals; Semantica Renderer when we embed it.
+      // HTML-Content for baked visuals; vilsem Renderer when we embed it.
       const parsed  = safeParse(part.content) || {}
       let updated   = ensureHtmlContentRegistered(parsed)
       if (rendererGuid) updated = ensureSemanticaRendererRegistered(updated, rendererGuid)
@@ -500,6 +500,7 @@ function buildLegacyHtmlContentContainer(visual, measureName) {
 export function extractPagesFromParts(reportParts) {
   if (!Array.isArray(reportParts)) return []
   const pages = {}
+  const visualFolders = new Map()
 
   for (const part of reportParts) {
     const pageMatch = part.path.match(/^definition\/pages\/([^/]+)\/page\.json$/)
@@ -512,12 +513,14 @@ export function extractPagesFromParts(reportParts) {
       pages[dirName].height      = Number(parsed.height) || 720
       continue
     }
-    const visualMatch = part.path.match(/^definition\/pages\/([^/]+)\/visuals\//)
+    const visualMatch = part.path.match(/^definition\/pages\/([^/]+)\/visuals\/([^/]+)\//)
     if (visualMatch) {
       const dirName = visualMatch[1]
       pages[dirName] = pages[dirName] || { dirName, visualCount: 0 }
       // count distinct visual dirs, not parts (each visual has a few files)
-      pages[dirName].visualCount = (pages[dirName].visualCount || 0) + 1
+      if (!visualFolders.has(dirName)) visualFolders.set(dirName, new Set())
+      visualFolders.get(dirName).add(visualMatch[2])
+      pages[dirName].visualCount = visualFolders.get(dirName).size
     }
   }
 

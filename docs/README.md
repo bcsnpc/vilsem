@@ -48,7 +48,7 @@ Latest repair checkpoint: [verified fixes and remaining work](qa/fix-status.md).
 | PBI DAX emission | [ui/src/pages/powerbi/daxTemplateBuilder.js](../ui/src/pages/powerbi/daxTemplateBuilder.js) |
 | PBI publish pipeline | [ui/src/pages/powerbi/publishCustomVisualFlow.js](../ui/src/pages/powerbi/publishCustomVisualFlow.js) |
 | PBI TMDL measure injection | [ui/src/pages/powerbi/tmdlMeasureInjector.js](../ui/src/pages/powerbi/tmdlMeasureInjector.js) |
-| Embedded fonts in PBI | [pbiviz-semantica-renderer/style/visual.less](../pbiviz-semantica-renderer/style/visual.less) — regenerate via `scripts/embed-fonts.js` |
+| Embedded fonts in PBI | [vilsem-renderer/style/visual.less](../vilsem-renderer/style/visual.less) — regenerate via `scripts/embed-fonts.js` |
 | Fabric API wrappers | [src/fabric/*.js](../src/fabric/) |
 
 ### "Where are credentials stored?"
@@ -84,7 +84,7 @@ All five use `getCardChromeStyle()` for card appearance. No divergence.
 | Build UI bundle | `npm run ui:build` |
 | Build standalone web export | `npm run standalone:build` |
 | Build Electron .exe | `npm run build` |
-| Rebuild PBI custom visual | `cd pbiviz-semantica-renderer && node scripts/embed-fonts.js && npx pbiviz package` |
+| Rebuild PBI custom visual | `cd vilsem-renderer && node scripts/embed-fonts.js && npx pbiviz package` |
 | Run integration tests | `node test-harness.js` |
 | Vitest unit tests | `npx vitest run` |
 

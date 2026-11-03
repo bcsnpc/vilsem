@@ -1,8 +1,8 @@
 import { metricFormatting } from '../shared/detailedCardSchemas.js'
 import React from 'react'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
-import { LoadingShimmer } from '../shared/atoms.jsx'
+import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
 
 export default function CompactMetricTile({ rows, config, loading, error }) {
@@ -10,6 +10,8 @@ export default function CompactMetricTile({ rows, config, loading, error }) {
   const t = config._T || getThemeTokens('dark')
   const val = rows?.[0]?._val
   if (loading) return <LoadingShimmer />
+  if (error) return <EmptyState error={error} />
+  if (!rows?.length) return <EmptyState label={config.title || config.label} />
   const max = config.maxValue || 100
   const pct = val != null ? Math.min(Math.abs(val) / max, 1) : 0
 
@@ -25,7 +27,7 @@ export default function CompactMetricTile({ rows, config, loading, error }) {
         {config.showPercentage !== false && <div data-format-target="percentage" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: config.percentageFontSize ?? 9, fontWeight: 700, color: config.percentageColor || p.text }}>{(pct * 100).toFixed(0)}%</div>}
       </div>}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: config.valueFontSize || 20, fontWeight: config.valueFontWeight ?? 800, color: config.valueColor || p.text, fontFamily: config.valueFontFamily || 'inherit' }}>{fmtVal(val, config.prefix, config.suffix)}</div>
+        <div data-format-target="scalar-value" style={{ fontSize: config.valueFontSize || 20, fontWeight: config.valueFontWeight ?? 800, color: config.valueColor || p.text, fontFamily: config.valueFontFamily || 'inherit' }}>{fmtVal(val, config.prefix, config.suffix)}</div>
         {(config.title || config.label) && <div style={{ fontSize: 10, color: t.textMuted, marginTop: 2 }}>{config.title || config.label}</div>}
       </div>
     </div>

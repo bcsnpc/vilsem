@@ -6,8 +6,8 @@
  * measures returning pre-rendered HTML strings as DAX string literals.
  *
  * Used by the HTML-Content-via-XMLA publish path (separate from the
- * Semantica Renderer org-library path). Nothing in this file is imported
- * by the existing reportBuilder.js or Semantica Renderer code.
+ * vilsem Renderer org-library path). Nothing in this file is imported
+ * by the existing reportBuilder.js or vilsem Renderer code.
  *
  * Output format mirrors what Power BI writes in real TMDL:
  *

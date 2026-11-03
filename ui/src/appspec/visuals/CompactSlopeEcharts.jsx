@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
-import { MULTI_COLORS } from '../shared/palettes.js'
+import { MULTI_COLORS } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'

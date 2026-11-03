@@ -248,19 +248,19 @@ If PBI rendering switches from DAX-HTML to ECharts-client-side:
 
 ### 4.1 What's fixed by the GUID
 
-[`pbiviz.json:5`](../../pbiviz-semantica-renderer/pbiviz.json#L5) — `"guid": "semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D"`.
+[`pbiviz.json:5`](../../vilsem-renderer/pbiviz.json#L5) — `"guid": "semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D"`.
 
 This GUID is used in [`publishCustomVisualFlow.js`](../../ui/src/pages/powerbi/publishCustomVisualFlow.js) as `VISUAL_GUID`. It identifies the visual type within PBI. As long as the GUID is unchanged, PBI treats every new `.pbiviz` build as a new version of the same visual.
 
 ### 4.2 What changes per build
 
-- `version` in [`pbiviz.json:7`](../../pbiviz-semantica-renderer/pbiviz.json#L7) (manual bump)
+- `version` in [`pbiviz.json:7`](../../vilsem-renderer/pbiviz.json#L7) (manual bump)
 - `dist/*.pbiviz` artifact filename (contains version in the filename)
 - JS bundle inside the archive
 
 ### 4.3 Selection mechanism in Semantica
 
-[`electron/ipc/powerbi.js:608`](../../electron/ipc/powerbi.js#L608) — `getBundledPbiviz()` scans `pbiviz-semantica-renderer/dist/*.pbiviz` and picks the one with the newest `mtime`. Cache is mtime-keyed, so rebuilds are picked up without restart.
+[`electron/ipc/powerbi.js:608`](../../electron/ipc/powerbi.js#L608) — `getBundledPbiviz()` scans `vilsem-renderer/dist/*.pbiviz` and picks the one with the newest `mtime`. Cache is mtime-keyed, so rebuilds are picked up without restart.
 
 **Implication:** at any time, the "current" bundle is whichever `.pbiviz` has the newest `mtime` on disk. All older `.pbiviz` files coexist in `dist/` but are effectively dead.
 
@@ -283,7 +283,7 @@ PBI Service embeds the custom visual binary **per-report at first publish**. Rep
 
 ### 4.6 Other version-adjacent considerations
 
-- **Side-by-side `.pbiviz` coexistence in `dist/`**: current behavior is "newest mtime wins." If we want controlled rollout, we'd either (a) move older versions out of `dist/`, (b) add a manifest that pins which version Semantica picks, or (c) rename the bundle selection logic to honor a version pin in `pbiviz-semantica-renderer/.pin`.
+- **Side-by-side `.pbiviz` coexistence in `dist/`**: current behavior is "newest mtime wins." If we want controlled rollout, we'd either (a) move older versions out of `dist/`, (b) add a manifest that pins which version Semantica picks, or (c) rename the bundle selection logic to honor a version pin in `vilsem-renderer/.pin`.
 - **Semantic meaning of the version number**: the current scheme (3.15.7.0) has no documented semantics — it's been incremented for fixes, capability additions, and rollbacks alike. A formal scheme (major = rendering approach, minor = capabilities, patch = bug fix) doesn't exist yet.
 - **Rollback story**: if a new version ships broken, delete the newer `.pbiviz` from `dist/`, restart Semantica → picks the older one by mtime. But republishes to existing reports still cache the broken bundle until user re-adds the visual.
 - **Report-level bundle invalidation**: there's no Fabric API call in the current publish flow that forces PBI to refresh the embedded visual binary. Investigation item if true hot-swap is needed.

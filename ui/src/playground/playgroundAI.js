@@ -9,8 +9,8 @@
 // The system prompt is composed from the format the ENGINE enforces (instantiate.js
 // + the three starter templates), not from prose docs. See PLAYGROUND_SPIKE.md §8.
 
-import { EXAMPLE_TEMPLATES } from './examples/index.js'
-import { validateTemplate } from './instantiate.js'
+import { EXAMPLE_TEMPLATES } from '@vilsem/core/templates/examples'
+import { validateTemplate } from '@vilsem/core/templates'
 
 const [KPI, BULLET, LOLLIPOP] = EXAMPLE_TEMPLATES
 const j = (o) => JSON.stringify(o, null, 2)

@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest'
-import {PieMarks} from '../ui/src/primitives/pie-marks'
+import {PieMarks} from '@vilsem/core/primitives/pie-marks'
 const ctx=(rows:any[])=>({data:{fields:[],rows},encoding:{},theme:{shimmerBg:'#222',textMuted:'#888',textPrimary:'#fff'},selection:{},dimensions:{width:400,height:300}} as any)
 describe('single-category pie/donut integrity',()=>{
  it.each([0,52])('preserves categorical marks and configured inner radius %s',innerRadius=>{

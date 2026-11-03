@@ -22,7 +22,7 @@ const actionIcon = (prime) => ({
   color: prime ? 'var(--v-accent)' : 'var(--v-text-2)',
 })
 
-export default function Home({ connectionInfo, authCreds, onOpenProject, onCreateProject, onRestyleReport, onInjectVisuals, onSettings, onLogout }) {
+export default function Home({ connectionInfo, authCreds, onOpenProject, onCreateProject, onRestyleReport, onSettings, onLogout }) {
   const [projects, setProjects] = useState([])
   const [projectError, setProjectError] = useState('')
   const [deleteDialog, setDeleteDialog] = useState(null)
@@ -195,21 +195,11 @@ export default function Home({ connectionInfo, authCreds, onOpenProject, onCreat
           <div style={{ font: '600 10px var(--v-mono)', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--v-accent)', marginBottom: 8 }}>Start</div>
           <h1 style={{ margin: 0, font: '600 22px var(--v-font)', letterSpacing: '-.01em', color: 'var(--v-text)' }}>What are we building?</h1>
           <div style={{ font: '400 13px var(--v-font)', color: 'var(--v-text-muted)', margin: '4px 0 26px' }}>
-            Compose ECharts visuals over your semantic model, then inject, publish, or export.
+            Compose ECharts visuals over your semantic model, then publish or export.
           </div>
 
           {/* Primary actions (three cards per mockup S2) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-            {onInjectVisuals && (
-              <button onClick={onInjectVisuals} style={actionCard()}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--v-accent-border)'; e.currentTarget.style.background = 'var(--v-surface-2)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-border)'; e.currentTarget.style.background = 'var(--v-surface)' }}>
-                <div style={actionIcon(true)}><Layers size={18} /></div>
-                <div style={{ font: '600 15px var(--v-font)', color: 'var(--v-text)', marginBottom: 5 }}>Inject into Power BI</div>
-                <div style={{ font: '400 12px var(--v-font)', color: 'var(--v-text-muted)', lineHeight: 1.5 }}>Add vilsem visuals to an existing report page — compose on live pages, review, inject.</div>
-                <ArrowRight size={16} style={{ position: 'absolute', top: 18, right: 18, color: 'var(--v-text-faint)' }} />
-              </button>
-            )}
             <button onClick={handleCreateClick} style={actionCard()}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--v-border-strong)'; e.currentTarget.style.background = 'var(--v-surface-2)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--v-border)'; e.currentTarget.style.background = 'var(--v-surface)' }}>

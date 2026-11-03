@@ -52,7 +52,7 @@ const SCHEMA = {
   platform:  'https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json',
 }
 
-// ─── Semantica Renderer custom visual — EMBEDDED per report ─────────────────
+// ─── vilsem Renderer custom visual — EMBEDDED per report ─────────────────
 //
 // Changed approach (2026-04-11): we now EMBED the .pbiviz binary directly in
 // every published PBIR report instead of relying on the tenant's organizational
@@ -72,7 +72,7 @@ const SCHEMA = {
 //
 // The actual GUID + base64 bytes are passed in via buildReportParts({ pbiviz })
 // — the caller reads them from IPC `pbiGetBundledPbiviz()` at publish time.
-// Reverted to Semantica Renderer org-library path after confirming the
+// Reverted to vilsem Renderer org-library path after confirming the
 // HTML Content visual pivot would require XMLA dataset mutation (PBIR schema
 // doesn't support inline visual-level calcs). Org-library renders correctly
 // in edit mode; view-mode-after-save behaves inconsistently on Fabric Trial
@@ -422,7 +422,7 @@ function buildPageObjects(backgroundColor) {
 function buildVisualJson(visual, _renderer, ctx) {
   const { visualDataMap, canvasTheme, measureTableLookup, pbiviz } = ctx || {}
 
-  // Org-library Semantica Renderer visual.
+  // Org-library vilsem Renderer visual.
   const visualType = orgStoreName(SEMANTICA_VISUAL_GUID)
 
   const w = num(visual.width,  420)
@@ -438,7 +438,7 @@ function buildVisualJson(visual, _renderer, ctx) {
   // every visual into `visualDataMap` and passes the map here. We call our
   // existing htmlTemplates/ dispatcher to turn the visual + data + theme
   // into a self-contained HTML string, then embed that string in the
-  // Semantica Renderer's `html.body` formatting property.
+  // vilsem Renderer's `html.body` formatting property.
   //
   // The custom visual's update() method reads dv.metadata.objects.html.body,
   // sets its root element's innerHTML, and the Semantica look lands in
@@ -585,7 +585,7 @@ function createDefaultReportJson(ctx) {
 }
 
 /**
- * Register the embedded Semantica Renderer custom visual in report.json:
+ * Register the embedded vilsem Renderer custom visual in report.json:
  *
  *   1. publicCustomVisuals[] — add the base GUID from pbiviz.json
  *   2. resourcePackages[] — add a `RegisteredResources` entry pointing to
@@ -708,7 +708,7 @@ function buildEmbeddedVisualParts(pbiviz) {
 // ── Reference resolution ────────────────────────────────────────────────────
 //
 // resolveMeasureRef / parseDimension were used by the old buildVisualQuery
-// path. They're now unused because Semantica Renderer reads HTML from a
+// path. They're now unused because vilsem Renderer reads HTML from a
 // formatting property instead of binding measures/columns as data roles.
 // If we later add live-data interpolation (a `content` role that the HTML
 // references via {{rows[0].<col>}}), reintroduce them from git history.

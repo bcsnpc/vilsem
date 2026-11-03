@@ -1,6 +1,6 @@
 /**
  * reportBuilder_htmlcontent — STANDALONE PBIR builder for the HTML Content
- * publish path. Completely separate from reportBuilder.js (Semantica Renderer
+ * publish path. Completely separate from reportBuilder.js (vilsem Renderer
  * org-library path). Nothing in this file is imported by the existing flow.
  *
  * Publish pipeline (wired in ReportEditor.jsx handlePublish with a rendererMode
@@ -37,10 +37,10 @@ const SCHEMA = {
 // manually-configured reference report — I originally had a typo 6865).
 const HTML_CONTENT_VISUAL_GUID = 'htmlContent443BE3AD55E043BF878BED274D3A6855'
 
-// Semantica Renderer — our OWN custom visual (embedded binary). Used by the
+// vilsem Renderer — our OWN custom visual (embedded binary). Used by the
 // injector's real-renderer path so injected chart/primitive visuals render as
 // live ECharts (reading objects.semantica.primitiveSpec) instead of the static
-// HTML-Content visual. Must match pbiviz-semantica-renderer/pbiviz.json.
+// HTML-Content visual. Must match vilsem-renderer/pbiviz.json.
 const SEMANTICA_RENDERER_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
 
 // Role name is "content" (lowercase). Also verified from the reference
@@ -304,7 +304,7 @@ function buildVisualJson(visual, ctx) {
   const isPrimitive   = !!primitiveSpec
 
   // Injector real-renderer path: chart/primitive visuals render via our embedded
-  // Semantica Renderer (reads primitiveSpec) when ctx.rendererGuid is provided.
+  // vilsem Renderer (reads primitiveSpec) when ctx.rendererGuid is provided.
   // Otherwise — and for every baked-HTML visual — fall back to HTML-Content.
   // publishHtmlContentFlow never sets rendererGuid, so it is unaffected.
   const visualTypeGuid = (isPrimitive && ctx?.rendererGuid) ? ctx.rendererGuid : HTML_CONTENT_VISUAL_GUID

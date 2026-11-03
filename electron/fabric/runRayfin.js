@@ -73,10 +73,11 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
   //    NOTE [VERIFY]: `npm create` may prompt to install the create pkg the first
   //    time ("Ok to proceed?"). npx caches after run 1; if it hangs, pre-warm with
   //    `npm create @microsoft/rayfin@latest` once, or add a confirm flag in config.
-  if (!fs.existsSync(projectDir) || !opts.reuseExisting) {
-    // Clean any leftovers from a prior run — create-rayfin declines to scaffold into
-    // a non-empty directory ("target directory … is not empty and overwrite declined").
-    try { fs.rmSync(projectDir, { recursive: true, force: true }); log(`Cleaned prior target ${projectDir}`) } catch (e) { log(`⚠ Could not clean ${projectDir}: ${e.message}`, 'stderr') }
+  const projectExists = fs.existsSync(projectDir)
+  if (projectExists && !opts.reuseExisting) {
+    return { ok: false, projectDir, stage: 'scaffold', error: { code: 'PROJECT_EXISTS', message: 'A local app folder with this name already exists. Choose another app name, or explicitly reuse the existing project. Its files have been preserved.' } }
+  }
+  if (!projectExists) {
     const createArgs = C.cli.create.args.map(a => a.replace('{appName}', appSlug).replace('{workspace}', workspace))
     log(`$ ${C.cli.create.cmd} ${createArgs.join(' ')}`)
     const scaffold = await runStreamed(C.cli.create.cmd, createArgs, parentDir, onOutput)
@@ -114,6 +115,16 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
       return { ok: false, projectDir, stage: 'inject', error: { code: 'APP_INJECTION_FAILED', message: `Could not prepare the report app: ${e.message}` } }
     }
     if (injected) {
+      // Ensure deps are installed before `rayfin up` builds (create usually installs;
+      // the renderer bundle is self-contained, so no extra deps are added).
+      log('$ npm install')
+      const inst = await runStreamed('npm', ['install'], projectDir, onOutput)
+      if (inst.code !== 0) return { ok: false, projectDir, injected, stage: 'install', error: { code: 'DEPENDENCY_INSTALL_FAILED', message: 'App dependencies could not be installed. Check the npm output and retry.' } }
+      // The scaffold lockfile can retain an old compatible tar release. Refresh
+      // only that dependency within the upstream range before invoking the CLI.
+      log('$ npm update tar --ignore-scripts')
+      const patched = await runStreamed('npm', ['update', 'tar', '--ignore-scripts'], projectDir, onOutput)
+      if (patched.code !== 0) return { ok: false, projectDir, injected, stage: 'install', error: { code: 'DEPENDENCY_UPDATE_FAILED', message: 'Could not update the archive dependency. Check the npm output and retry.' } }
       // Wire the semantic-model connection alias so the shim's queries resolve.
       // The model's OWN workspace + item id (not the deploy workspace) — vilsem has
       // these from its connection. Auto-wire when provided; else print the command.
@@ -132,11 +143,7 @@ async function deployToFabric(spec, opts = {}, onOutput = () => {}) {
         log(`    npx fabric-app-data add semanticModel ${alias} --from-url "<your Power BI semantic model URL>"`)
         log(`  then re-deploy. (The app will show a query error until the alias resolves.)`, 'stderr')
       }
-      // Ensure deps are installed before `rayfin up` builds (create usually installs;
-      // the renderer bundle is self-contained, so no extra deps are added).
-      log('$ npm install')
-      const inst = await runStreamed('npm', ['install'], projectDir, onOutput)
-      if (inst.code !== 0) return { ok: false, projectDir, injected, stage: 'install', error: { code: 'DEPENDENCY_INSTALL_FAILED', message: 'App dependencies could not be installed. Check the npm output and retry.' } }
+
     }
   }
 

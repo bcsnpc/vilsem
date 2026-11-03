@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import EChartsCanvas from '../appspec/shared/EChartsCanvas.jsx'
 import getThemeTokens from '../appspec/getThemeTokens'
-import { normaliseRows, normaliseTableRows, resolveRowKey, getScalarValue } from '../appspec/shared/row-normalize.js'
-import { instantiateVisual, validateTemplate, buildThemeContext, slotCount } from './instantiate.js'
+import { normaliseRows, normaliseTableRows, resolveRowKey, getScalarValue } from '@vilsem/core/dax/rows'
+import { instantiateVisual, validateTemplate, buildThemeContext, slotCount } from '@vilsem/core/templates'
 import { generateTemplate } from './playgroundAI.js'
-import { EXAMPLE_TEMPLATES } from './examples/index.js'
+import { EXAMPLE_TEMPLATES } from '@vilsem/core/templates/examples'
 
 // Playground Spike — author a custom visual as a declarative template, bind it
 // to real model fields, preview live data, and save it to the Library.

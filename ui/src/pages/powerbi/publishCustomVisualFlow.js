@@ -1,6 +1,6 @@
 /**
  * publishCustomVisualFlow — publishes dashboards to Power BI using the
- * Semantica Renderer custom visual (instead of HTML Content).
+ * vilsem Renderer custom visual (instead of HTML Content).
  *
  * Approach (from CUSTOM_VISUAL_PUBLISH_BREAKTHROUGH.md — 2026-04-17):
  *   1. Pre-render HTML for each visual via htmlTemplates
@@ -17,7 +17,7 @@ import { renderVisualToHtml } from './htmlTemplates/index.js'
 import { mergeTmdlPartsWithLiveDax } from './tmdlMeasureInjector.js'
 import { buildLiveDax, buildDataOnlyDax, buildPrimitiveSpecJson, isPrimitiveCovered } from './daxTemplateBuilder.js'
 
-// The Semantica Renderer custom visual GUID (from pbiviz-semantica-renderer/pbiviz.json)
+// The vilsem Renderer custom visual GUID (from vilsem-renderer/pbiviz.json)
 const VISUAL_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
 const MEASURE_TABLE = '_SemanticaGenerated'
 

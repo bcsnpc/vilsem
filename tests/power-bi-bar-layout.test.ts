@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { composeOption } from '../pbiviz-semantica-renderer/src/compositions'
+import { composeOption } from '../vilsem-renderer/src/compositions'
 const rows=[{_cat:'Accessories',_val:57809},{_cat:'Bikes',_val:13929},{_cat:'Clothing',_val:12436}]
 const theme={textMuted:'#888',textPrimary:'#fff',gridStroke:'#222'}
 describe('Power BI bar-family label clearance',()=>{

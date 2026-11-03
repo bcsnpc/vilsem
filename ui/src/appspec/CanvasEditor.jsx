@@ -4,9 +4,9 @@ import { VISUAL_MAP, getCardChromeStyle } from './AppSpecRenderer.jsx'
 import { getThemeTokens } from './getThemeTokens.ts'
 import { isObjectType, isBareVisual } from './schema.js'
 import AxisSwitchPills, { getEffectiveGroupBy } from './AxisSwitchPills.jsx'
-import { normaliseRows, normaliseTableRows, resolveRowKey, getScalarValue } from './shared/row-normalize.js'
+import { normaliseRows, normaliseTableRows, resolveRowKey, getScalarValue } from '@vilsem/core/dax/rows'
 import { setPreview } from '../vilsem/dataPreviewStore.js'
-import { buildTablePreviewDax, buildScalarPreviewDax } from './previewDax.js'
+import { buildTablePreviewDax, buildScalarPreviewDax } from '@vilsem/core/dax/preview'
 import { drillHierarchy, drillStyleOf, expandLevels, shapeExpandInPlace, resolveDrillQuery, pushDrill, popDrillTo } from './shared/drill.js'
 import DrillChrome from './shared/DrillChrome.jsx'
 import VisualBoundary from './shared/VisualBoundary.jsx'
@@ -637,6 +637,8 @@ export default function CanvasEditor({
                 const hasAxisOpts = Array.isArray(item.config?.axisOptions) && item.config.axisOptions.filter(o => o?.groupBy?.table && o?.groupBy?.column).length >= 2
                 const chartConfig = {
                   ...(item.config || {}),
+                  // The editor already draws the shared header for these cards.
+                  ...(['stat_card', 'metric_tile'].includes(item.type) ? { title: undefined, label: undefined } : {}),
                   measureName: item.data?.measures?.[0],
                   secondaryMeasureName: item.data?.measures?.[1] || null,
                   orderBy: typeof item.data?.orderBy === 'string' ? item.data.orderBy : 'desc',

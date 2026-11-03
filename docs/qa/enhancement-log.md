@@ -65,3 +65,13 @@ SETTINGS-003 verification: implemented; 237/237 pane checks pass across41 types.
 - Current: label visibility/content remain under Style while label fonts/colors are under Text.
 - Improvement: move showLabels, showValues, showCenterText and labelStyle to Text with their existing settings.
 - Benefit: change label content, visibility and appearance in one tab. Saved keys/defaults unchanged.
+
+
+## UX-CARD-CAPTION-073
+- Area: Bullet / Progress title and caption hierarchy.
+- Current experience: chart header and component footer both repeat config.title/config.label; Bullet also adds target context to that footer. Seen in service-dom-cards.png and local-dom-cards-desktop.png.
+- Proposed improvement: separate an optional subtitle/target caption from the common chart title, with independent visibility and typography. Define saved-spec migration before changing existing captions.
+- User benefit: clearer hierarchy and predictable title controls without losing target context.
+- Priority: P2. Effort: small implementation plus cross-target formatting/persistence tests. Not implemented.
+
+UX-CARD-CAPTION-073 clarification: runtime trace shows AppSpecRenderer already removes component titles. The observed duplicate is a Power BI adapter bug, now tracked as FORMAT-DOM-073. Separate subtitle controls remain optional future work; do not redesign existing captions to solve the adapter bug.

@@ -1,6 +1,6 @@
-import { barValueDomain } from '../../primitives/bar-marks/domain'
+import { barValueDomain } from '@vilsem/core/primitives/bar-marks/domain'
 import React, { useMemo, useCallback } from 'react'
-import { pal, gridLineColor } from '../shared/palettes.js'
+import { pal, gridLineColor } from '@vilsem/core/palettes'
 import { BAR_SCROLL_THRESHOLD } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
@@ -15,7 +15,7 @@ import {
   BarMarks,
   Tooltip,
   Legend,
-} from '../../primitives/index'
+} from '@vilsem/core/primitives'
 
 // Grouped bar — two measures side-by-side per category. Same fragment composition
 // as CompactStackedBarEcharts, just with `stacked: false` so ECharts auto-groups

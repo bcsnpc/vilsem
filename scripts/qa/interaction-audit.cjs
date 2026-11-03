@@ -15,6 +15,18 @@ app.whenReady().then(async()=>{
   win.webContents.on('console-message',e=>{if(e.level==='error')report.events.push(e.message)})
   try{
     await win.loadURL('http://127.0.0.1:5173/qa/full-audit.html');await js(`new Promise(r=>{const f=()=>window.qaFullReady?r():requestAnimationFrame(f);f()})`)
+    await check('Bar race tooltip changes apply immediately and reset to auto',async()=>{
+      await call('mount','bar_race','viewer',{inspector:false})
+      const results=[]
+      for(const config of [{tooltipEnabled:false,tooltipTrigger:'axis'},{tooltipEnabled:true,tooltipTrigger:'item'},{tooltipEnabled:true,tooltipTrigger:'auto'}]){
+        await call('change',config)
+        const actual=await js(`(()=>{const t=qaFull.getCharts()[0].getOption().tooltip[0];return {show:t.show,trigger:t.trigger}})()`)
+        assert.equal(actual.show,config.tooltipEnabled)
+        assert.equal(actual.trigger,config.tooltipTrigger==='auto'?'item':config.tooltipTrigger)
+        results.push({config,actual})
+      }
+      return results
+    })
     const pair=await call('makeSpec','bar');pair.visuals.push({id:'other',type:'kpi',position:{x:8,y:0,w:4,h:4},data:{measures:['Revenue']},config:{title:'Total',animations:false,countUp:false}})
     await check('Native bar click cross-filters another visual',async()=>{await call('mount','bar','viewer',{spec:pair,inspector:false});const p=await chartPoint();await click(p.x,p.y);const s=await call('snapshot');assert.ok(filters(s).some(f=>f['QA[Category]']==='North'),'No category filter reached other visual query');return {filters:filters(s),text:s.text}})
     await check('Native repeat click deselects category',async()=>{const p=await chartPoint();await click(p.x,p.y);const s=await call('snapshot');assert.deepEqual(filters(s).at(-1),{});return {filters:filters(s)}})

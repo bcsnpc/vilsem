@@ -7,6 +7,7 @@ export default function FabricDeployDialog({ spec, appTitle, datasetId, onClose 
   const [prereq, setPrereq] = useState(null)
   const [info, setInfo] = useState(null)
   const [workspace, setWorkspace] = useState('')
+  const [appName, setAppName] = useState(appTitle || 'vilsem-app')
   const [output, setOutput] = useState('')
   const [status, setStatus] = useState('idle') // idle | deploying | done | error
   const [result, setResult] = useState(null)
@@ -29,27 +30,27 @@ export default function FabricDeployDialog({ spec, appTitle, datasetId, onClose 
   const runDeploy = async (dryRun) => {
     setStatus('deploying'); setOutput(''); setResult(null)
     try {
-      const res = await window.semantica.fabricDeploy({ spec, opts: { appName: appTitle, workspace: workspace.trim(), datasetId, dryRun, injectChart: !templateOnly } })
+      const res = await window.semantica.fabricDeploy({ spec, opts: { appName: appName.trim(), workspace: workspace.trim(), datasetId, dryRun, injectChart: !templateOnly } })
       setResult(res); setStatus(res?.ok ? 'done' : 'error')
     } catch (e) {
       setResult({ ok: false, error: { code: 'IPC', message: String(e?.message || e) } }); setStatus('error')
     }
   }
 
-  const canDeploy = prereq?.ok && workspace.trim() && status !== 'deploying'
+  const canDeploy = prereq?.ok && workspace.trim() && appName.trim() && status !== 'deploying'
   const row = { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '3px 0' }
   const ok = (b) => (b ? '#22C55E' : '#F43F5E')
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: 640, maxWidth: '96vw', maxHeight: '90vh', overflow: 'auto', background: 'var(--surface-raised, #14181e)', color: 'var(--text-primary, #E8ECF1)', border: '1px solid var(--border-default, #2A313A)', borderRadius: 12, padding: 20 }}>
+      <div role="dialog" aria-modal="true" aria-label="Deploy to Fabric" onClick={e => e.stopPropagation()} style={{ width: 640, maxWidth: '96vw', maxHeight: '90vh', overflow: 'auto', background: 'var(--surface-raised, #14181e)', color: 'var(--text-primary, #E8ECF1)', border: '1px solid var(--border-default, #2A313A)', borderRadius: 12, padding: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, flex: 1 }}>Deploy to Fabric <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#E0A458', border: '1px solid #4A3F2A', borderRadius: 999, padding: '2px 8px', marginLeft: 6 }}>PREVIEW SPIKE</span></div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted, #9BA6B4)', cursor: 'pointer', fontSize: 16 }}>✕</button>
+          <div style={{ fontSize: 16, fontWeight: 600, flex: 1 }}>Deploy to Fabric <span style={{ fontSize: 10, fontFamily: 'monospace', color: '#E0A458', border: '1px solid #4A3F2A', borderRadius: 999, padding: '2px 8px', marginLeft: 6 }}>PREVIEW</span></div>
+          <button aria-label="Close deployment dialog" onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted, #9BA6B4)', cursor: 'pointer', fontSize: 16 }}>✕</button>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted, #9BA6B4)', lineHeight: 1.5, marginBottom: 14 }}>
-          Generates a Rayfin data-app from <b>{appTitle || 'this dashboard'}</b> (one visual for the spike) and runs <code>rayfin up</code>. Deployed apps currently run inside the Fabric portal.
-          {info && <span style={{ display: 'block', marginTop: 4, fontFamily: 'monospace', fontSize: 10, opacity: 0.7 }}>targets Rayfin preview {info.previewTargetedAt} · template {info.templateName}</span>}
+          Publishes <b>{appTitle || 'this dashboard'}</b> as a report app inside the Fabric portal, connected to your semantic model.
+          {info?.previewTargetedAt && <span style={{ display: 'block', marginTop: 4, fontFamily: 'monospace', fontSize: 10, opacity: 0.7 }}>targets Rayfin preview {info.previewTargetedAt} · template {info.templateName}</span>}
         </div>
 
         {/* Prereqs */}
@@ -79,6 +80,9 @@ export default function FabricDeployDialog({ spec, appTitle, datasetId, onClose 
         </div>
 
         {/* Target workspace */}
+        <label htmlFor="fabric-app-name" style={{ fontSize: 11, color: 'var(--text-muted, #9BA6B4)', display: 'block', marginBottom: 4 }}>App name</label>
+        <input id="fabric-app-name" value={appName} onChange={e => setAppName(e.target.value)} disabled={status === 'deploying'}
+          style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 7, border: '1px solid var(--border-default, #2A313A)', background: 'var(--surface-sunken, #0E1013)', color: 'inherit', fontSize: 13, marginBottom: 12 }} />
         <label style={{ fontSize: 11, color: 'var(--text-muted, #9BA6B4)', display: 'block', marginBottom: 4 }}>Target Fabric workspace name</label>
         <input value={workspace} onChange={e => setWorkspace(e.target.value)} placeholder="my-workspace" disabled={status === 'deploying'}
           style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 7, border: '1px solid var(--border-default, #2A313A)', background: 'var(--surface-sunken, #0E1013)', color: 'inherit', fontSize: 13, marginBottom: 12 }} />
@@ -87,7 +91,7 @@ export default function FabricDeployDialog({ spec, appTitle, datasetId, onClose 
             (still-preview-guessed) vilsem chart, so you get a published app first. */}
         <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-muted, #9BA6B4)', marginBottom: 12, cursor: 'pointer' }}>
           <input type="checkbox" checked={templateOnly} onChange={e => setTemplateOnly(e.target.checked)} disabled={status === 'deploying'} />
-          Deploy template only (skip the vilsem chart) — recommended for the very first publish
+          Deploy starter template without this report (advanced)
         </label>
 
         {/* Actions */}

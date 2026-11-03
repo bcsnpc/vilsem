@@ -3,11 +3,11 @@ import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import getThemeTokens from '../getThemeTokens'
-import { mergeFragments, LineMarks } from '../../primitives/index'
+import { mergeFragments, LineMarks } from '@vilsem/core/primitives'
 import { resolveGrain, sortRowsForAxis, formatAxisLabel } from '../shared/formatters.js'
-import { gridLineColor } from '../shared/palettes.js'
+import { gridLineColor } from '@vilsem/core/palettes'
 
-export default function CompactLineEcharts({ rows, config, loading, error, groupBy }) {
+export default function CompactLineEcharts({ rows, config, loading, error, groupBy, allowSecondaryAxis = false }) {
   const t = config._T || getThemeTokens('dark')
   // Point click → category (x value), for click-to-drill / cross-filter.
   const handleClick = useCallback((params) => {
@@ -74,7 +74,7 @@ export default function CompactLineEcharts({ rows, config, loading, error, group
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <EChartsCanvas config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
+      <EChartsCanvas allowSecondaryAxis={allowSecondaryAxis} config={config} option={applyTooltipConfig(option, config)} onClick={config._onBarClick ? handleClick : undefined} />
     </div>
   )
 }

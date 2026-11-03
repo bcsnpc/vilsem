@@ -3,7 +3,7 @@ import EChartsCanvas from '../shared/EChartsCanvas.jsx'
 import { applyTooltipConfig } from '../shared/applyTooltipConfig.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'
-import { instantiateVisual, buildThemeContext } from '../../playground/instantiate.js'
+import { instantiateVisual, buildThemeContext } from '@vilsem/core/templates'
 
 // Generic inspector toggles the template doesn't read on its own. Applied as a
 // post-step so the standard Legend / Data labels / Grid lines / Animations

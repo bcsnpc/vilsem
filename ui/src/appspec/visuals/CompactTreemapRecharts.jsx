@@ -1,6 +1,6 @@
 import React from 'react'
 import { Treemap, ResponsiveContainer } from 'recharts'
-import { pal, MULTI_COLORS } from '../shared/palettes.js'
+import { pal, MULTI_COLORS } from '@vilsem/core/palettes'
 import { fmtVal } from '../shared/formatters.js'
 import { LoadingShimmer, EmptyState } from '../shared/atoms.jsx'
 import getThemeTokens from '../getThemeTokens'

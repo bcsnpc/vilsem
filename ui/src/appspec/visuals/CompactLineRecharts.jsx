@@ -3,7 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   LabelList,
 } from 'recharts'
-import { pal } from '../shared/palettes.js'
+import { pal } from '@vilsem/core/palettes'
 import {
   resolveGrain, sortRowsForAxis, formatAxisLabel, getLineScrollParams,
   fmtVal, fmtAxisNumber,

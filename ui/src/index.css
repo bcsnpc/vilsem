@@ -23,8 +23,8 @@
   --gray-900:    #111827;
 
   /* Inter is the primary typeface — loaded via Google Fonts <link> in ui/index.html.
-     Must match the font stack used by the PBI Semantica Renderer custom visual
-     (pbiviz-semantica-renderer/style/visual.less) so editor ↔ published report render identically. */
+     Must match the font stack used by the PBI vilsem Renderer custom visual
+     (vilsem-renderer/style/visual.less) so editor ↔ published report render identically. */
   --font-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 }
 

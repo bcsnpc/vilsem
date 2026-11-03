@@ -23,3 +23,11 @@ Runtime follow-up confirms ARCH-002 (stale editor data and missing Area mode), A
 Additional inspection candidates: preload listeners without symmetric unsubscribe in root StrictMode effects; live image URL controls vs desktop CSP; title weight default vs hardcoded CanvasEditor header; slash-command detection/insertion regex differences; tooltip HTML escaping; high-category normalization/layout behavior. These are not verified bugs yet.
 
 Dependency rules: changes to a public config key require reviewing renderer, inspector, defaults, AI prompts/sanitizer, custom templates, persisted specs and export mapping. A renderer/primitive refactor requires all wrappers and host layouts in the test set. Do not migrate every visual to a single engine solely for consistency of filenames.
+
+## Independent secondary value axis implementation scope
+
+FORMAT-AXIS-048 investigation: Line and Area route through LineMarks, then EChartsCanvas/applyAxisTextConfig; Power BI composition routes through the same copied LineMarks and applyAxisTextConfig. The current primitive emits two line series on one value axis. Therefore the new opt-in axis can be applied at the shared option-formatting boundary without changing field assignment, aggregation, query generation or selection handlers.
+
+Acceptance: off by default; applies only to two unstacked, non-inverted line series with a single value axis. Series 2 gets its own automatic right-side scale. Preserve all data, primary axis settings and selection identity. Removing the second measure or disabling the option must remove the extra axis. Stack and secondary-axis choices are mutually exclusive in the inspector. Stacked-area and bump schemas do not expose this new option. Existing explicit multi-axis custom options remain untouched.
+
+Implemented independent controls cover axis visibility, title, labels/font/color/rotation/spacing, line/grid colors and number prefix/suffix. This does not add arbitrary domain editing, extra measure slots or alternate-category-axis cross-filter support. Tests must cover defaults, removal/reset, stacked/rank guards, styling and compiled Power BI parity before claiming verification.

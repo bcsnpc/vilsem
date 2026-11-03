@@ -1,3 +1,11 @@
+# Latest broad sweep and focused repairs
+
+Latest completed sweep: 1,230 cases; 156 DOM clipping candidates including 75 non-ellipsis cases. These are not all confirmed bugs. All 36 error events are deliberate fixtures. See evidence/visibility-broad-summary.json.
+
+Focused follow-up confirmed bar-race control overflow and multi-segment Waffle legend overflow. Bar-race now passes 16 size/host cases including scroll reachability and scrubbing; Waffle passes 24 layout plus six data cases, including the single-value path. Independent Line/Area axes now reserve a scrollable drawing width; native tests cover axis reachability and body-hosted tooltip bounds in narrow cards. The broad count predates these fixes. Remaining candidates and canvas/SVG mark bounds still need review.
+
+---
+
 # Settled clipping review
 
 Current repair status: [verified fixes and remaining work](fix-status.md). Reproduction descriptions below preserve before-fix behavior.

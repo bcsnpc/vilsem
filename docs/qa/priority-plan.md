@@ -1,11 +1,19 @@
+# User-confirmed work order
+
+1. Complete non-AI gaps: export preservation/parity, target interactions, formatting/clipping, visual semantics, UX/recovery, regression and release tooling.
+2. Audit and improve AI configuration and editing effectiveness.
+3. Add and test the Ollama connector with a small local model.
+
+Ollama work is deferred outside active source in `cache/deferred-ollama`. Do not resume it ahead of the non-AI and AI-editing work.
+
 # Current priority update ? 2026-09-11 night
 
-1. **P0 preservation:** EXPORT-PARTS-028 reproduced; original payload preservation implemented. Byte-level tests and live isolated report roundtrip (30/30 identical parts) pass. Complete insertion-path acceptance before release.
-2. **P1 target parity:** existing-report insertion still uses static substitutes (EXPORT-INJECT-030); local export rejects 22 types and slicers/drill. Trace dependencies and migrate with preservation/native-slicer regression tests.
-3. **P1 interactions:** remaining secondary-axis cross-filter test failure; complete Service/Fabric per-visual native click, multi-select, drill and reset coverage. Do not restore the old filter API approach without native-slicer compatibility tests.
+1. **P0 preservation:** EXPORT-PARTS-028 reproduced; original payload preservation implemented. Byte-level tests and live isolated report roundtrip (30/30 identical parts) pass. Direct insertion is retired; retain preservation tests for shared export/save utilities and validate custom-visual package import.
+2. **P1 target parity:** Direct existing-report insertion is retired by user request; EXPORT-INJECT-030 is no longer scheduled for implementation. Validate custom-visual export/import instead. Local export rejects 6 types and slicers/drill; trace dependencies and extend coverage with native-slicer regression tests.
+3. **P1 interactions:** remaining alternate category-axis cross-filter test failure; complete Service/Fabric per-visual native click, multi-select, drill and reset coverage. Do not restore the old filter API approach without native-slicer compatibility tests.
 4. **P1 query/failure correctness:** Fabric dimension-only fix verified live; insertion preparation failure guard verified through four failing-before/passing-after scenarios. Extend UX error/recovery acceptance.
 5. **P2 visual/format acceptance:** classify 156 clipping candidates, validate every property semantically, resolve placeholder visual semantics and target typography differences.
-6. **P2 AI/release work:** AI config validation, saved-project migrations, dependency audit (Fabric generated template: 44 findings), package lint, installer and recovery acceptance.
+6. **P2 AI/release work:** AI config validation, saved-project migrations, dependency audit (Fabric generated template: 43 findings), package lint, installer and recovery acceptance.
 
 See [per-visual target coverage](target-coverage-by-visual.md). Earlier plans below are historical and may refer to defects now verified.
 

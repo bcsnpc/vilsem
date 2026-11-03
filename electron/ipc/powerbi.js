@@ -629,7 +629,7 @@ let bundledPbivizCache = null  // { key: string, value: {...} }
 // report-create time. Point every reader at the real unpacked path so fs and
 // adm-zip see the actual bytes. In dev (no asar) this is a no-op.
 function pbivizDistDir() {
-  const base = path.join(__dirname, '..', '..', 'pbiviz-semantica-renderer', 'dist')
+  const base = path.join(__dirname, '..', '..', 'vilsem-renderer', 'dist')
   const marker = `app.asar${path.sep}`
   if (base.includes(marker) && !base.includes('app.asar.unpacked')) {
     const unpacked = base.replace(marker, `app.asar.unpacked${path.sep}`)
@@ -858,6 +858,10 @@ async function getAccessTokenForEmbed() {
 async function exportVisualPackage({ spec, title, fileBase } = {}) {
   try {
     if (!spec || typeof spec !== 'string') return { success: false, message: 'spec (JSON string) is required' }
+    let parsedSpec
+    try { parsedSpec = JSON.parse(spec) } catch { return { success: false, message: 'Visual specification must be valid JSON. No package was saved.' } }
+    const supportedTypes = require('@vilsem/core/spec/types')
+    if (!supportedTypes.includes(parsedSpec?.type)) return { success: false, message: `Power BI custom visual export is not supported for ${parsedSpec?.type || 'this visual'} yet. No package was saved.` }
     const distDir = pbivizDistDir()
     const latest = pickRendererPbiviz(distDir)
     if (!latest) return { success: false, message: 'No semanticaRenderer .pbiviz found in ' + distDir }
@@ -879,7 +883,7 @@ async function exportVisualPackage({ spec, title, fileBase } = {}) {
     const obj = JSON.parse(resEntry.getData().toString('utf8'))
     if (!obj.content || typeof obj.content.js !== 'string') return { success: false, message: 'template content.js missing' }
     const before = (obj.content.js.match(/__SEMANTICA_BAKED_SPEC__/g) || []).length
-    obj.content.js = obj.content.js.replace(/["']__SEMANTICA_BAKED_SPEC__["']/, JSON.stringify(spec))
+    obj.content.js = obj.content.js.replace(/["']__SEMANTICA_BAKED_SPEC__["']/, () => JSON.stringify(spec))
     const after = (obj.content.js.match(/__SEMANTICA_BAKED_SPEC__/g) || []).length
     if (before === 0 || after !== 0) return { success: false, message: 'baked-spec placeholder missing/not replaced — rebuild the .pbiviz template' }
     let resStr = JSON.stringify(obj).split(OLD_GUID).join(newGuid)
