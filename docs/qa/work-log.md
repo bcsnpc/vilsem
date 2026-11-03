@@ -684,3 +684,11 @@ FORMAT-PBI-068 reproduced in Service (`Value`/`Secondary` instead of bound field
 2026-11-02: Core follow-up shares ranking/time-template ordering and adds structured escaped DAX bindings. Full suite 788 PASS. MCP fixture/stdio/template suite 26 PASS; live configured Fabric schema + all 79 column samples + PNG preview passed. No Desktop engine was running. Public and private core main/tag publication completed for 0.1.0; patch distribution underway.
 
 2026-11-02 delivery: application/core 788 PASS in both checkouts; complete Electron build and packaged imports PASS. Both repos main + core-v0.1.0/core-v0.1.1 published, renderer 4.13.1.0 retains GUID/spec key. New public vilsem-mcp main + v0.1.0 published: 27 tests PASS, dependency audit 0, GitHub npx/stdio smoke PASS, live Fabric schema/79 samples/qualified scalar PNG PASS. Desktop no-engine response verified; successful Desktop connection/reload and live native host interactions remain unverified. Original local PBIP data was not edited.
+
+
+### 2026-11-02 - standalone model connections
+- Extracted Desktop discovery/ADOMD, Fabric introspection, DAX and Microsoft auth into @vilsem/core/connect; Electron compatibility wrappers delegate to core. No renderer/IPC dependency.
+- MCP no longer loads app checkouts. Added explain_visual. Device code uses scoped private home refresh-token cache and correct polling; SP and injected PKCE are retained.
+- Desktop core connection: port 61645, process-workspace-port-file, 13 tables / 39 measures. No model changes.
+- Initial app suite: 795 passed; focused final connection/auth suite: 8 passed; MCP suite: 28 passed. Fixed advisory Desktop process inspection timeout blocking insertion.
+- Releases, packaged smoke and live Desktop visual/reload/cross-filter acceptance remain in progress.

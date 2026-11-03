@@ -160,3 +160,5 @@ Focused visual and deployment regressions can be run with `npm run qa:native` af
 ## Custom visual authoring with MCP
 
 The shared `@vilsem/core` workspace powers [vilsem-mcp](https://github.com/bcsnpc/vilsem-mcp), a local stdio server for previewing and adding Vilsem custom visuals to existing PBIR report pages. It complements native Power BI report/model authoring tools. See its README for installation, supported compositions, model-connection setup and verification limits.
+
+Standalone model connections: [`@vilsem/core/connect`](packages/core/README.md#standalone-model-connections-020). MCP needs no Vilsem app checkout.

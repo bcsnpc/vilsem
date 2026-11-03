@@ -192,11 +192,15 @@ function register() {
     const projectRoot = appRoot
     const missing = []
     for (const relPath of BACKEND_FILES) {
-      const srcFile = relPath === 'src/fabric/translator.js' ? path.join(projectRoot, 'packages/core/src/dax/translator.cjs') : path.join(projectRoot, relPath)
+      const coreSource = {'src/auth/auth.js':'auth.cjs','src/fabric/client.js':'client.cjs','src/fabric/xmla.js':'xmla.cjs'}[relPath]
+      const srcFile = relPath === 'src/fabric/translator.js' ? path.join(projectRoot, 'packages/core/src/dax/translator.cjs') : coreSource ? path.join(projectRoot, 'packages/core/src/connect',coreSource) : path.join(projectRoot, relPath)
       const destFile = path.join(exportDir, relPath)
       if (fs.existsSync(srcFile)) {
         fs.mkdirSync(path.dirname(destFile), { recursive: true })
-        fs.copyFileSync(srcFile, destFile)
+        if (coreSource) {
+          let source=fs.readFileSync(srcFile,'utf8').replaceAll("require('./auth.cjs')","require('../auth/auth')").replaceAll("require('./xmla.cjs')","require('./xmla')").replaceAll("require('./localRuntime.cjs')","({current:()=>null})")
+          fs.writeFileSync(destFile,source)
+        } else fs.copyFileSync(srcFile, destFile)
       } else {
         missing.push(relPath)
       }

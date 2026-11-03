@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -9,7 +9,8 @@
     "assets",
     "schemas",
     "!src/**/*.test.ts",
-    "!src/**/*.test.tsx"
+    "!src/**/*.test.tsx",
+    "!src/**/*.test.js"
   ],
   "exports": {
     "./dax": "./src/dax/index.js",
@@ -52,7 +53,13 @@
       "types": "./dist/compositions.d.ts",
       "default": "./dist/compositions.js"
     },
-    "./spec/resolve": "./src/spec/resolve.js"
+    "./spec/resolve": "./src/spec/resolve.js",
+    "./connect": "./src/connect/index.cjs",
+    "./connect/auth": "./src/connect/auth.cjs",
+    "./connect/metadata": "./src/connect/metadata.cjs",
+    "./connect/localRuntime": "./src/connect/localRuntime.cjs",
+    "./connect/client": "./src/connect/client.cjs",
+    "./connect/xmla": "./src/connect/xmla.cjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs"
@@ -75,6 +82,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.6.1",
-    "ajv": "^8.18.0"
+    "ajv": "^8.18.0",
+    "axios": "^1.8.4"
   }
 }
