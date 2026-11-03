@@ -206,3 +206,5 @@ INTERACTION-AXIS-080: 28 focused selection runtime tests PASS, including Ctrl/Co
 - Additive MCP write: all 135 pre-existing report files byte-identical immediately after insertion. Source PBIP folder untouched. Desktop's culture rewrite was backed up/restored after normal close; all 19 model definition files match initial hashes after reopening.
 - Private evidence: D:/vilsem-mcp/test-results/live-desktop-v020 and live-desktop-v021; open report is the cache QA copy, page Vilsem MCP QA. Customer samples/credentials are not published.
 - Not live verified: browser device-code/PKCE sign-in, incoming cross-highlight variants, drill-through destinations, bookmarks and every tooltip configuration. These have narrower automated coverage; the cross-filter OUT checklist is live verified.
+
+- Final release outcome: core 0.2.1 and MCP 0.2.2 published; main pushed in private/public app repos and MCP repo. Both app/core suites 811 passed; MCP 30 passed; full MCP audit zero. Fresh installed latest server confirmed port 62232, real-data PNG and persisted visual validation without an app checkout. Desktop checklist complete; saved QA page remains open with selection cleared.
