@@ -5,3 +5,4 @@ export function bridge(payload:any):Promise<any>;
 export function connect(source:any):Promise<any>;
 export function query(connection:any,dax:string,maxRows?:number):Promise<any[]>;
 export function schema(connection:any):Promise<any>;
+export function createMicrosoftLogin(options?:any):{authorizationUrl:string;matchesRedirect(url:string):boolean;completeRedirect(url:string):Promise<{accessToken:string;refreshToken?:string;expiresIn:number}>};

@@ -70,17 +70,10 @@ async function getStorageToken() {
   const clientSecret = process.env.FABRIC_CLIENT_SECRET;
 
   try {
-    const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-    const params = new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: 'https://storage.azure.com/.default',
-    });
-    const res = await axios.post(tokenUrl, params.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-    return res.data.access_token;
+    return await require('@vilsem/core/connect').createAuth({
+      env:{AUTH_MODE:'service_principal',FABRIC_TENANT_ID:tenantId,FABRIC_CLIENT_ID:clientId,FABRIC_CLIENT_SECRET:clientSecret},
+      resource:'https://storage.azure.com',
+    }).getToken();
   } catch {
     // Fall back to PBI token
     return await getToken();

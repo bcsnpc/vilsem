@@ -71,7 +71,7 @@ async function queryRoute(fastify) {
           message: 'Fabric returned 429 and all retries exhausted',
         });
       }
-      if (err.code === 'AUTH_FAILED') {
+      if (err.code === 'AUTH_FAILED' || err.message?.startsWith('AUTH_FAILED:')) {
         return reply.code(502).send({
           error: 'AUTH_FAILED',
           message: err.message,

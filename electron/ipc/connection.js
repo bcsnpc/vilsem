@@ -1,7 +1,6 @@
 const { ipcMain, safeStorage, app, BrowserWindow } = require('electron/main')
 const path   = require('path')
 const fs     = require('fs')
-const crypto = require('crypto')
 const axios  = require('axios')
 const { forceRefresh, setInteractiveTokens, getToken }                            = require('../../src/auth/auth')
 const { fetchMeasures, startAutoRefresh, getMeasuresList, getEnrichedMeasures,
@@ -245,31 +244,9 @@ async function reinitEngine(ws) {
 
 // ── PKCE helpers ──────────────────────────────────────────────────────────────
 
-const MS_CLIENT_ID   = 'ea0616ba-638b-4df5-95b9-636659ae5121'
-const MS_REDIRECT    = 'https://login.microsoftonline.com/common/oauth2/nativeclient'
-const MS_SCOPE       = 'https://analysis.windows.net/powerbi/api/.default offline_access'
-const MS_AUTH_BASE   = 'https://login.microsoftonline.com/common/oauth2/v2.0'
-
-function generatePKCE() {
-  const codeVerifier  = crypto.randomBytes(32).toString('base64url')
-  const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url')
-  return { codeVerifier, codeChallenge }
-}
-
-// ── Token fetch for SP credentials ───────────────────────────────────────────
-
-async function fetchTokenSP(tenantId, clientId, clientSecret) {
-  const res = await axios.post(
-    `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-    new URLSearchParams({
-      grant_type:    'client_credentials',
-      client_id:     clientId,
-      client_secret: clientSecret,
-      scope:         'https://analysis.windows.net/powerbi/api/.default',
-    }).toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 15000 }
-  )
-  return res.data.access_token
+const {createAuth,createMicrosoftLogin}=require('@vilsem/core/connect')
+async function fetchTokenSP(tenantId,clientId,clientSecret) {
+  return createAuth({env:{AUTH_MODE:'service_principal',FABRIC_TENANT_ID:tenantId,FABRIC_CLIENT_ID:clientId,FABRIC_CLIENT_SECRET:clientSecret}}).getToken()
 }
 
 // Resolve a bearer token from either accessToken directly or SP credentials
@@ -292,16 +269,7 @@ function register() {
   // ── Microsoft PKCE login ──────────────────────────────────────────────────
 
   ipcMain.handle('start-ms-login', async () => {
-    const { codeVerifier, codeChallenge } = generatePKCE()
-
-    const authUrl = new URL(`${MS_AUTH_BASE}/authorize`)
-    authUrl.searchParams.set('client_id',             MS_CLIENT_ID)
-    authUrl.searchParams.set('response_type',         'code')
-    authUrl.searchParams.set('redirect_uri',          MS_REDIRECT)
-    authUrl.searchParams.set('scope',                 MS_SCOPE)
-    authUrl.searchParams.set('code_challenge',        codeChallenge)
-    authUrl.searchParams.set('code_challenge_method', 'S256')
-    authUrl.searchParams.set('prompt',                'select_account')
+    const login = createMicrosoftLogin()
 
     return new Promise((resolve, reject) => {
       const win = new BrowserWindow({
@@ -311,48 +279,24 @@ function register() {
         webPreferences: { nodeIntegration: false, contextIsolation: true },
       })
 
-      win.loadURL(authUrl.toString())
+      win.loadURL(login.authorizationUrl)
 
       let settled = false
       function settle(fn, val) { if (!settled) { settled = true; fn(val) } }
 
       async function handleUrl(url) {
-        if (!url.startsWith(MS_REDIRECT) || settled) return
+        if (!login.matchesRedirect(url) || settled) return
         settled = true  // claim before close to prevent 'closed' firing as rejection
-
-        const params = new URL(url).searchParams
-        const code   = params.get('code')
-        const error  = params.get('error')
 
         if (!win.isDestroyed()) win.close()
 
-        if (error) {
-          reject(new Error(params.get('error_description') || error))
-          return
-        }
-        if (!code) {
-          reject(new Error('No authorization code in redirect'))
-          return
-        }
-
         try {
-          const res = await axios.post(
-            `${MS_AUTH_BASE}/token`,
-            new URLSearchParams({
-              client_id:     MS_CLIENT_ID,
-              grant_type:    'authorization_code',
-              code,
-              redirect_uri:  MS_REDIRECT,
-              code_verifier: codeVerifier,
-              scope:         MS_SCOPE,
-            }).toString(),
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 15000 }
-          )
+          const tokens = await login.completeRedirect(url)
           resolve({
             success:      true,
-            accessToken:  res.data.access_token,
-            refreshToken: res.data.refresh_token,
-            expiresIn:    res.data.expires_in,
+            accessToken:  tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            expiresIn:    tokens.expiresIn,
           })
         } catch (err) {
           reject(new Error(err.response?.data?.error_description || err.message))
@@ -566,16 +510,7 @@ function register() {
   ipcMain.handle('reauth-microsoft', async () => {
     // Reuse the PKCE login flow, then update the active workspace tokens
     return new Promise((resolve) => {
-      const { codeVerifier, codeChallenge } = generatePKCE()
-
-      const authUrl = new URL(`${MS_AUTH_BASE}/authorize`)
-      authUrl.searchParams.set('client_id',             MS_CLIENT_ID)
-      authUrl.searchParams.set('response_type',         'code')
-      authUrl.searchParams.set('redirect_uri',          MS_REDIRECT)
-      authUrl.searchParams.set('scope',                 MS_SCOPE)
-      authUrl.searchParams.set('code_challenge',        codeChallenge)
-      authUrl.searchParams.set('code_challenge_method', 'S256')
-      authUrl.searchParams.set('prompt',                'select_account')
+      const login = createMicrosoftLogin()
 
       const win = new BrowserWindow({
         width: 500, height: 700,
@@ -584,41 +519,21 @@ function register() {
         webPreferences: { nodeIntegration: false, contextIsolation: true },
       })
 
-      win.loadURL(authUrl.toString())
+      win.loadURL(login.authorizationUrl)
 
       let settled = false
       function settle(val) { if (!settled) { settled = true; resolve(val) } }
 
       async function handleUrl(url) {
-        if (!url.startsWith(MS_REDIRECT) || settled) return
+        if (!login.matchesRedirect(url) || settled) return
         settled = true
-
-        const params = new URL(url).searchParams
-        const code   = params.get('code')
-        const error  = params.get('error')
 
         if (!win.isDestroyed()) win.close()
 
-        if (error || !code) {
-          settle({ success: false, error: params.get('error_description') || error || 'No code' })
-          return
-        }
-
         try {
-          const res = await axios.post(
-            `${MS_AUTH_BASE}/token`,
-            new URLSearchParams({
-              client_id:     MS_CLIENT_ID,
-              grant_type:    'authorization_code',
-              code,
-              redirect_uri:  MS_REDIRECT,
-              code_verifier: codeVerifier,
-              scope:         MS_SCOPE,
-            }).toString(),
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 15000 }
-          )
+          const tokens = await login.completeRedirect(url)
 
-          const { access_token, refresh_token, expires_in } = res.data
+          const {accessToken:access_token,refreshToken:refresh_token,expiresIn:expires_in}=tokens
 
           // Update active workspace config with new tokens
           const cfg = readConfig()
@@ -634,9 +549,9 @@ function register() {
           // Update in-memory auth state
           setInteractiveTokens(access_token, refresh_token, expires_in || 3600)
 
-          settle({ success: true })
+          resolve({ success: true })
         } catch (err) {
-          settle({ success: false, error: err.response?.data?.error_description || err.message })
+          resolve({ success: false, error: err.response?.data?.error_description || err.message })
         }
       }
 

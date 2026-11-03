@@ -14,9 +14,9 @@ Composition resolution supports the ECharts composition types. DOM-adapter types
 
 Structured `buildVisualDax` bindings qualify and escape model identifiers. `prepareVisualRows` shares report ordering with previews, preserving time-slot chronology and value ordering for ranked compositions.
 
-## Standalone model connections (0.2.0)
+## Standalone model connections (0.2.1)
 
-Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.2.0/vilsem-core-0.2.0.tgz`.
+Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.2.1/vilsem-core-0.2.1.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -29,3 +29,5 @@ const rows = await models.query(connection, 'EVALUATE ROW("Value", 1)', 200);
 Fabric uses `{kind:'fabric',workspaceId,datasetId}`. Credentials come from `FABRIC_TENANT_ID`, `FABRIC_CLIENT_ID`, `FABRIC_CLIENT_SECRET` with `AUTH_MODE=service_principal`. Otherwise `AUTH_MODE=device_code` prints login instructions to stderr and caches only a refresh token in `~/.vilsem/auth/` (0700 directory, atomic 0600 file; Windows user-profile ACLs apply). Cache keys include tenant/client/resource. No app checkout, Electron or IPC is used. `createAuth({onDeviceCode})` customizes notifications. Compatibility subpaths preserve query parsing, PKCE token injection and local project fingerprinting; app registry caching stays in the app.
 
 Desktop discovery uses CIM to identify `msmdsrv.exe` with a Desktop parent and reads its `-s` workspace `msmdsrv.port.txt`. No PBIP command-line argument is required. Multiple engines require an explicit port. ADOMD is loaded from the installed Desktop distribution. Metadata and DAX queries do not modify the model.
+
+`createMicrosoftLogin()` owns Microsoft authorization URL generation, S256 PKCE, state validation and authorization-code exchange. It exposes `authorizationUrl`, `matchesRedirect(url)` and `completeRedirect(url)`; the app owns its browser surface, and core has no Electron/UI dependency. Duplicate navigation callbacks exchange only once. `createAuth({resource})` supports other Microsoft resources such as Azure Storage while keeping cache scopes separate. Core auth failures preserve the application's AUTH_FAILED classification. Browser completion/cancel/failure handoff tests cover both first login and reauthentication.

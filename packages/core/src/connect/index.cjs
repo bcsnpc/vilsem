@@ -1,5 +1,6 @@
 ﻿const {bridge}=require('./localRuntime.cjs');
 const auth=require('./auth.cjs');
+const {createMicrosoftLogin}=require('./microsoft.cjs');
 const metadata=require('./metadata.cjs');
 /** Each connection owns its model IDs; no process-global dataset mutation. */
 function createConnector(options={}){
@@ -37,4 +38,4 @@ function createConnector(options={}){
  return {connect,query,schema};
 }
 const connector=createConnector();
-module.exports={createConnector,createAuth:auth.createAuth,bridge,connect:connector.connect,query:connector.query,schema:connector.schema};
+module.exports={createConnector,createMicrosoftLogin,createAuth:auth.createAuth,bridge,connect:connector.connect,query:connector.query,schema:connector.schema};
