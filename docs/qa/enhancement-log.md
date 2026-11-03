@@ -75,3 +75,11 @@ SETTINGS-003 verification: implemented; 237/237 pane checks pass across41 types.
 - Priority: P2. Effort: small implementation plus cross-target formatting/persistence tests. Not implemented.
 
 UX-CARD-CAPTION-073 clarification: runtime trace shows AppSpecRenderer already removes component titles. The observed duplicate is a Power BI adapter bug, now tracked as FORMAT-DOM-073. Separate subtitle controls remain optional future work; do not redesign existing captions to solve the adapter bug.
+
+## EXP-CUSTOM-001 - Sandboxed custom-series extension (design only)
+- Area: Template expressiveness / Marimekko.
+- Current experience: Native series cannot lay out true variable-width Marimekko rectangles; custom renderItem is refused by design.
+- Proposed improvement: Versioned extension manifests, isolated execution and validated display lists, with host-owned rendering and interactions. See docs/expressiveness-gaps.md for limits, threat model and deployment constraints.
+- User benefit: Express specialized geometry without granting templates arbitrary JavaScript privileges.
+- Effort: Large; isolation and host certification feasibility must be established before implementation.
+- Priority: P2; intentionally not implemented in the expressiveness cycle, per the requested category-(c) boundary.

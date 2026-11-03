@@ -1234,3 +1234,47 @@ Verified with the latest package in Service: **22/22 checks pass** across Line, 
 - Status: Verified (automated); real browser sign-in not performed in this cycle.
 - Fix: Protocol/PKCE/state/code exchange now resides in core createMicrosoftLogin; Electron owns only the browser lifecycle and resolves the claimed callback directly. Refresh retains the original public Microsoft client/common authority when switching from SP credentials.
 - Regression: tests/core-microsoft-ui.test.js success/failure/cancel for both login handlers; packages/core/src/connect/microsoft.test.ts protocol and workspace-switch refresh; tests/core-auth-route.test.js preserves AUTH_FAILED response classification.
+## EXP-FMT-001 - Declarative relational and ordered data could not be expressed
+- Visual / Area: Sankey, Gantt, waterfall, sunburst, small multiples, network; core template resolver.
+- Category / Severity: Architecture / High.
+- Description: Templates could only calculate one row at a time, shape two category fields, and use a small formatter allowlist. Required links, trees, dates, ordered totals and facets failed validation.
+- Steps / Input: Author the expressiveness templates; bind the existing sample-model fields listed in docs/expressiveness-gaps.md; call validate_spec, explain_visual and preview_visual.
+- Expected: Resolve supported native chart structures from real fields without caller code.
+- Actual: Exact initial errors include `each transform needs a string "calculate" and an "as" name`, the third-dimension rejection and unknown label/date formatters.
+- Evidence / Root cause: Core instantiate.js shapeSlots/applyTransforms/validateTemplate; ignored MCP expressiveness baseline tool outputs.
+- Status: Verified (automated and real-data MCP preview); Desktop acceptance recorded in the expressiveness report.
+- Fix: Six category slots; date/take/window/links/hierarchy/facet transforms; bounded repeat; explicit nullable annotation handling; native chart module registration. No imperative custom callback added.
+- Regression: tests/expressiveness.test.js; MCP tests/expressiveness.test.ts; all older template tests remain enabled.
+
+## EXP-HOST-002 - Template renderer discarded additional category bindings
+- Visual / Area: Renderer buildRowsFromDataView; multi-level templates.
+- Category / Severity: Data / High.
+- Steps / Input: Deliver categorical data with three category columns and resolve a three-level sunburst or task/start/end Gantt.
+- Expected: All bound category levels reach core in the same order as preview normalization; transformed selection maps back to source rows.
+- Actual: Renderer emitted only _cat; preview's _cats was absent. Additional bindings could not reach template slots.
+- Evidence / Root cause: vilsem-renderer/src/visual.ts buildRowsFromDataView and selection routing.
+- Status: Verified (automated); live rendered acceptance is recorded separately.
+- Fix: Carry _cats, _cat2 and _sourceIndex; map transformed rowIndexes after ordering. Aggregate selections send all contributing identities.
+- Regression: tests/power-bi-selection-runtime.test.ts (six-level row boundary and sorted aggregate selection/tooltip identity cases); core hierarchy/link tests.
+
+## EXP-REF-003 - Missing reference measure crashed empty-data preview
+- Visual / Area: Bullet and dual-axis templates; markLine.
+- Category / Severity: Rendering / High.
+- Steps / Input: previewRows on the shipped bullet or dual-axis spec with no rows / a null target.
+- Expected: No reference line when its measure is absent; no invented zero and no exception.
+- Actual: ECharts reported invalid markLine data and `Cannot read properties of undefined (reading 'coord')`.
+- Evidence / Root cause: Empty scalar tokens resolved to null annotation coordinates in instantiateVisual.
+- Status: Verified (automated).
+- Fix: Omit markLine records with missing coordinate tokens while preserving configured styles and real reference values.
+- Regression: Core empty-reference test; MCP shipped-template empty-data previews for all nine specs.
+
+## EXP-THEME-004 - Explicit template backgrounds were overridden in Desktop
+- Visual / Area: All dark templates on a white native report page.
+- Category / Severity: Rendering / High.
+- Steps / Input: Preview a dark template with backgroundColor=$theme.background; commit it to the Expressiveness page with plain card chrome; reload Desktop.
+- Expected: Explicit template background survives; text/axes retain preview contrast independently of the report theme.
+- Actual: The renderer unconditionally forced transparent, leaving pale labels on white despite a dark preview.
+- Evidence / Root cause: Actual Desktop gallery captured before the fix; renderPrimitiveChart background override.
+- Status: Verified (automated); final live acceptance tracked in docs/expressiveness-gaps.md.
+- Fix: Honor an explicit background for templates; keep legacy composition transparency unchanged. Shipped examples explicitly request their theme background.
+- Regression: Renderer harness background/legacy-transparency test, plus real Desktop gallery acceptance.

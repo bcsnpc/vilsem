@@ -1,3 +1,14 @@
+## Latest: MCP expressiveness cycle - 2026-11-02
+
+- Ten new templates authored independently; nine pass validate_spec, explain_visual, real-data preview and commit_visual on the new Expressiveness page. Marimekko is the sole category-(c) refusal; its sandboxed-extension design is documented, not implemented.
+- Native Desktop renderer 4.14.2.0 tested through actual import, external-change reload and saved report reopen. Explicit dark template backgrounds survive on a white native page. Core 0.3 includes relational/tree/facet/window/date shaping and preserves transformed row identities.
+- Source gates: **843/843 app/core tests** in both private and sanitized public checkouts; **44/44 MCP tests**. Native renderer package command exited 0; JS in the release package matches the imported package.
+- Saved containers: 10 valid Vilsem visuals (nine new + prior QA); native visuals excluded by design. All **19 model definition files byte-identical** after restoring Desktop culture normalization and reopening. No model changes were made by the MCP.
+- Desktop auto-discovery: process-workspace-port-file, initial 62232 / reopened 57597. Evidence: ignored MCP test-results/expressiveness; detailed PASS/failure classes and verification limits in [expressiveness-gaps.md](../expressiveness-gaps.md).
+- This is the ten-template expressiveness acceptance. It does not close broader Service/Fabric, interaction-variant, installer or certification backlog. Network/Gantt samples and prior-period semantics are explicit in the format documentation.
+
+---
+
 ## Latest: Shape / Divider without data bindings
 
 **35 types supported, six still gated** (KPI, Sparkline KPI, navigation button, text box, image, custom).
