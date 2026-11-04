@@ -20,6 +20,24 @@
       "description": "Phase 5.2: optional third measure. Used by bubble (size dimension). Maps to _val3 in the primitive runtime."
     },
     {
+      "displayName": "Measure 4",
+      "name": "quaternary",
+      "kind": "Measure",
+      "description": "Optional template measure 4; preserves host-evaluated DAX values."
+    },
+    {
+      "displayName": "Measure 5",
+      "name": "quinary",
+      "kind": "Measure",
+      "description": "Optional template measure 5; preserves host-evaluated DAX values."
+    },
+    {
+      "displayName": "Measure 6",
+      "name": "senary",
+      "kind": "Measure",
+      "description": "Optional template measure 6; preserves host-evaluated DAX values."
+    },
+    {
       "displayName": "Category",
       "name": "category",
       "kind": "Grouping",
@@ -95,6 +113,18 @@
           "category6": {
             "min": 0,
             "max": 1
+          },
+          "quaternary": {
+            "min": 0,
+            "max": 1
+          },
+          "quinary": {
+            "min": 0,
+            "max": 1
+          },
+          "senary": {
+            "min": 0,
+            "max": 1
           }
         }
       ],
@@ -153,6 +183,21 @@
             {
               "bind": {
                 "to": "tertiary"
+              }
+            },
+            {
+              "bind": {
+                "to": "quaternary"
+              }
+            },
+            {
+              "bind": {
+                "to": "quinary"
+              }
+            },
+            {
+              "bind": {
+                "to": "senary"
               }
             }
           ]

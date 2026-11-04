@@ -1,0 +1,18 @@
+{
+  "stress2-final-root-audit.json": {
+    "info": 0,
+    "low": 0,
+    "moderate": 19,
+    "high": 21,
+    "critical": 5,
+    "total": 45
+  },
+  "stress2-final-mcp-audit.json": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  }
+}

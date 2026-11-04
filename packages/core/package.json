@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -81,12 +81,17 @@
       ],
       "dax/rows": [
         "src/dax/row-normalize.js"
+      ],
+      "templates": [
+        "src/templates/instantiate.js"
       ]
     }
   },
   "dependencies": {
     "adm-zip": "^0.6.1",
     "ajv": "^8.18.0",
-    "axios": "^1.8.4"
+    "axios": "^1.8.4",
+    "d3-hierarchy": "3.1.2",
+    "d3-shape": "3.2.0"
   }
 }

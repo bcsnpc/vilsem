@@ -81,6 +81,8 @@ export function shapeValues(primary, cats) {
   const deltaPct = (delta != null && first) ? delta / first : null
   return {
     values: p,
+    lastRowValue:p.length?(p[p.length-1]??null):null,
+    lastRowLabel:p.length?(c[p.length-1]??null):null,
     series: [p],
     categories: c,
     pairs: p.map((v, i) => [c[i], v]),
@@ -161,14 +163,16 @@ export function applyTransforms(transforms, shaped, cats, params) {
   const rowCount = Math.max(0, ...(cats ? [cats.length] : []), ...lens)
   for (const t of transforms) {
     if (!t || t.as == null) { warnings.push('transform needs { calculate, as }'); continue }
-    if (t.calculate == null) { calc[t.as] = derive(t, shaped, calc, cats, shapeValues); continue }
+    if (t.calculate == null) { calc[t.as] = derive(t, shaped, calc, cats, shapeValues,params); continue }
     const out = []
     const refs = [...String(t.calculate).matchAll(/[A-Za-z_]\w*/g)].map(m=>m[0]).filter(name=>Object.hasOwn(shaped,name)||Object.hasOwn(calc,name))
     const length = refs.length ? Math.max(0,...refs.map(name=>(calc[name]||shaped[name]).values?.length||0)) : rowCount
     for (let r = 0; r < length; r++) {
       const scope = { ...(params || {}) }
       for (const [name, s] of Object.entries(shaped)) if (Array.isArray(s?.values)) scope[name] = Number(s.values[r]) || 0
-      for (const [name, s] of Object.entries(calc)) scope[name] = Number(s.values[r]) || 0 // chaining
+      // Relational transforms (facets/links/hierarchies) have no numeric vector.
+      // Their presence must not break later independent arithmetic transforms.
+      for (const [name, s] of Object.entries(calc)) if(Array.isArray(s?.values))scope[name] = Number(s.values[r]) || 0
       out.push(refs.some(name=>(calc[name]||shaped[name]).values?.[r]==null) ? null : evalExpr(t.calculate, scope))
     }
     calc[String(t.as)] = shapeValues(out, cats)
@@ -286,14 +290,15 @@ export function resolveToken(token, ctx) {
 }
 
 // ── whitelist formatter DSL → real function (built in OUR code, no eval) ─────
-export function makeFormatter(tpl) {
+export function makeFormatter(tpl,emptyText='') {
   const template = String(tpl)
   return function formatter(p) {
     return template.replace(/\{([^}]+)\}/g, (_, expr) => {
       const [rawKey, fmt] = expr.split(':')
       // Accept ECharts' native placeholders as aliases — models reach for them
       // by instinct: {c}=value, {b}=name/category, {a}=seriesName, {d}=percent (pie share).
-      const key = rawKey === 'c' ? 'value' : rawKey === 'b' ? 'name' : rawKey === 'a' ? 'seriesName'
+      const indexed = /^(value|c)\.([0-5])$/.exec(rawKey)
+      const key = indexed ? 'value' : rawKey === 'c' ? 'value' : rawKey === 'b' ? 'name' : rawKey === 'a' ? 'seriesName'
         : (rawKey === 'd' || rawKey === 'percent') ? 'percent' : rawKey
       if (key === 'label') return p?.data?.label ?? p?.name ?? ''
       if (key === 'name') return p?.name ?? ''
@@ -301,7 +306,8 @@ export function makeFormatter(tpl) {
       if (key === 'percent') return p?.percent != null ? String(p.percent) : '' // pie slice share-of-total
       if (key === 'value') {
         const raw = (p && typeof p === 'object') ? p.value : p
-        const v = Array.isArray(raw) ? raw[raw.length - 1] : raw
+        const v = Array.isArray(raw) ? raw[indexed ? Number(indexed[2]) : raw.length - 1] : indexed ? null : raw
+        if(v==null || v==='' || (typeof v==='number'&&!Number.isFinite(v)))return emptyText
         if (fmt === 'date') { const ms=typeof v==='number'?v:Date.parse(String(v??''));return Number.isFinite(ms)?new Date(ms).toISOString().slice(0,10):'' }
         if (fmt === 'thousands') return fmtThousands(v)
         if (fmt === 'percent') return fmtPercent(v)
@@ -310,6 +316,32 @@ export function makeFormatter(tpl) {
       return `{${expr}}` // unknown key → leave literal (never eval)
     })
   }
+}
+
+// Power BI host tooltips do not consume ECharts' formatter automatically.
+// Reuse only the formatter resolved by trusted core, retaining host identities
+// at the caller. Never stringify tuples as unlabelled raw decimal arrays.
+export function nativeTemplateTooltipItems(params, formatter, tupleLabels, boundFields) {
+  if(typeof formatter==='function') {
+    const formatted=formatter(params)
+    if(formatted!=null && typeof formatted!=='object')return [{displayName:'Details',value:String(formatted)}]
+  }
+  const raw=params?.value ?? params?.data?.value
+  const show=value=>value==null?'(Blank)':typeof value==='number'?fmtThousands(value):String(value)
+  if(Array.isArray(raw) && Array.isArray(tupleLabels)) {
+    const items=raw.slice(0,50).map((value,index)=>({displayName:`${params?.name || params?.seriesName || 'Value'}: ${tupleLabels[index]?.name ?? tupleLabels[index] ?? `Indicator ${index+1}`}`,value:show(value)}))
+    if(raw.length>50)items.push({displayName:'Additional indicators',value:`${raw.length-50} omitted`})
+    return items
+  }
+  if(Array.isArray(boundFields))return boundFields.map(field=>{
+    let value=show(field.value)
+    if(field.value!=null && (field.isDate || Object.prototype.toString.call(field.value)==='[object Date]')) {
+      const date=new Date(field.value)
+      if(Number.isFinite(date.getTime()))value=date.toISOString().slice(0,10)
+    }
+    return {displayName:String(field.name),value}
+  })
+  return [{displayName:String(params?.data?.label ?? params?.name ?? params?.seriesName ?? 'Value'),value:Array.isArray(raw)?raw.map(show).join(' / '):show(raw)}]
 }
 
 // ── deep walk: replace whole-token strings + convert formatterTemplate keys ──
@@ -329,6 +361,14 @@ export function deepResolve(node, ctx, warnings) {
   }
   if (Array.isArray(node)) return node.map(n => deepResolve(n, ctx, warnings))
   if (node && typeof node === 'object') {
+    if (Object.hasOwn(node,'concat')) {
+      if(Object.keys(node).length!==1 || !Array.isArray(node.concat))throw Error('concat requires an array of declarative arrays')
+      const arrays=node.concat.map(part=>deepResolve(part,ctx,warnings))
+      if(arrays.some(part=>!Array.isArray(part)))throw Error('concat members must resolve to arrays')
+      const result=arrays.flat()
+      if(result.length>20000)throw Error('concat limit is 20000 items')
+      return result
+    }
     if (Object.prototype.hasOwnProperty.call(node,'repeat')) {
       const source=deepResolve(node.repeat,ctx,warnings)
       if(!Array.isArray(source))throw Error('repeat must resolve to an array')
@@ -340,8 +380,9 @@ export function deepResolve(node, ctx, warnings) {
     const out = {}
     for (const [k, v] of Object.entries(node)) {
       if (BLOCKED.has(k)) throw Error(`unsafe object key ${k}`)
+      if(k==='formatterEmptyText')continue
       if (k === 'formatterTemplate' && typeof v === 'string') {
-        out.formatter = makeFormatter(v)
+        out.formatter = makeFormatter(v,node.formatterEmptyText??'')
         continue
       }
       out[k] = deepResolve(v, ctx, warnings)
@@ -389,10 +430,12 @@ export function instantiateVisual({ template, rows = [], params = {}, theme } = 
   warnings.push(...tWarns)
   const ctx = { slots: shaped, calc, params: paramValues, theme: theme || {} }
   const option = deepResolve(template?.template || {}, ctx, warnings)
+  const capabilityErrors=templateCapabilityErrors(option)
+  if(capabilityErrors.length)throw Error(capabilityErrors.join('\n'))
   // An absent reference measure is not a zero-valued line. ECharts cannot lay
   // out null annotation coordinates, even when the underlying series is empty.
   for(const series of Array.isArray(option.series)?option.series:[]) {
-    if(Array.isArray(series.markLine?.data))series.markLine={...series.markLine,data:series.markLine.data.filter(item=>{
+    for(const annotation of ['markLine','markArea'])if(Array.isArray(series[annotation]?.data))series[annotation]={...series[annotation],data:series[annotation].data.filter(item=>{
       const points=Array.isArray(item)?item:[item]
       return points.every(point=>point && !['xAxis','yAxis'].some(key=>Object.hasOwn(point,key)&&point[key]==null) && (!Array.isArray(point.coord)||point.coord.every(v=>v!=null)))
     })}
@@ -429,11 +472,26 @@ export function collectTokens(node, acc = []) {
   return acc
 }
 
+const TEMPLATE_SERIES=new Set(['bar','line','pie','scatter','gauge','radar','treemap','sunburst','sankey','graph','heatmap','tree','boxplot','candlestick','parallel','themeRiver','pictorialBar','funnel','chord'])
+function templateCapabilityErrors(option) {
+  const errors=[]
+  if(option?.geo!=null)errors.push('geo/map rendering requires a shipped registered map asset; the current renderer ships none')
+  const visit=series=>{
+    if(Array.isArray(series)){series.forEach(visit);return}
+    if(!series||typeof series!=='object')return
+    if(series.repeat){visit(series.template);return}
+    if(series.concat){visit(series.concat);return}
+    if(series.coordinateSystem==='geo'||series.type==='map')errors.push('geo/map rendering requires a shipped registered map asset; the current renderer ships none')
+    else if(typeof series.type==='string'&&!series.type.startsWith('$')&&!TEMPLATE_SERIES.has(series.type))errors.push(series.type==='custom'?'custom series requires imperative renderItem; executable callbacks are not supported by the declarative format':`series type "${series.type}" is not shipped by the current renderer; a bounded declarative transform or a sandboxed extension is required`)
+  }
+  visit(option?.series)
+  return [...new Set(errors)]
+}
 export function validateTemplate(template) {
   const errors = []
   const warnings = []
   if (!template || typeof template !== 'object') { errors.push('template must be a JSON object'); return { errors, warnings } }
-  if(template.meta?.formatVersion!=null && ![1,2].includes(template.meta.formatVersion))errors.push(`Unsupported template formatVersion ${template.meta.formatVersion}`)
+  if(template.meta?.formatVersion!=null && ![1,2,3].includes(template.meta.formatVersion))errors.push(`Unsupported template formatVersion ${template.meta.formatVersion}`)
   if (!template.meta || !template.meta.id) errors.push('meta.id is required')
   if (!template.meta || !template.meta.name) warnings.push('meta.name is recommended')
 
@@ -455,8 +513,8 @@ export function validateTemplate(template) {
     errors.push(`at most six dimension/time slots are supported (found ${dimSlots.length}); the 1st maps to $slot.<d>.categories, the 2nd to a second axis / heatmap y`)
   }
   const totalMeasures = measureSlots.reduce((sum, s) => sum + slotCount(s?.count), 0)
-  if (totalMeasures > 3) {
-    warnings.push(`template declares ${totalMeasures} measures; the current data shape supports at most 3 — extra measures render empty.`)
+  if (totalMeasures > 6) {
+    errors.push(`template declares ${totalMeasures} measures; at most six measure bindings are supported.`)
   }
 
   if (!template.template || typeof template.template !== 'object') {
@@ -471,6 +529,7 @@ export function validateTemplate(template) {
     if(depth>64){errors.push('template nesting limit is 64');return}
     if(Array.isArray(node))return node.forEach(v=>checkSafety(v,depth+1))
     if(!node||typeof node!=='object')return
+    if(Object.hasOwn(node,'formatterEmptyText')&&(!Object.hasOwn(node,'formatterTemplate')||typeof node.formatterEmptyText!=='string'||node.formatterEmptyText.length>200))errors.push('formatterEmptyText requires formatterTemplate and a literal string up to 200 characters')
     for(const [key,value] of Object.entries(node)) {
       if(BLOCKED.has(key))errors.push(`unsafe object key ${key}`)
       if(typeof value==='function')errors.push('executable functions are not supported')
@@ -479,10 +538,12 @@ export function validateTemplate(template) {
     }
   }
   checkSafety(template)
+  errors.push(...templateCapabilityErrors(template.template).filter(error=>!errors.includes(error)))
   if(errors.length)return {errors,warnings}
-  const repeatShapes={panels:['name','index','categories','data','left','top','width','height'],pieData:['name','value'],nodes:['id','name','category','label','value','rowIndexes'],links:['source','target','value','rowIndexes'],children:['id','name','value','rowIndexes','children']}
+  const repeatShapes={data:['name','value','rowIndexes'],groups:['name','value','rowIndexes','index','seats','data'],panels:['name','index','categories','values','rowIndexes','data','last','lastLabel','sum','max','avg','left','top','width','height'],pieData:['name','value'],nodes:['id','name','category','label','value','rowIndexes','depth','offset','span','base','data','pixelSpan','labelWidth','labelVisible','cx','cy','radius','diameter','x','y','symbolSize'],links:['source','target','label','value','rowIndexes'],children:['id','name','value','rowIndexes','children']}
   const checkItems=(node,fields=null)=>{
-    if(typeof node==='string' && node.startsWith('$item.')) {
+    if(node==='$item' && fields===null)errors.push('token "$item" requires a repeat scope')
+    else if(typeof node==='string' && node.startsWith('$item.')) {
       const property=node.split('.')[1]
       if(!fields || !fields.includes(property))errors.push(`token "${node}" references an unknown repeat item field "${property}"`)
     } else if(Array.isArray(node))node.forEach(item=>checkItems(item,fields))
@@ -498,6 +559,7 @@ export function validateTemplate(template) {
   checkItems(template.template)
 
   for (const tok of collectTokens(template.template || {})) {
+    if(tok==='$item')continue // scope checked above; copies only the bounded current item
     // A token must be a plain dotted path. Reject expressions / ternaries /
     // arithmetic (the engine never evaluates them — they'd resolve to undefined).
     if (!/^\$(slot|calc|param|theme|item)(\.[A-Za-z0-9_]+)+$/.test(tok)) {
@@ -505,6 +567,7 @@ export function validateTemplate(template) {
       continue
     }
     const path = tok.slice(1).split('.')
+    if(path.some(part=>BLOCKED.has(part))){errors.push(`unsafe token path ${tok}`);continue}
     if (path[0] === 'slot') {
       if (!slots[path[1]]) errors.push(`token "${tok}" references undeclared slot "${path[1]}"`)
     } else if (path[0] === 'calc') {

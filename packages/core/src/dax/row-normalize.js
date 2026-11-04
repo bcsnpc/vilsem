@@ -2,6 +2,20 @@
 // `{ _cat, _val, _val2 }` shape every Compact* component expects.
 // Verbatim extract from AppSpecRenderer.jsx (pre-Phase-1).
 
+// The Power BI host evaluates model/inline DAX before delivering categorical
+// data. Keep its numeric results intact, especially ratios and distinct counts.
+export function rowsFromCategorical(categorical, normalizeCategory = value => value) {
+  const categories=categorical?.categories || [], values=categorical?.values || []
+  const cats=categories[0]?.values || [], primary=values[0]?.values || []
+  return Array.from({length:Math.max(cats.length,primary.length)},(_,i)=>{
+    const row={_cat:normalizeCategory(cats[i]),_sourceIndex:i,_cats:categories.map(c=>normalizeCategory(c.values[i])),_cat2:normalizeCategory(categories[1]?.values?.[i]),_val:primary[i]}
+    if(values[1]?.values?.[i]!=null)row._val2=values[1].values[i]
+    if(values[2]?.values?.[i]!=null)row._val3=values[2].values[i]
+    if(values.length>3)row._vals=values.map(column=>column.values?.[i] ?? null)
+    return row
+  })
+}
+
 export function prepareVisualRows(rows, type, config = {}, template) {
   const timeTemplate = template && Object.values(template.slots || {}).some(slot => slot?.kind === 'time')
   if (timeTemplate) return [...rows].sort((a,b)=>String(a._cat ?? '').localeCompare(String(b._cat ?? ''),undefined,{numeric:true}))
@@ -140,6 +154,7 @@ export function normaliseRows(rawRows, groupByRef, measures) {
       _val:  primaryMeasureKey   ? (r[primaryMeasureKey]   ?? null) : null,
       _val2: secondaryMeasureKey ? (r[secondaryMeasureKey] ?? null) : null,
       _val3: tertiaryMeasureKey  ? (r[tertiaryMeasureKey]  ?? null) : null,
+      ...(measures.length>3?{_vals:measures.map(m=>r[resolveMeasureKey(r,m)]??null)}:{}),
     }
   })
 }

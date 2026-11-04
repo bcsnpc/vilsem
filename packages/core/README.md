@@ -16,7 +16,7 @@ Structured `buildVisualDax` bindings qualify and escape model identifiers. `prep
 
 ## Standalone model connections
 
-Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.3.0/vilsem-core-0.3.0.tgz`.
+Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.4.0/vilsem-core-0.4.0.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -35,3 +35,29 @@ Desktop discovery uses CIM to identify `msmdsrv.exe` with a Desktop parent and r
 ## Expressive template format 2
 
 Core 0.3 adds six category slots, ordered sum/lag/share windows, UTC dates, bounded samples, weighted links, hierarchies and facets with bounded repeat expansion. Renderer 4.14 registers native Sankey, sunburst and graph charts and preserves category bindings and transformed selection identities. See the MCP [spec-format reference](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/spec-format.md) and [expressiveness report](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/expressiveness-gaps.md). Templates never execute caller code; custom renderItem is rejected.
+
+Core0.4 adds query-only visual-scoped DAX, format3 current-row/fallback formatting,
+bounded temporal/statistical/layout operations and native renderer4.31. Operations
+include OHLC/Heikin-Ashi, waterfall, partition/pack, multistage flows, streamgraph,
+grouped intervals, conversion/calendar bands, EWMA, bins/boxes/ECDF, density,
+collision layouts, QQ/hexbin, shares/subtotals, rebase/pivot/correlation/cohorts,
+parameterized top-N, Pareto counts, fixed tiles and conservative word packing.
+Feature floors prevent new specs silently targeting an older report renderer.
+Existing renderer GUID and `objects.semantica.primitiveSpec` remain unchanged.
+Transforms never execute caller code or persist measures to the model. Refer to
+the versioned MCP spec-format reference for bounds, data-window assumptions and
+native acceptance status; these additions are not a production certification.
+
+
+### Query-only scoped measures
+
+`buildVisualDax({dimensions, measures, scopedMeasures: spec.measures})` emits
+`DEFINE MEASURE` before EVALUATE without any model write. `compileScopedMeasures`
+lexes expressions, checks references against an optional supplied schema and
+rejects cycles/shadowed model names. It is not a full DAX parser; the calling
+connection must validate syntax/binding with the actual Analysis Services engine.
+PBIR export uses inline `NativeMeasure` expressions, expanding local dependencies
+with CALCULATE to preserve measure context transition. The Desktop host evaluates
+these under report filters and delivers numbers to `rowsFromCategorical`; neither
+JavaScript nor the visual executes DAX. Do not write a scoped definition to TMDL.
+See the MCP `vilsem://docs/spec-format` for ratio/time-intelligence/ranking examples.

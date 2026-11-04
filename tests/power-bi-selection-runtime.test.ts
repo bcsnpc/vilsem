@@ -1,10 +1,12 @@
-import { prepareVisualRows } from '@vilsem/core/dax/rows'
+import { prepareVisualRows, rowsFromCategorical, normaliseRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
 import { lollipop as templateExample } from '@vilsem/core/templates/examples'
 import { describe, it, expect, vi } from 'vitest'
 import fs from 'node:fs'
 import vm from 'node:vm'
 import ts from 'typescript'
+import {createRequire} from 'node:module'
 import { composeOption } from '../vilsem-renderer/src/compositions'
 import { escapeHtml } from '@vilsem/core/primitives/escapeHtml'
 import { applyAxisTextConfig } from '../ui/src/appspec/shared/axisTextConfig.js'
@@ -19,13 +21,14 @@ const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarg
 
 function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories'], configOverrides = {}) {
   const events: Record<string, Function> = {}, zrEvents: Record<string, Function> = {}
-  const chart = { on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
+  const chart = { on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
   const rootEvents: Record<string, Function> = {}
   const node = () => ({ style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
   const exports: any = {}
   vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, cancelAnimationFrame() {}, require: (name: string) => {
-    if (name === '@vilsem/core/dax/rows') return { prepareVisualRows }
+    if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
+    if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems }
     if (name === 'echarts/core') return { use() {}, init: () => chart }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
@@ -312,6 +315,88 @@ describe('native Power BI interaction contracts', () => {
     h.events.mouseout()
     expect(h.tooltip.hide).toHaveBeenLastCalledWith({isTouchEvent:false,immediately:true})
   })
+  it('formats tuple tooltips through the native host without losing source identities',()=>{
+    const h=harness()
+    const spec={type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'native-tooltip'},slots:{cat:{kind:'dimension'},revenue:{kind:'measure'},profit:{kind:'measure'}},template:{tooltip:{formatterTemplate:'Revenue {value.0:thousands}; Profit {value.1:thousands}'},series:[{type:'scatter',data:'$slot.revenue.pairs'}]}}}
+    const dv={categorical:{categories:[{values:['Bikes']}],values:[{source:{roles:{content:true}},values:[12345.678]},{source:{roles:{secondary:true}},values:[-20.5]}]}}
+    h.visual.renderPrimitiveChart(dv,spec)
+    h.events.mouseover({name:'Bikes',dataIndex:0,data:{rowIndexes:[0]},value:[12345.678,-20.5],event:{event:{clientX:10,clientY:20}}})
+    expect(h.tooltip.show).toHaveBeenLastCalledWith(expect.objectContaining({identities:[h.ids[0]],dataItems:[{displayName:'Details',value:'Revenue 12,345.68; Profit -20.5'}]}))
+  })
+  it('does not register host hover handlers when tooltips are disabled',()=>{
+    const h=harness('bar',undefined,{tooltipEnabled:false})
+    expect(h.events.mouseover).toBeUndefined()
+    expect(h.tooltip.show).not.toHaveBeenCalled()
+  })
+  it.each(['treemap','sunburst'])('preserves %s navigation while selection changes and clears missing filtered roots',type=>{
+    const h=harness()
+    const spec={type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'navigation'},slots:{cat:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{hierarchy:{levels:['cat','cat'],value:'amount'},as:'h'}],template:{series:[{type,data:'$calc.h.children'}]}}}
+    const dv={categorical:{categories:[{values:['Bikes','Clothing']}],values:[{source:{roles:{content:true}},values:[20,10]}]}}
+    h.visual.renderPrimitiveChart(dv,spec)
+    const id=h.visual.lastOption.series[0].data[0].id,seriesId=h.visual.lastOption.series[0].id
+    h.events[`${type}roottonode`]({seriesId,targetNode:{getId:()=>id,depth:1}})
+    h.visual.applyChartSelection(h.ids,[h.ids[0]])
+    expect(h.chart.dispatchAction).toHaveBeenLastCalledWith({type:`${type}RootToNode`,seriesId,targetNodeId:id},{silent:true})
+    h.visual.applyChartSelection(h.ids,[])
+    expect(h.chart.dispatchAction).toHaveBeenCalledTimes(2)
+    // A filtered result retaining the id restores it; removing the node resets.
+    h.visual.renderPrimitiveChart({...dv,categorical:{...dv.categorical,categories:[{values:['Clothing']}] }},spec)
+    expect(h.visual.hierarchyNavigation.size).toBe(0)
+  })
+  it('does not re-drill after the treemap breadcrumb returns to root',()=>{
+    const h=harness('treemap'),seriesId=h.visual.lastOption.series[0].id
+    h.events.treemaproottonode({seriesId,targetNode:{getId:()=> 'Bikes',depth:1}})
+    h.events.treemaproottonode({seriesId,targetNode:{getId:()=> 'Products',depth:0}})
+    h.visual.applyChartSelection(h.ids,[])
+    expect(h.chart.dispatchAction).not.toHaveBeenCalled()
+  })
+  it('retains tree collapse flags across selection/clear and toggles them back on expand',()=>{
+    const h=harness(),spec={type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'tree-state'},slots:{cat:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{hierarchy:{levels:['cat','cat'],value:'amount'},as:'h'}],template:{series:[{type:'tree',initialTreeDepth:-1,data:[{name:'Products',children:'$calc.h.children'}]}]}}}
+    const dv={categorical:{categories:[{values:['Bikes','Clothing']}],values:[{source:{roles:{content:true}},values:[20,10]}]}}
+    h.visual.renderPrimitiveChart(dv,spec)
+    const seriesId=h.visual.lastOption.series[0].id
+    // Tree raw data index 0 is virtual root, 1 is Products, 2 is Bikes.
+    h.events.treeexpandandcollapse({seriesId,dataIndex:2})
+    h.visual.applyChartSelection(h.ids,[h.ids[0]])
+    const data=()=>h.chart.setOption.mock.calls.at(-1)[0].series[0].data[0].children
+    expect(data()[0].collapsed).toBe(true)
+    expect(data()[0].children[0].itemStyle.opacity).toBe(1)
+    expect(data()[1].children[0].itemStyle.opacity).toBe(0.25)
+    h.visual.applyChartSelection(h.ids,[])
+    expect(data()[0].collapsed).toBe(true)
+    h.events.treeexpandandcollapse({seriesId,dataIndex:2})
+    h.visual.applyChartSelection(h.ids,[])
+    expect(data()[0].collapsed).toBe(false)
+    const before=h.selection.select.mock.calls.length
+    h.events.click({seriesType:'tree',dataIndex:1,data:{name:'Products',children:[]},event:{event:{}}})
+    expect(h.selection.select.mock.calls.length).toBe(before)
+    h.visual.renderPrimitiveChart({...dv,categorical:{...dv.categorical,categories:[{values:['Clothing']}] }},spec)
+    expect(h.visual.treeCollapsed.get(seriesId).size).toBe(0)
+  })
+  it('preserves collapse through real native ECharts 6 action payloads and option replacement',()=>{
+    const native=createRequire(new URL('../vilsem-renderer/package.json',import.meta.url))('echarts')
+    const h=harness(),spec={type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'real-tree-state'},slots:{cat:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{hierarchy:{levels:['cat','cat'],value:'amount'},as:'h'}],template:{animation:false,series:[{type:'tree',expandAndCollapse:true,initialTreeDepth:-1,data:[{name:'Products',children:'$calc.h.children'}]}]}}}
+    h.visual.renderPrimitiveChart({categorical:{categories:[{values:['Bikes','Clothing']}],values:[{values:[20,10]}]}},spec)
+    const chart=native.init(null,undefined,{renderer:'svg',ssr:true,width:900,height:600})
+    h.visual.chart=chart
+    try {
+      chart.setOption(h.visual.lastOption)
+      chart.on('treeexpandandcollapse',h.events.treeexpandandcollapse)
+      const seriesId=h.visual.lastOption.series[0].id
+      const bikes=()=>chart.getModel().getSeriesByIndex(0).getData().tree.getNodeByDataIndex(2)
+      expect(bikes().name).toBe('Bikes')
+      expect(bikes().isExpand).toBe(true)
+      chart.dispatchAction({type:'treeExpandAndCollapse',seriesId,dataIndex:2})
+      expect(bikes().isExpand).toBe(false)
+      h.visual.applyChartSelection(h.ids,[h.ids[0]])
+      expect(bikes().isExpand).toBe(false)
+      h.visual.applyChartSelection(h.ids,[])
+      expect(bikes().isExpand).toBe(false)
+      chart.dispatchAction({type:'treeExpandAndCollapse',seriesId,dataIndex:2})
+      h.visual.applyChartSelection(h.ids,[])
+      expect(bikes().isExpand).toBe(true)
+    } finally {chart.dispose()}
+  })
   it('restores bookmark selection and resets it through the host callback', () => {
     const h=harness()
     h.restoreSelection([h.ids[1]])
@@ -353,6 +438,62 @@ describe('renderer template and keyboard contracts', () => {
 
 
 describe('declarative transformed visual identity routing',()=>{
+ it('keeps word packing symbols invisible and dims unrelated labels through native selection',()=>{
+  const h=harness('bar',['Road Red','Mountain Blue'])
+  const template={meta:{id:'word-selection'},slots:{word:{kind:'dimension'},revenue:{kind:'measure'}},transforms:[{words:{text:'word',weight:'revenue',limit:4},as:'w'}],template:{xAxis:{type:'value'},yAxis:{type:'value'},series:[{type:'graph',coordinateSystem:'cartesian2d',data:'$calc.w.data',links:[]}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['Road Red','Mountain Blue']}],values:[{values:[10,5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  h.visual.applyChartSelection(h.ids,[h.ids[0]])
+  const data=h.chart.setOption.mock.calls.at(-1)[0].series[0].data
+  expect(data.every(d=>d.itemStyle.opacity===0)).toBe(true)
+  expect(data.find(d=>d.name==='road').label.opacity).toBe(1)
+  expect(data.find(d=>d.name==='mountain').label.opacity).toBe(.25)
+  h.visual.applyChartSelection(h.ids,[])
+  expect(h.chart.setOption.mock.calls.at(-1)[0]).toBe(h.visual.lastOption)
+ })
+ it('preserves invisible helper series and authored mark/label opacity when selecting',()=>{
+  const h=harness('bar',['A','B'])
+  const template={meta:{id:'transparent-helpers'},slots:{category:{kind:'dimension'},amount:{kind:'measure'}},template:{xAxis:{type:'category'},yAxis:{type:'value'},series:[{type:'bar',itemStyle:{opacity:0},data:'$slot.amount.values'},{type:'bar',itemStyle:{opacity:.6},label:{show:true,opacity:.8},data:'$slot.amount.values'}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A','B']}],values:[{values:[10,5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  h.visual.applyChartSelection(h.ids,[h.ids[0]])
+  const series=h.chart.setOption.mock.calls.at(-1)[0].series
+  expect(series[0].data.map(d=>d.itemStyle.opacity)).toEqual([0,0])
+  expect(series[1].data.map(d=>d.itemStyle.opacity)).toEqual([.6,.15])
+  expect(series[1].data.map(d=>d.label.opacity)).toEqual([.8,.2])
+  expect(h.visual.lastOption.series[1].itemStyle.opacity).toBe(.6)
+ })
+ it('keeps duplicate heatmap categories bound to the correct complete source row in host tooltips and clicks',async()=>{
+  const h=harness()
+  const template={meta:{id:'heatmap-bound-tooltip'},slots:{month:{kind:'dimension'},country:{kind:'dimension'},revenue:{kind:'measure'}},template:{xAxis:{type:'category',data:'$slot.month.categories'},yAxis:{type:'category',data:'$slot.country.categories'},series:[{type:'heatmap',data:'$slot.revenue.matrix'}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{source:{displayName:'Month'},values:['Jan','Jan','Feb']},{source:{displayName:'Country'},values:['US','Canada','US']}],values:[{source:{displayName:'Revenue'},values:[2,10,5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const data=h.visual.lastOption.series[0].data[0]
+  h.events.mouseover({seriesIndex:0,dataIndex:0,value:data,data})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual([{displayName:'Month',value:'Jan'},{displayName:'Country',value:'Canada'},{displayName:'Revenue',value:'10'}])
+  await h.events.click({seriesIndex:0,dataIndex:0,value:data,data,event:{event:{}}})
+  expect(h.selection.select).toHaveBeenLastCalledWith(h.ids[1],false)
+ })
+ it('uses the correct radar panel indicator names in native host tooltips',()=>{
+  const h=harness()
+  const template={meta:{id:'radar-host-indicators'},slots:{country:{kind:'dimension'},category:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{facet:{by:'country',category:'category',value:'amount'},as:'f'}],template:{radar:[{indicator:[{name:'Wrong'}]},{indicator:[{name:'Bikes'},{name:'Clothing'}]}],series:[{type:'radar',radarIndex:1,data:{repeat:'$calc.f.panels',template:{name:'$item.name',value:'$item.values',rowIndexes:'$item.rowIndexes'}}}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['US','US']},{values:['Bikes','Clothing']}],values:[{values:[3,2]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const data=h.visual.lastOption.series[0].data[0]
+  h.events.mouseover({seriesIndex:0,dataIndex:0,name:data.name,value:data.value,data})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual([{displayName:'US: Bikes',value:'3'},{displayName:'US: Clothing',value:'2'}])
+  expect(h.tooltip.show.mock.calls.at(-1)[0].identities).toHaveLength(2)
+ })
+ it('dims unrelated flow links while preserving authored edge opacity and restores the pristine graph',()=>{
+  const h=harness()
+  const template={meta:{id:'flow-edge-style'},slots:{a:{kind:'dimension'},b:{kind:'dimension'},v:{kind:'measure'}},transforms:[{flows:{levels:['a','b'],value:'v'},as:'f'}],template:{series:[{type:'sankey',data:'$calc.f.nodes',links:'$calc.f.links',lineStyle:{opacity:0.4}}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A','B']},{values:['X','Y']}],values:[{values:[2,3]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  h.visual.applyChartSelection(h.ids,[h.ids[0]])
+  const links=h.chart.setOption.mock.calls.at(-1)[0].series[0].links
+  // prepareVisualRows sorts by measure; assert identities rather than input order.
+  expect(links.find(link=>link.label==='A \u2192 X').lineStyle.opacity).toBe(0.4)
+  expect(links.find(link=>link.label==='B \u2192 Y').lineStyle.opacity).toBe(0.1)
+  expect(links.map(link=>link.rowIndexes)).toEqual([[0],[1]])
+  expect(h.visual.lastOption.series[0].links.every(link=>!link.lineStyle)).toBe(true)
+  h.visual.applyChartSelection(h.ids,[])
+  expect(h.chart.setOption.mock.calls.at(-1)[0]).toBe(h.visual.lastOption)
+ })
  it('preserves every category field through the renderer row boundary',()=>{
   const h=harness()
   const rows=h.visual.buildRowsFromDataView({categorical:{categories:[{values:['A']},{values:['B']},{values:['C']}],values:[{values:[7]}]}})
@@ -385,4 +526,17 @@ it('preserves a declarative background on a white host page while legacy charts 
  expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).not.toBe('transparent')
  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A']}],values:[{values:[7]}]}},{type:'bar',config:{cardStyle:'plain'}})
  expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).toBe('transparent')
+})
+
+
+it('renders scoped-measure host query results identically to the SSR resolver fixture',()=>{
+  const h=harness('bar',['A','B','C'])
+  const spec={version:1,type:'custom',canvasTheme:'dark',config:{cardStyle:'plain'},measures:{Margin:'DIVIDE([Profit],[Revenue])'},template:{meta:{id:'fixture_margin',name:'Margin'},slots:{category:{kind:'dimension'},margin:{kind:'measure'}},params:[],template:{animation:false,xAxis:{type:'category',data:'$slot.category.values'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.margin.values'}]}}}
+  const values=[0.6284073682136907,0.442744552217835,0.41138501803790783]
+  const categorical={categories:[{values:['A','B','C']}],values:[{source:{displayName:'Margin',roles:{content:true}},values}]}
+  h.visual.renderPrimitiveChart({categorical},spec)
+  const actual=h.chart.setOption.mock.calls.at(-1)[0]
+  const ssr=resolveVisualSpec(spec,normaliseRows(values.map((v,i)=>({'P[C]':['A','B','C'][i],'[Margin]':v})),'P[C]',['Margin']))
+  expect(JSON.stringify(actual.series)).toBe(JSON.stringify(ssr.series))
+  expect(actual.xAxis.data).toEqual(ssr.xAxis.data)
 })

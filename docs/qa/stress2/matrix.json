@@ -1,0 +1,1073 @@
+[
+  {
+    "id": 1,
+    "name": "Step line (start/middle/end step)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded; real Desktop rendering inspected. Preview capped at 200 rows; Desktop displays the full host window.",
+    "evidence": "001-step-line.png"
+  },
+  {
+    "id": 2,
+    "name": "Spline line with area gradient fill",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded; real Desktop rendering inspected. Preview capped at 200 rows; Desktop displays the full host window.",
+    "evidence": "002-spline-gradient.png"
+  },
+  {
+    "id": 3,
+    "name": "Multi-series line with 7-day rolling average overlay (rolling → (b) if missing)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "Actual four-tool workflow and inspected Desktop 7-day DAX mean overlay, including both real series.",
+    "evidence": "003-rolling-line.png"
+  },
+  {
+    "id": 4,
+    "name": "Line with confidence band (upper/lower measures as filled area)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "Actual four-tool rerun succeeded; final Desktop confidence interval inspected with invisible baseline excluded and legend colours matched.",
+    "evidence": "004-confidence-band.png"
+  },
+  {
+    "id": 5,
+    "name": "Fan chart (nested percentile bands around a median line)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "(a) corrected",
+    "reason": "Actual four-tool workflow succeeded; revised native Desktop screenshot inspected. All five real percentile bindings visible; separate full-data DAX query confirms the low recent median.",
+    "evidence": "005-fan-chart.png"
+  },
+  {
+    "id": 6,
+    "name": "Horizon chart (layered bands per row, small multiples)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "(a), (b) corrected",
+    "reason": "Actual four-tool workflow succeeded; revised native Desktop screenshot inspected. Facet arithmetic fix verified in Desktop; three adaptive bands, country margins and labels visible.",
+    "evidence": "006-horizon.png"
+  },
+  {
+    "id": 7,
+    "name": "Sparkline grid: 3×3 KPI tiles, each a sparkline from a date column",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "Four actual MCP operations succeeded; Desktop screenshot inspected with nine named, distinct KPI/sparkline tiles and readable numbers.",
+    "evidence": "007-sparkline-grid.png"
+  },
+  {
+    "id": 8,
+    "name": "Stacked 100% column with inline percentage labels",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded; Desktop rendering and full evidence crop inspected.",
+    "evidence": "008-100-percent-column.png"
+  },
+  {
+    "id": 9,
+    "name": "Diverging stacked bar (Likert-style, centred at zero)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "Actual four-tool rerun and final native Desktop screenshot inspected. Opposing signed economics balances; tiny return labels suppressed. Likert geometry uses actual economics data, not invented survey responses.",
+    "evidence": "009-diverging-stack.png"
+  },
+  {
+    "id": 10,
+    "name": "Population pyramid / butterfly (two measures, opposite directions)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "Actual four-tool rerun and final native Desktop screenshot inspected. Actual gender-filtered customer measures shown in chronological birth-year order.",
+    "evidence": "010-population-pyramid.png"
+  },
+  {
+    "id": 11,
+    "name": "Grouped + stacked combination (clustered by series, stacked by sub-series)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "(a) corrected",
+    "reason": "All four actual MCP operations succeeded; Desktop rendering and full evidence crop inspected.",
+    "evidence": "011-grouped-stacked.png"
+  },
+  {
+    "id": 12,
+    "name": "Lollipop with target markers",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded; Desktop rendering and full evidence crop inspected.",
+    "evidence": "012-lollipop-target.png"
+  },
+  {
+    "id": 13,
+    "name": "Dot plot (Cleveland) with two measures per category",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "013-cleveland-dots.png"
+  },
+  {
+    "id": 14,
+    "name": "Range bar with delta label",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "014-range-delta.png"
+  },
+  {
+    "id": 15,
+    "name": "Wrapped bar (long category list split into columns)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "015-wrapped-bar.png"
+  },
+  {
+    "id": 16,
+    "name": "Barcode / strip plot of raw values per category",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "016-revenue-strip.png"
+  },
+  {
+    "id": 17,
+    "name": "Polar bar (radial column) with category labels",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "017-polar-column.png"
+  },
+  {
+    "id": 18,
+    "name": "Nightingale rose",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "018-nightingale-rose.png"
+  },
+  {
+    "id": 19,
+    "name": "Semi-circle donut with centre KPI",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "a (authoring: unused dimension slot; corrected)",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "019-semi-donut-kpi.png"
+  },
+  {
+    "id": 20,
+    "name": "Nested donut (two levels)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "020-nested-donut.png"
+  },
+  {
+    "id": 21,
+    "name": "Pie with small slices grouped as \"Other\" (top-N → (b) if missing)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "021-pie-top-other.png"
+  },
+  {
+    "id": 22,
+    "name": "Pictogram with repeated icons (bounded repeat)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "022-pictogram-icons.png"
+  },
+  {
+    "id": 23,
+    "name": "Waffle chart (10×10, percent of total)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "023-waffle-share.png"
+  },
+  {
+    "id": 24,
+    "name": "Parliament / hemicycle seat chart",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "024-hemicycle.png"
+  },
+  {
+    "id": 25,
+    "name": "Bullet with target + three qualitative bands + delta text",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "025-bullet-bands-delta.png"
+  },
+  {
+    "id": 26,
+    "name": "Linear gauge with thresholds",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "026-linear-gauge.png"
+  },
+  {
+    "id": 27,
+    "name": "Multi-ring progress (nested radial progress for three measures)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "027-multi-ring-progress.png"
+  },
+  {
+    "id": 28,
+    "name": "Gauge with bands driven by a visual-scoped target measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "028-gauge-target-bands.png"
+  },
+  {
+    "id": 29,
+    "name": "Combo: column + line, dual axis, reference line from a measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "029-dual-axis-reference.png"
+  },
+  {
+    "id": 30,
+    "name": "Pareto: sorted bars + cumulative % line + 80% reference line",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "030-pareto.png"
+  },
+  {
+    "id": 31,
+    "name": "Waterfall with subtotals at category boundaries",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "031-waterfall-subtotals.png"
+  },
+  {
+    "id": 32,
+    "name": "Double waterfall (two periods side by side)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "032-double-waterfall.png"
+  },
+  {
+    "id": 33,
+    "name": "Bridge chart (start value → deltas → end value) with connectors",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "033-profit-bridge.png"
+  },
+  {
+    "id": 34,
+    "name": "Candlestick/OHLC from four measures by date, with volume bars below",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "034-revenue-ohlc.png"
+  },
+  {
+    "id": 35,
+    "name": "Heikin-Ashi (derived OHLC → (b))",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "035-heikin-ashi.png"
+  },
+  {
+    "id": 36,
+    "name": "Heatmap matrix, two categories, diverging scale centred at zero",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "036-diverging-heatmap.png"
+  },
+  {
+    "id": 37,
+    "name": "Calendar heatmap, one year, weekday rows, colour by visual-scoped measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "037-calendar-margin.png"
+  },
+  {
+    "id": 38,
+    "name": "1-D heatmap / heat strip by date",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "038-daily-heat-strip.png"
+  },
+  {
+    "id": 39,
+    "name": "Lasagna plot (one heat strip per category, stacked)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "039-country-lasagna.png"
+  },
+  {
+    "id": 40,
+    "name": "Treemap two levels, colour by second measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "a",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "040-treemap-secondary-colour.png"
+  },
+  {
+    "id": 41,
+    "name": "Treemap with drill (breadcrumb)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "041-treemap-drill.png"
+  },
+  {
+    "id": 42,
+    "name": "Sunburst three levels, size by measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "042-sunburst-products.png"
+  },
+  {
+    "id": 43,
+    "name": "Icicle chart (partition)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "043-icicle-partition.png"
+  },
+  {
+    "id": 44,
+    "name": "Circle packing (nested bubbles)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "044-circle-packing.png"
+  },
+  {
+    "id": 45,
+    "name": "Tree diagram (orthogonal) from parent/child columns",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "045-orthogonal-tree.png"
+  },
+  {
+    "id": 46,
+    "name": "Radial tree",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "046-radial-tree.png"
+  },
+  {
+    "id": 47,
+    "name": "Indented tree / org chart from manager/employee columns",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "047-taxonomy-org-chart.png"
+  },
+  {
+    "id": 48,
+    "name": "Dendrogram-style tree with leaf values",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "048-dendrogram-values.png"
+  },
+  {
+    "id": 49,
+    "name": "Sankey between two category levels",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "049-sankey-two-levels.png"
+  },
+  {
+    "id": 50,
+    "name": "Sankey three levels with node ordering by value",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "050-sankey-three-levels.png"
+  },
+  {
+    "id": 51,
+    "name": "Alluvial / parallel sets (categorical flows, multiple axes)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "051-parallel-sets.png"
+  },
+  {
+    "id": 52,
+    "name": "Chord diagram of flows between categories",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "052-chord-ribbons.png"
+  },
+  {
+    "id": 53,
+    "name": "Non-ribbon chord (arc links only)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "053-chord-arcs.png"
+  },
+  {
+    "id": 54,
+    "name": "Arc diagram (nodes on a line, arcs for links)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "054-arc-diagram.png"
+  },
+  {
+    "id": 55,
+    "name": "Force-directed network from a relationship table, node size by measure",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "055-relationship-force.png"
+  },
+  {
+    "id": 56,
+    "name": "Circular layout network",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "056-network-circular.png"
+  },
+  {
+    "id": 57,
+    "name": "Adjacency matrix from a relationship table",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "057-adjacency-matrix.png"
+  },
+  {
+    "id": 58,
+    "name": "Bipartite graph (two columns of nodes)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "058-bipartite.png"
+  },
+  {
+    "id": 59,
+    "name": "Radar with benchmark series overlaid",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "059-radar-benchmark.png"
+  },
+  {
+    "id": 60,
+    "name": "Radar small multiples (one per category)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "060-radar-small-multiples.png"
+  },
+  {
+    "id": 61,
+    "name": "Parallel coordinates across six measures",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "061-parallel-six-measures.png"
+  },
+  {
+    "id": 62,
+    "name": "Scatter with quadrant lines at medians, outlier labels, bubble size by third measure (median → (b))",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "062-median-quadrants.png"
+  },
+  {
+    "id": 63,
+    "name": "Connected scatter (points ordered by date, path drawn)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "063-connected-scatter.png"
+  },
+  {
+    "id": 64,
+    "name": "Scatter matrix / pair plot of four measures (facets)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "064-scatter-matrix.png"
+  },
+  {
+    "id": 65,
+    "name": "Bubble chart with categorical colour and legend",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "a",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "065-categorical-bubbles.png"
+  },
+  {
+    "id": 66,
+    "name": "Bump chart (rank over time; rank → (b) if missing)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "066-bump-rank.png"
+  },
+  {
+    "id": 67,
+    "name": "Slope chart two periods, top-5 movers highlighted",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "a",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "067-slope-movers.png"
+  },
+  {
+    "id": 68,
+    "name": "Streamgraph (stacked area, wiggle offset, smoothing)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "068-wiggle-streamgraph.png"
+  },
+  {
+    "id": 69,
+    "name": "Stacked area with percent normalisation",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "069-normalized-area.png"
+  },
+  {
+    "id": 70,
+    "name": "Cumulative flow diagram (stacked area of states over time)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "070-cumulative-flow.png"
+  },
+  {
+    "id": 71,
+    "name": "Gantt with start/duration, grouped by owner, today marker",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "071-gantt-country.png"
+  },
+  {
+    "id": 72,
+    "name": "Timeline of events with annotations from a text column",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "072-event-timeline.png"
+  },
+  {
+    "id": 73,
+    "name": "Funnel with conversion % between stages",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "073-funnel-conversion.png"
+  },
+  {
+    "id": 74,
+    "name": "Mirrored funnel (two segments compared)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "074-mirrored-funnel.png"
+  },
+  {
+    "id": 75,
+    "name": "Quadrant / BCG matrix with labelled quadrants",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "075-labelled-quadrants.png"
+  },
+  {
+    "id": 76,
+    "name": "Dual-axis with independent zoom slider",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "076-independent-axis-zoom.png"
+  },
+  {
+    "id": 77,
+    "name": "Line with markArea bands for weekends/holidays",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "077-weekend-bands.png"
+  },
+  {
+    "id": 78,
+    "name": "Column with error bars from min/max measures",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "078-columns-error-bars.png"
+  },
+  {
+    "id": 79,
+    "name": "Control chart (mean ± 3σ lines from a visual-scoped measure)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "079-control-chart.png"
+  },
+  {
+    "id": 80,
+    "name": "CUSUM / EWMA chart (cumulative or exponentially weighted → (b))",
+    "tier": "A",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "080-ewma.png"
+  },
+  {
+    "id": 81,
+    "name": "Forest plot (estimate + CI per category)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "081-forest-range.png"
+  },
+  {
+    "id": 82,
+    "name": "Dot-and-whisker plot",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "082-dot-whisker.png"
+  },
+  {
+    "id": 83,
+    "name": "Small multiples of bar chart per category, shared y-axis",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "083-bar-shared-axis.png"
+  },
+  {
+    "id": 84,
+    "name": "Small multiples of line chart per category, free y-axis",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "084-line-free-axis.png"
+  },
+  {
+    "id": 85,
+    "name": "KPI card with sparkline, delta vs prior period, conditional colour",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "085-kpi-sparkline.png"
+  },
+  {
+    "id": 86,
+    "name": "Ranked list with inline bars (table-like bar chart)",
+    "tier": "A",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "086-ranked-inline-bars.png"
+  },
+  {
+    "id": 87,
+    "name": "Marimekko (expected (c) — re-confirm after any new tokens)",
+    "tier": "A",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: custom series requires imperative renderItem; executable callbacks are not supported by the declarative format. No target container written. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 88,
+    "name": "Mosaic plot (expected (c) — same reason)",
+    "tier": "A",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: custom series requires imperative renderItem; executable callbacks are not supported by the declarative format. No target container written. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 89,
+    "name": "Histogram with auto bins from a numeric column",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "089-histogram-auto.png"
+  },
+  {
+    "id": 90,
+    "name": "Histogram with manual bin width parameter",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "090-histogram-width.png"
+  },
+  {
+    "id": 91,
+    "name": "Box plot per category from a detail-level column (quartiles, whiskers, outliers)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "091-box-detail-prices.png"
+  },
+  {
+    "id": 92,
+    "name": "Violin plot (density → likely (c))",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "092-violin-density.png"
+  },
+  {
+    "id": 93,
+    "name": "Beeswarm / jitter plot (collision layout → likely (c))",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "093-beeswarm.png"
+  },
+  {
+    "id": 94,
+    "name": "Strip plot with mean marker",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "094-strip-mean.png"
+  },
+  {
+    "id": 95,
+    "name": "ECDF plot",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "095-ecdf.png"
+  },
+  {
+    "id": 96,
+    "name": "Density / ridgeline plot (kernel density → likely (c))",
+    "tier": "B",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "096-ridgeline.png"
+  },
+  {
+    "id": 97,
+    "name": "Q-Q plot against normal (quantiles → decide)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "097-normal-qq.png"
+  },
+  {
+    "id": 98,
+    "name": "Hexbin scatter (binning in 2-D → decide)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "098-hexbin-price-cost.png"
+  },
+  {
+    "id": 99,
+    "name": "Contour / 2-D density heatmap (→ likely (c))",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "099-density2d-price-cost.png"
+  },
+  {
+    "id": 100,
+    "name": "Top-N with \"Other\" bucket donut, N as a parameter",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "100-parameter-top-other.png"
+  },
+  {
+    "id": 101,
+    "name": "Percent-of-total by group with group subtotals",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "101-group-percent-subtotals.png"
+  },
+  {
+    "id": 102,
+    "name": "YoY comparison bars with variance labels and conditional colour",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "102-yoy-variance.png"
+  },
+  {
+    "id": 103,
+    "name": "Month-over-month index chart (all series rebased to 100)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "103-rebase-index.png"
+  },
+  {
+    "id": 104,
+    "name": "Running total vs same-period-last-year running total",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "104-ytd-prior-year.png"
+  },
+  {
+    "id": 105,
+    "name": "Cohort retention heatmap (cohort × period from a date column)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "105-cohort-retention.png"
+  },
+  {
+    "id": 106,
+    "name": "Pivoted heatmap from long-format data (pivot → (b))",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "106-pivot-heatmap.png"
+  },
+  {
+    "id": 107,
+    "name": "Correlogram / correlation heatmap across six measures (Pearson → decide)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "107-pearson-six.png"
+  },
+  {
+    "id": 108,
+    "name": "Pareto 80/20 with category count annotation",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "108-pareto-count.png"
+  },
+  {
+    "id": 109,
+    "name": "Spike histogram by date",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "109-date-spikes.png"
+  },
+  {
+    "id": 110,
+    "name": "Radial histogram (polar bins)",
+    "tier": "B",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "110-radial-histogram.png"
+  },
+  {
+    "id": 111,
+    "name": "Choropleth map (region column → shaded regions) — (c) unless a shipped map asset exists",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: geo/map rendering requires a shipped registered map asset; the current renderer ships none. No target container written. No map asset or coordinate fields available. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 112,
+    "name": "Bubble map from lat/long columns",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: geo/map rendering requires a shipped registered map asset; the current renderer ships none. No target container written. No map asset or coordinate fields available. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 113,
+    "name": "Geo heatmap from lat/long",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: geo/map rendering requires a shipped registered map asset; the current renderer ships none. No target container written. No map asset or coordinate fields available. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 114,
+    "name": "Flow map (origin → destination lat/long)",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: geo/map rendering requires a shipped registered map asset; the current renderer ships none. No target container written. No map asset or coordinate fields available. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 115,
+    "name": "Tile grid map (US states / EU countries as fixed grid; may be (a) if layout tokens suffice)",
+    "tier": "C",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "115-country-tile-grid.png"
+  },
+  {
+    "id": 116,
+    "name": "Word cloud from a text column weighted by measure",
+    "tier": "C",
+    "status": "PASS",
+    "classification": "b",
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "116-word-cloud.png"
+  },
+  {
+    "id": 117,
+    "name": "Voronoi treemap",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: custom series requires imperative renderItem; executable callbacks are not supported by the declarative format. No target container written. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 118,
+    "name": "Flame chart from a hierarchical call-stack-like column set",
+    "tier": "C",
+    "status": "PASS",
+    "classification": null,
+    "reason": "All four actual MCP operations succeeded with this exact spec; individual native Desktop rendering/screenshot inspected.",
+    "evidence": "118-hierarchy-flame.png"
+  },
+  {
+    "id": 119,
+    "name": "3-D bar / surface",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: series type \"bar3D\" is not shipped by the current renderer; a bounded declarative transform or a sandboxed extension is required. No target container written. Sandbox/asset requirements documented."
+  },
+  {
+    "id": 120,
+    "name": "Venn / Euler of set overlaps",
+    "tier": "C",
+    "status": "FAIL (c) - not implemented by scope",
+    "classification": "c",
+    "reason": "All four actual MCP operations refuse: custom series requires imperative renderItem; executable callbacks are not supported by the declarative format. No target container written. Sandbox/asset requirements documented."
+  }
+]

@@ -320,7 +320,7 @@ describe('validateTemplate — static checks for the editor', () => {
     expect(errors.some(e => /kind must be measure/.test(e))).toBe(true)
     expect(errors.some(e => /ECharts skeleton.*required/.test(e))).toBe(true)
   })
-  it('warns (not errors) when >3 measures are declared', () => {
+  it('accepts four through six measures and rejects more than six', () => {
     const heavy = {
       meta: { id: 'h', name: 'H' },
       slots: { a: { kind: 'measure', count: 2 }, b: { kind: 'measure', count: 2 } },
@@ -328,7 +328,9 @@ describe('validateTemplate — static checks for the editor', () => {
     }
     const { errors, warnings } = validateTemplate(heavy)
     expect(errors).toEqual([])
-    expect(warnings.some(w => /at most 3/.test(w))).toBe(true)
+    expect(warnings).toEqual([])
+    heavy.slots.b.count=5
+    expect(validateTemplate(heavy).errors.join(' ')).toContain('at most six')
   })
   it('collectTokens finds every $-token in the skeleton', () => {
     expect(collectTokens(lolliTemplate.template).sort()).toEqual(
@@ -463,4 +465,10 @@ describe('slotCount', () => {
     expect(slotCount({ min: 2 })).toBe(2)
     expect(slotCount(undefined)).toBe(1)
   })
+})
+
+it('omits empty-data mark areas while retaining complete bound rectangles',()=>{
+  const template={meta:{id:'annotation-area-gap'},slots:{cat:{kind:'dimension'},v:{kind:'measure'}},template:{series:[{type:'bar',data:'$slot.v.values',markArea:{data:[[{xAxis:0,yAxis:'$slot.v.min'},{xAxis:1,yAxis:'$slot.v.max'}]]}}]}}
+  expect(instantiateVisual({template,rows:[]}).option.series[0].markArea.data).toEqual([])
+  expect(instantiateVisual({template,rows:[{_cat:'A',_val:2}]}).option.series[0].markArea.data).toEqual([[{xAxis:0,yAxis:2},{xAxis:1,yAxis:2}]])
 })

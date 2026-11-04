@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 import AdmZip from 'adm-zip'
 import Ajv from 'ajv'
 import { resolveVisualSpec } from '../spec/resolve.js'
+import { compileScopedMeasures } from '../dax/scopedMeasures.js'
+import { assertReportRenderer } from './rendererCompatibility.js'
 
 export const RENDERER_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
 export const VISUAL_SCHEMA = 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json'
@@ -39,12 +41,18 @@ export function makeVisualContainer({ visualName, spec, bindings = {}, layout = 
   const queryState = {}
   const dimensions = bindings.dimensions || []
   const measures = bindings.measures || []
-  if (!Array.isArray(dimensions) || dimensions.length > 6 || !Array.isArray(measures) || measures.length > 3) throw Error('Bindings support up to six category levels and three measures')
+  const scoped = compileScopedMeasures(spec.measures || {}, {homeTable:measures[0]?.table})
+  if (!Array.isArray(dimensions) || dimensions.length > 6 || !Array.isArray(measures) || measures.length > 6) throw Error('Bindings support up to six category levels and six measures')
   const add = (field, index, measure) => {
     const property = measure ? field.name : field.column
     if (!field.table || !property || typeof field.table !== 'string' || typeof property !== 'string') throw Error('Every binding requires a table and field name')
-    const role = measure ? ['content','secondary','tertiary'][index] : index ? `category${index+1}` : 'category'
-    queryState[role] = { projections: [{ field: { [measure ? 'Measure' : 'Column']: { Expression: { SourceRef: { Entity: field.table } }, Property: property } }, queryRef: `${field.table}.${property}`, nativeQueryRef: property, ...(!measure ? { active:true } : {}) }] }
+    const role = measure ? ['content','secondary','tertiary','quaternary','quinary','senary'][index] : index ? `category${index+1}` : 'category'
+    const expression = measure ? scoped.expression(property) : undefined
+    if(expression!==undefined && field.table.toLowerCase()!==measures[0].table.toLowerCase())throw Error('All visual-scoped measure bindings must use the first measure binding table')
+    const projection = expression
+      ? { NativeMeasure: { Language:'dax', Expression:expression, DataType:3, ProposedName:property } }
+      : { [measure ? 'Measure' : 'Column']: { Expression: { SourceRef: { Entity: field.table } }, Property: property } }
+    queryState[role] = { projections: [{ field:projection, queryRef: expression ? `NativeMeasure(${property})` : `${field.table}.${property}`, nativeQueryRef: property, ...(!measure ? { active:true } : {}) }] }
   }
   dimensions.forEach((field,index)=>add(field,index,false))
   measures.forEach((field,index)=>add(field,index,true))
@@ -79,6 +87,7 @@ export async function injectVisual({ reportDir, pageName, visualName, spec, bind
   await validateVisualContainer(visual)
   const visualDir = path.join(pageDir,'visuals',visualName)
   const registrationExists = (report.resourcePackages || []).some(item=>item.type==='CustomVisual' && item.name===RENDERER_GUID)
+  if (registrationExists) await assertReportRenderer(root,RENDERER_GUID,spec,bindings)
   const parts = registrationExists ? [] : await rendererParts()
   const resourceDir = path.join(root,'CustomVisuals',RENDERER_GUID)
   // Never overwrite another tool's resource directory or any existing visual.

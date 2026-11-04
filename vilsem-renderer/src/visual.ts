@@ -1,5 +1,6 @@
-import { prepareVisualRows } from '@vilsem/core/dax/rows'
+import { prepareVisualRows, rowsFromCategorical } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
 /*
  * vilsem Renderer — Power BI custom visual
  * ─────────────────────────────────────────────────
@@ -33,18 +34,24 @@ import DataView = powerbi.DataView
 import * as echarts from "echarts/core"
 import {
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
+  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart,
 } from "echarts/charts"
 import {
   TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
-  MarkLineComponent, GraphicComponent, TitleComponent,
+  MarkLineComponent, GraphicComponent, TitleComponent, MarkAreaComponent, MarkPointComponent,
+  PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
+  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DataZoomSliderComponent, DatasetComponent,
 } from "echarts/components"
 import { CanvasRenderer } from "echarts/renderers"
 import { LabelLayout } from "echarts/features"
 
 echarts.use([
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
-  TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
-  MarkLineComponent, GraphicComponent, TitleComponent, CanvasRenderer, LabelLayout,
+  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart,
+  TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent,
+  MarkLineComponent, GraphicComponent, TitleComponent, MarkAreaComponent, MarkPointComponent,
+  PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
+  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DatasetComponent, CanvasRenderer, LabelLayout,
 ])
 
 import { composeOption } from "./compositions"
@@ -163,6 +170,9 @@ export class Visual implements IVisual {
   // re-running composeOption() — selection should be a render-state shim,
   // not a recomposition.
   private lastOption: any = null
+  private hierarchyNavigation = new Map<string, any>()
+  private treeCollapsed = new Map<string, Map<string, boolean>>()
+  private hierarchyBindingKey = ""
   private primitiveCategoryNames: string[] = []
   private primitiveRowNames: string[] = []
   private primitiveVisualType = ""
@@ -600,6 +610,21 @@ export class Visual implements IVisual {
     // Per-visual tooltip config (show/hide + trigger) — same helper the web canvas
     // uses, so tooltip behaviour matches on canvas, web export and PBI.
     option = applyTooltipConfig(option, config as any)
+    const bindingKey = JSON.stringify([(spec as any).template?.meta?.id || visualType,
+      (dv?.categorical?.categories || []).map(c=>c.source?.queryName || c.source?.displayName),
+      (dv?.categorical?.values || []).map(c=>c.source?.queryName || c.source?.displayName)])
+    if(bindingKey !== this.hierarchyBindingKey) {this.hierarchyNavigation.clear();this.treeCollapsed.clear()}
+    this.hierarchyBindingKey = bindingKey
+    for(const [index,series] of (Array.isArray(option.series)?option.series:[]).entries()) {
+      if(['treemap','sunburst','tree'].includes(series.type))series.id ||= `vilsem-hierarchy-${index}`
+      if(series.type==='tree') {
+        const identify=(nodes:any[],path:string[]=[])=>nodes.map((node,index)=>{
+          const next=[...path,JSON.stringify([node?.name ?? null,index])]
+          return {...node,id:node.id ?? JSON.stringify(next),...(Array.isArray(node.children)?{children:identify(node.children,next)}:{})}
+        })
+        series.data=identify(series.data || [])
+      }
+    }
 
     // Save the composed option so applyChartSelection can derive selection-
     // aware overrides without recomposing.
@@ -615,7 +640,34 @@ export class Visual implements IVisual {
       chartRoot.style.minWidth = `${minimumWidth}px`
     }
     this.chart = echarts.init(chartRoot)
-    this.chart.setOption(option)
+    this.chart.setOption(this.withTreeState(option))
+    this.chart.on('treeexpandandcollapse',(payload:any)=>{
+      const series=this.lastOption?.series?.find(s=>s.id===payload?.seriesId && s.type==='tree')
+      if(!series)return
+      const pending=(series.data || []).map(node=>({node,depth:1})).reverse();let index=0
+      while(pending.length && index<10000) {
+        const entry=pending.pop()!;index++
+        if(index===payload.dataIndex) {
+          const states=this.treeCollapsed.get(series.id) || new Map<string,boolean>()
+          const limit=series.initialTreeDepth ?? 2
+          const collapsed=states.get(entry.node.id) ?? entry.node.collapsed ?? (limit>=0 && entry.depth>limit)
+          states.set(entry.node.id,!collapsed);this.treeCollapsed.set(series.id,states);break
+        }
+        if(Array.isArray(entry.node.children))pending.push(...entry.node.children.map(node=>({node,depth:entry.depth+1})).reverse())
+      }
+    })
+    for(const type of ['treemapRootToNode','treemapZoomToNode','sunburstRootToNode']) {
+      this.chart.on(type.toLowerCase(),(payload:any)=>{
+        const seriesId=payload?.seriesId, node=payload?.targetNode
+        const targetNodeId=payload?.targetNodeId ?? node?.getId?.()
+        if(typeof seriesId!=='string')return
+        if(type!=='treemapZoomToNode') {
+          for(const [key,action] of this.hierarchyNavigation)if(action.seriesId===seriesId)this.hierarchyNavigation.delete(key)
+          if(node?.depth===0)return // breadcrumb returned to the virtual root
+        }
+        if(typeof targetNodeId==='string')this.hierarchyNavigation.set(`${seriesId}:${type}`,{type,seriesId,targetNodeId})
+      })
+    }
 
     // ── Radar: per-indicator tooltip via ZR mousemove ──────────────────────
     // ECharts radar always shows all indicators in one tooltip. Wire ZR mousemove
@@ -716,7 +768,7 @@ export class Visual implements IVisual {
         if (selectionIds[index]) this.selectionManager.showContextMenu(selectionIds[index], { x: event?.clientX || 0, y: event?.clientY || 0 })
       })
       const tooltip = this.host.tooltipService
-      if (tooltip?.enabled()) {
+      if (tooltip?.enabled() && option?.tooltip?.show !== false) {
         this.chart.setOption({ tooltip: { show: false } }, false)
         this.lastOption = { ...this.lastOption, tooltip: { ...this.lastOption?.tooltip, show: false } }
         const showTooltip = (params: any) => {
@@ -724,7 +776,10 @@ export class Visual implements IVisual {
           const index = indexes[0]
           if (!selectionIds[index]) return
           const event = params?.event?.event
-          const dataItems = this.templateRowSources !== null ? [{displayName: String(params?.data?.label ?? params?.name ?? params?.seriesName ?? "Value"), value: String(params?.value ?? params?.data?.value ?? "(Blank)")}] : (cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: String(column.values[index] ?? "(Blank)") }))
+          const series=this.lastOption?.series?.[params?.seriesIndex ?? 0]
+          const radar=series?.type==='radar' ? (Array.isArray(this.lastOption?.radar)?this.lastOption.radar[series.radarIndex ?? 0]:this.lastOption?.radar) : null
+          const boundFields=series?.type==='heatmap' ? [...(cat?.categories || []),...(cat?.values || [])].map(column=>({name:column.source?.displayName || column.source?.queryName || 'Value',value:column.values[index],isDate:column.source?.type?.dateTime===true})) : undefined
+          const dataItems = this.templateRowSources !== null ? nativeTemplateTooltipItems(params,this.lastOption?.tooltip?.formatter,radar?.indicator,boundFields) : (cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: String(column.values[index] ?? "(Blank)") }))
           tooltip.show({ coordinates: [event?.clientX || 0, event?.clientY || 0], isTouchEvent: false, identities: indexes.map(i=>selectionIds[i]).filter(Boolean), dataItems })
         }
         this.chart.on("mouseover", showTooltip)
@@ -764,6 +819,7 @@ export class Visual implements IVisual {
   // Sorting, treemap's virtual root and slope endpoints make these different.
   private primitiveCategoryIndexes(params: any): number[] {
     if(this.templateRowSources !== null) {
+      if(['tree','treemap','sunburst'].includes(params?.seriesType) && !Array.isArray(params?.data?.rowIndexes))return []
       const indexes = Array.isArray(params?.data?.rowIndexes) ? params.data.rowIndexes : [params?.dataIndex]
       return [...new Set<number>(indexes.filter((i: any)=>Number.isInteger(i)&&i>=0).map((i: number)=>this.templateRowSources![i]).filter((i: number)=>i!=null))]
     }
@@ -809,7 +865,7 @@ export class Visual implements IVisual {
 
     if (!selected.length && this.highlightIndexes === null) {
       // No selection — restore the pristine composed option.
-      this.chart.setOption(this.lastOption, true)
+      this.setSelectionOption(this.lastOption)
       return
     }
 
@@ -822,7 +878,7 @@ export class Visual implements IVisual {
       else selectedSet.forEach(index => { if (!this.highlightIndexes!.has(index)) selectedSet.delete(index) })
     }
     if (selectedSet.size === 0 && this.highlightIndexes === null) {
-      this.chart.setOption(this.lastOption, true)
+      this.setSelectionOption(this.lastOption)
       return
     }
 
@@ -838,25 +894,76 @@ export class Visual implements IVisual {
         const selectedSeries = selectedSet.has(this.primitiveCategoryIndex({ seriesName: s.name }))
         s.lineStyle = { ...s.lineStyle, opacity: selectedSeries ? (s.lineStyle?.opacity ?? 1) : 0.25 }
       }
-      s.data = s.data.map((d: any, i: number) => {
+      const styleDatum=(d:any,i:number):any=>{
         const categoryIndex = this.primitiveCategoryIndex({ dataIndex: i, data: d, name: d?.name, value: Array.isArray(d) ? d : d?.value, seriesName: s.name })
-        const isSelected = this.templateRowSources !== null ? this.primitiveCategoryIndexes({dataIndex:i,data:d}).some(index=>selectedSet.has(index)) : selectedSet.has(categoryIndex)
-        const opacity = isSelected ? 1 : 0.25
+        const structural = this.templateRowSources !== null && Array.isArray(d?.children) && !d?.rowIndexes?.length
+        const isSelected = structural || (this.templateRowSources !== null ? this.primitiveCategoryIndexes({dataIndex:i,data:d}).some(index=>selectedSet.has(index)) : selectedSet.has(categoryIndex))
+        const factor = isSelected ? 1 : 0.25
+        const item = d != null && typeof d === 'object' && !Array.isArray(d) ? d : null
+        const baseOpacity = item?.itemStyle?.opacity ?? s.itemStyle?.opacity ?? 1
+        const opacity = baseOpacity * factor
+        const labelStyle = item?.label && typeof item.label === 'object' ? item.label : null
+        const label = labelStyle || s.label?.show
+          ? { label: { ...labelStyle, opacity: (labelStyle?.opacity ?? s.label?.opacity ?? 1) * factor } }
+          : {}
         // Data items can be raw values (number/string) or objects with
         // {value, itemStyle, ...}. Normalize to the object form so we can
         // attach itemStyle.opacity without losing the existing fields.
-        if (Array.isArray(d)) return { value: [...d], itemStyle: { opacity } }
+        if (Array.isArray(d)) return { value: [...d], itemStyle: { opacity }, ...label }
         if (d != null && typeof d === "object") {
           const existing = d.itemStyle && typeof d.itemStyle === "object" ? d.itemStyle : {}
-          return { ...d, itemStyle: { ...existing, opacity } }
+          return { ...d, itemStyle: { ...existing, opacity }, ...label,...(Array.isArray(d.children)?{children:d.children.map(styleDatum)}:{}) }
         }
-        return { value: d, itemStyle: { opacity } }
-      })
+        return { value: d, itemStyle: { opacity }, ...label }
+      }
+      s.data = s.data.map(styleDatum)
+      for(const key of ['links','edges']) if(Array.isArray(s[key])) {
+        s[key]=s[key].map((edge:any,index:number)=>{
+          if(!Array.isArray(edge?.rowIndexes))return edge
+          const active=this.primitiveCategoryIndexes({dataIndex:index,data:edge}).some(i=>selectedSet.has(i))
+          const base=edge.lineStyle?.opacity ?? s.lineStyle?.opacity ?? 1
+          return {...edge,lineStyle:{...edge.lineStyle,opacity:base*(active?1:0.25)}}
+        })
+      }
     }
     // `notMerge: true` so ECharts replaces the option wholesale — avoids
     // leftover styles from the previous selection state bleeding through.
-    this.chart.setOption(cloned, true)
+    this.setSelectionOption(cloned)
 
+  }
+
+  private setSelectionOption(option:any): void {
+    this.chart!.setOption(this.withTreeState(option),true)
+    // Replacing selection styles rebuilds ECharts' tree nodes. Restore only
+    // stable ids still present in the new data, using public navigation actions.
+    // Silent dispatch avoids recording our own restore as new user navigation.
+    for(const [key,action] of this.hierarchyNavigation) {
+      const series=(Array.isArray(option.series)?option.series:[]).find(s=>s.id===action.seriesId)
+      const pending=[...(series?.data || [])];let found=false,visited=0
+      while(pending.length && visited++<10000) {
+        const node=pending.pop()
+        if(String(node?.id ?? node?.name ?? '')===action.targetNodeId){found=true;break}
+        if(Array.isArray(node?.children))pending.push(...node.children)
+      }
+      if(found)this.chart!.dispatchAction(action,{silent:true})
+      else this.hierarchyNavigation.delete(key)
+    }
+  }
+
+  private withTreeState(option:any): any {
+    if(!Array.isArray(option.series) || !this.treeCollapsed.size)return option
+    return {...option,series:option.series.map((series:any)=>{
+      const states=this.treeCollapsed.get(series.id)
+      if(series.type!=='tree' || !states)return series
+      const seen=new Set<string>()
+      const apply=(nodes:any[])=>nodes.map(node=>{
+        seen.add(node.id)
+        return {...node,...(states.has(node.id)?{collapsed:states.get(node.id)}:{}),...(Array.isArray(node.children)?{children:apply(node.children)}:{})}
+      })
+      const data=apply(series.data || [])
+      for(const id of states.keys())if(!seen.has(id))states.delete(id)
+      return {...series,data}
+    })}
   }
 
   // Expand-in-place drill (pattern 02) for a PBI visual. The multi-category dataView
@@ -1286,28 +1393,7 @@ export class Visual implements IVisual {
   }
 
   private buildRowsFromDataView(dv: DataView): Array<{ _cat?: unknown; _val?: unknown; _val2?: unknown; _val3?: unknown }> {
-    const cat = dv?.categorical
-    const cats = cat?.categories?.[0]?.values ?? []
-    const valueCols = cat?.values ?? []
-    const primary   = valueCols[0]?.values ?? []
-    const secondary = valueCols[1]?.values ?? []
-    const tertiary  = valueCols[2]?.values ?? []
-
-    const n = Math.max(cats.length, primary.length)
-    const rows: Array<{ _cat?: unknown; _val?: unknown; _val2?: unknown; _val3?: unknown }> = []
-    for (let i = 0; i < n; i++) {
-      const row: any = {
-        _cat: this.normalizeCat(cats[i]),
-        _sourceIndex: i,
-        _cats: (cat?.categories || []).map(column => this.normalizeCat(column.values[i])),
-        _cat2: this.normalizeCat(cat?.categories?.[1]?.values?.[i]),
-        _val: primary[i],
-      }
-      if (secondary.length > i && secondary[i] != null) row._val2 = secondary[i]
-      if (tertiary.length > i  && tertiary[i]  != null) row._val3 = tertiary[i]
-      rows.push(row)
-    }
-    return rows
+    return rowsFromCategorical(dv?.categorical, value => this.normalizeCat(value))
   }
 
   // Convert raw category values into something the primitives can format. Date

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import crypto from 'node:crypto'
-import { injectVisual, makeVisualContainer, validateVisualContainer, RENDERER_GUID } from '@vilsem/core/pbir'
+import { injectVisual, makeVisualContainer, validateVisualContainer, RENDERER_GUID, assertRendererVersion, requiredRendererVersion } from '@vilsem/core/pbir'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
 import { lollipop } from '@vilsem/core/templates/examples'
 
@@ -74,6 +74,32 @@ describe('core PBIR insertion',()=>{
   it('validates positions and field bindings',()=>{
     expect(()=>makeVisualContainer({...args(),layout:{width:-1}})).toThrow(/layout/)
     expect(()=>makeVisualContainer({...args(),bindings:{measures:[{name:'Sales'}]}})).toThrow(/table/)
+  })
+  it('refuses advanced specs against old registered resources before writing any report file',async()=>{
+    await injectVisual(args())
+    await write(`CustomVisuals/${RENDERER_GUID}/package.json`,{visual:{guid:RENDERER_GUID},version:'4.14.2.0'})
+    const spec={template:{...lollipop,transforms:[{waterfall:{category:'category',value:'value'},as:'steps'}]}}
+    // Use the actual slot names of the fixture; version rejection is separate
+    // from ordinary spec validation and must leave every byte intact.
+    const slots=Object.entries(lollipop.slots)
+    spec.template.transforms[0].waterfall={category:slots.find(([,s])=>s.kind==='dimension')[0],value:slots.find(([,s])=>s.kind==='measure')[0]}
+    const before=await snapshot()
+    await expect(injectVisual({...args(),visualName:'advanced',spec})).rejects.toThrow(/requires vilsem Renderer 4.18/)
+    expect(await snapshot()).toEqual(before)
+    await expect(injectVisual({...args(),visualName:'basic'})).resolves.toBeTruthy()
+  })
+  it('detects feature floors and compares complete renderer versions',()=>{
+    expect(requiredRendererVersion({type:'bar'})).toBe(null)
+    const spec={template:{transforms:[{heikinAshi:{},as:'ha'}]}}
+    expect(requiredRendererVersion(spec)).toBe('4.17.0.0')
+    expect(()=>assertRendererVersion(spec,{},'4.16.9.9')).toThrow(/4.17/)
+    expect(()=>assertRendererVersion(spec,{},undefined)).toThrow(/unreadable/)
+    expect(()=>assertRendererVersion(spec,{},'4.17.0.0')).not.toThrow()
+    expect(()=>assertRendererVersion(spec,{},'5.0.0.0')).not.toThrow()
+    expect(requiredRendererVersion({measures:{Ratio:'1'}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({template:{slots:{values:{kind:'measure',count:6}}}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({template:{template:{series:{concat:[]}}}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({template:{transforms:[{allocate:{},as:'grid'}]}})).toBe('4.16.0.0')
   })
 })
 
