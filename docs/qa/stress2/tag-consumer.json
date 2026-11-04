@@ -1,0 +1,11 @@
+{
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.4.0"
+  },
+  "templates": 134,
+  "stressTemplates": 111,
+  "pngBytes": 9039,
+  "status": "PASS",
+  "scope": "Public Git tag install, stdio handshake/catalog/validate_spec and deterministic fixture PNG. Real Desktop/schema/PNG separately passed using the isolated release tarball."
+}

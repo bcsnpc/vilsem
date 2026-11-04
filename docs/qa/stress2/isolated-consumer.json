@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.4.0"
+  },
+  "connection": {
+    "kind": "desktop",
+    "discovery": "process-workspace-port-file",
+    "port": 56276
+  },
+  "schema": {
+    "tables": 13,
+    "measures": 39
+  },
+  "templates": {
+    "templates": 134
+  },
+  "preview": {
+    "rowCount": 130,
+    "png": true
+  },
+  "checkoutRequired": false,
+  "VILSEM_APP_PATH": false
+}

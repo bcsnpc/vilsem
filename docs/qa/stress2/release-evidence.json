@@ -1,0 +1,22 @@
+{
+  "coreTag": "core-v0.4.0",
+  "coreURL": "https://github.com/bcsnpc/vilsem/releases/tag/core-v0.4.0",
+  "coreCommit": "2730bc0",
+  "coreTarballSHA256": "f288dc988202d102a336cea8d8007651f4fd4e38f7d18badf8430efbeb772e55",
+  "rendererSHA256": "6fc0b15eb5afe8ee75a11208bd8d2deae48074a2f6c41113f3b71bbb66bec5de",
+  "rendererVersion": "4.31.0.0",
+  "isolatedConsumer": "PASS",
+  "modelDefinitionFiles": 19,
+  "modelDefinitionsUnchanged": true,
+  "publishedDependencyFullSuite": {
+    "passed": 167,
+    "failed": 0,
+    "durationSeconds": 408.3,
+    "priorRun": "165/167;two30s timing failures;unchanged isolated retry2/2;no assertion or timeout changes"
+  },
+  "mcpTag": "v0.4.0",
+  "mcpURL": "https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.4.0",
+  "mcpCommit": "e6edeb3",
+  "mcpTarballSHA256": "5ca7923480dc7c55c0c8cfb3c7b8486bf756d211c058a86abb703d8b2e6ae15c",
+  "tagInstall": "PASS: public Git tag v0.4.0 installed outside repositories; stdio0.4/catalog134/stress111/validate_spec/fixturePNG"
+}
