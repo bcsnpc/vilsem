@@ -8,6 +8,8 @@ import {scopedMeasuresOf} from '../spec/migrate.js'
 export function requiredRendererVersion(spec, bindings = {}) {
   let minor = 0
   const require = version => { minor = Math.max(minor, version) }
+  if(spec?.specVersion==='0.7')require(36)
+  if(spec?.template?.meta?.formatVersion===4)require(36)
   if(spec?.formatting&&Object.keys(spec.formatting).length)require(35)
   // Older bundles defaulted to a dark canvas and ignored model formats. Refuse
   // silent preview/native divergence; never replace an existing report resource.
@@ -18,7 +20,10 @@ export function requiredRendererVersion(spec, bindings = {}) {
   const templateMeasures=Object.values(spec?.template?.slots || {}).filter(slot=>slot?.kind==='measure').reduce((count,slot)=>count+slotCount(slot.count),0)
   if (Object.keys(scopedMeasuresOf(spec)).length || Math.max(templateMeasures,bindings.measures?.length || 0) > 3) require(15)
   const walk = value => {
+    if(value?.type==='custom'&&value.renderItem?.language==='vilsem-expression')require(36)
+    if(value&&typeof value==='object'&&(Object.hasOwn(value,'timeline')||Object.hasOwn(value,'universalTransition')))require(36)
     if(typeof value==='string'&&/^\$theme\.paletteText(?:\.\d+)?$/.test(value))require(34)
+    if(typeof value==='string'&&/^\$theme\.(readablePalette|pageBackground)(?:\.\d+)?$/.test(value))require(36)
     if(typeof value==='string'&&/^\$item\.(pixelSpan|labelWidth|labelVisible)$/.test(value))require(30)
     if(typeof value==='string'&&/^\$(slot|calc)\.[A-Za-z_]\w*\.(lastRowValue|lastRowLabel)$/.test(value))require(28)
     if (typeof value === 'string' && /\{(?:value|c)\.[0-5](?::(?:thousands|percent|date))?\}/.test(value)) require(20)
@@ -36,6 +41,14 @@ export function requiredRendererVersion(spec, bindings = {}) {
   }
   walk(spec?.template?.template)
   for (const transform of spec?.template?.transforms || []) {
+    if(transform.mosaic)require(36)
+    if(transform.setOverlaps)require(36)
+    if(transform.voronoi)require(36)
+    if(transform.race)require(36)
+    if(transform.flows?.time)require(36)
+    if(transform.density?.expressionGeometry)require(36)
+    if(transform.jitter?.expressionGeometry||transform.words?.expressionGeometry||transform.hierarchy?.expressionGeometry)require(36)
+    if(transform.hexbin?.expressionGeometry||transform.density2d?.contourFractions)require(36)
     if(transform.words)require(31)
     if(transform.density2d)require(30)
     if(['qq','hexbin','density2d','groupShare','conditional','rebase','cohort','pivot','correlation','pareto','tiles'].some(key=>Object.hasOwn(transform,key))||transform.top?.countParam!=null)require(29)

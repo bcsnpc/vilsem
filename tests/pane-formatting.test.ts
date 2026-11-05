@@ -36,8 +36,10 @@ describe('every declared common pane property has a render contract',()=>{
   if(f.name==='style')v='dashed'
   if(f.name==='palette')v='#123456,#abcdef'
   if(f.group==='border'&&f.name==='show')v=true
+  if(f.group==='motion'&&f.name==='reduceMotion')v=true
   const pane={[f.group]:{...(f.group==='border'?{show:true}:{}),[f.name]:v}}
   const out=applyPaneFormatting(option(),pane,{width:300,height:200})
+  if(f.group==='motion'){expect(out.animation).toBe(false);return}
   if(['autoMin','autoMax'].includes(f.name)){
    const index=f.group==='primaryAxis'?0:1,key=f.name==='autoMin'?'min':'max',base=option();base.yAxis[index][key]=23
    expect(applyPaneFormatting(base,{[f.group]:{[f.name]:true,[key]:23}}).yAxis[index][key]).toBeUndefined()
@@ -64,7 +66,7 @@ describe('every declared common pane property has a render contract',()=>{
   const caps=JSON.parse(fs.readFileSync('vilsem-renderer/capabilities.json','utf8'))
   const {semantica,...common}=caps.objects;expect(common).toEqual(paneCapabilities())
   const cards=paneFormattingCards({});expect(cards.flatMap(c=>c.groups.flatMap(g=>g.slices))).toHaveLength(fields.length)
-  expect(paneFormattingCards({}, {dom:true}).map(c=>c.displayName)).toEqual(['Appearance','Title','Border'])
+  expect(paneFormattingCards({}, {dom:true}).map(c=>c.displayName)).toEqual(['Appearance','Animation','Title','Border'])
  })
  it('changes a secondary axis without overwriting primary currency formatting',()=>{
   const base=option();base.yAxis[0].axisLabel={formatter:()=>'$12'}

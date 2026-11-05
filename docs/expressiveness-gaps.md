@@ -57,3 +57,15 @@ Desktop also exposed an (a) background-token handling gap across all nine: the r
 A final Desktop authoring correction explicitly includes the profit reference in the dual-axis domain; a new MCP regression asserts both the numerical bound and the rendered reference label. The issue was a missing derived domain in the initial authored template, not an imperative requirement or an absent arithmetic operator. Existing calculate expresses it. The final MCP suite contains 45 passing tests.
 
 Final isolated GitHub install acceptance: MCP 0.3.0 / core 0.3.0 installed under a separate D:/cache project, with no VILSEM_APP_PATH or app checkout imports. Auto-discovered Desktop port 57597; fresh get_schema returned 13 tables / 39 measures with zero sample failures. All nine installed example files passed validate/explain/real-data PNG preview; the target domain was checked explicitly. Catalog: 23 templates / 24 resources. Saved report: ten valid custom containers. Both public release assets were confirmed uploaded.
+
+## Round3 GroupC development supersedes historical refusal status
+
+The earlier Marimekko/custom-series refusals above describe older releases.
+GroupC now has a closed expression AST and live-data MCP tool passes for all11
+former(c) chart families, including weighted Voronoi. See
+[the precise evidence table](qa/stress3/expression-results.md). These are
+inspected SSR previews and commits, not native Desktop acceptance. GroupC is
+not released yet. Basic Venn uses exact observed counts with schematic circles;
+arbitrary exact area-proportional Euler fitting remains unsupported. Geo maps
+still need shipped registered assets;3D still needs a reviewed ECharts-GL path.
+No arbitrary imperative/custom-extension execution was added.

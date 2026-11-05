@@ -4,6 +4,7 @@ export function validateWords(d,field,errors,label) {
  field(d.text);field(d.weight)
  for(const [key,min,max] of [['limit',1,100],['width',300,1600],['height',150,1000],['minFont',8,40],['maxFont',8,80]])if(d[key]!=null&&(!Number.isInteger(d[key])||d[key]<min||d[key]>max))errors.push(`${label}: words ${key} must be an integer ${min}..${max}`)
  if((d.minFont??12)>(d.maxFont??36))errors.push(`${label}: words minFont must not exceed maxFont`)
+ if(d.expressionGeometry!=null&&typeof d.expressionGeometry!=='boolean')errors.push(`${label}: words expressionGeometry must be boolean`)
 }
 export function deriveWords(d,get,n) {
  const texts=get(d.text),weights=get(d.weight),terms=new Map(),width=d.width??750,height=d.height??400
@@ -15,7 +16,7 @@ export function deriveWords(d,get,n) {
   for(const word of words){if(++lineage>20000)throw Error('words exceeds 20000 contributor identities; filter the input');if(!terms.has(word))terms.set(word,{name:word,weight:0,rowIndexes:[]});const term=terms.get(word);term.weight+=value;if(!Number.isFinite(term.weight))throw Error('words aggregate exceeds finite numeric range; rescale the input');term.rowIndexes.push(index)}
  }
  const ranked=[...terms.values()].sort((a,b)=>b.weight-a.weight||(a.name<b.name?-1:a.name>b.name?1:0)).slice(0,d.limit??24),data=[]
- if(!ranked.length)return {data:[],width,height,count:0,omittedCount:terms.size}
+ if(!ranked.length)return {data:[],width,height,count:0,omittedCount:terms.size,...(d.expressionGeometry?{expressionData:[]}: {})}
  const min=ranked.at(-1).weight,max=ranked[0].weight;let checks=0
  for(const term of ranked) {
   const ratio=max===min ? .5 : Math.sqrt((term.weight-min)/(max-min)),font=Math.round((d.minFont??12)+ratio*((d.maxFont??36)-(d.minFont??12)))
@@ -34,5 +35,5 @@ export function deriveWords(d,get,n) {
   if(!placement)throw Error(`words cannot place ${ranked.length} terms without overlap; reduce limit/font size or increase explicit plot dimensions`)
   data.push({id:term.name,name:term.name,value:[placement.x,placement.y,term.weight],rowIndexes:term.rowIndexes,bounds:{width:w,height:h},symbolSize:1,itemStyle:{opacity:0},label:{show:true,opacity:1,position:'inside',fontFamily:'Segoe UI',fontSize:font}})
  }
- return {data,width,height,count:data.length,omittedCount:Math.max(0,terms.size-data.length)}
+ return {data,width,height,count:data.length,omittedCount:Math.max(0,terms.size-data.length),...(d.expressionGeometry?{expressionData:data.map(point=>({name:point.name,rowIndexes:point.rowIndexes,value:[...point.value,point.label.fontSize,point.name,width,height]}))}:{})}
 }

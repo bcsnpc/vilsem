@@ -78,6 +78,9 @@ async function rendererParts() {
 // Changes one new visual and, only when missing, its custom-visual registration.
 // Existing report content is never passed through a report builder/serializer.
 export async function injectVisual({ reportDir, pageName, visualName, spec, bindings, layout }) {
+  // Guard the version actually persisted, not the caller's older/unversioned
+  // input. A resource that cannot read the migrated spec must refuse the write.
+  spec=migrate(spec)
   const root = await fs.realpath(reportDir)
   const pageDir = path.join(root,'definition','pages',segment(pageName,'pageName'))
   const pageReal = await fs.realpath(pageDir)

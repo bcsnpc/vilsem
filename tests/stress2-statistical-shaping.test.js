@@ -83,7 +83,7 @@ describe('bounded statistical operations for stress round 2',()=>{
  it('refuses unavailable maps, GL, word cloud and imperative series before blank charts can be committed',()=>{
   for(const type of ['wordCloud','bar3D','surface','venn','custom']) {
    const t={meta:{id:'capability'},slots,template:{series:[{type,data:[]}]}}
-   expect(validateTemplate(t).errors.join()).toMatch(type==='custom'?/imperative renderItem/:/not shipped/)
+   expect(validateTemplate(t).errors.join()).toMatch(type==='custom'?/bounded expression AST/:/not shipped/)
   }
   expect(validateTemplate({meta:{id:'geo'},slots,template:{geo:{map:'world'},series:[]}}).errors.join()).toMatch(/ships none/)
   const t={meta:{id:'dynamic'},slots,params:[{name:'seriesType',type:'string',default:'wordCloud'}],template:{series:[{type:'$param.seriesType',data:[]}]}}

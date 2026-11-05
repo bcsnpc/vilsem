@@ -4,7 +4,7 @@ import {migrate} from '@vilsem/core/spec/migrate'
 import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
-import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
+import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController } from '@vilsem/core/templates'
 /*
  * vilsem Renderer — Power BI custom visual
  * ─────────────────────────────────────────────────
@@ -38,24 +38,24 @@ import DataView = powerbi.DataView
 import * as echarts from "echarts/core"
 import {
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
-  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart,
+  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart, CustomChart,
 } from "echarts/charts"
 import {
-  TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
+  TimelineComponent, TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent,
   MarkLineComponent, GraphicComponent, TitleComponent, MarkAreaComponent, MarkPointComponent,
   PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
   VisualMapContinuousComponent, VisualMapPiecewiseComponent, DataZoomSliderComponent, DatasetComponent,
 } from "echarts/components"
 import { CanvasRenderer } from "echarts/renderers"
-import { LabelLayout } from "echarts/features"
+import { LabelLayout, UniversalTransition } from "echarts/features"
 
 echarts.use([
   RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, SankeyChart, SunburstChart, GraphChart,
-  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart,
-  TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent,
+  HeatmapChart, TreeChart, BoxplotChart, CandlestickChart, ParallelChart, ThemeRiverChart, PictorialBarChart, FunnelChart, ChordChart, CustomChart,
+  TimelineComponent, TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent,
   MarkLineComponent, GraphicComponent, TitleComponent, MarkAreaComponent, MarkPointComponent,
   PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
-  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DatasetComponent, CanvasRenderer, LabelLayout,
+  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DatasetComponent, CanvasRenderer, LabelLayout, UniversalTransition,
 ])
 
 import { composeOption } from "./compositions"
@@ -169,6 +169,9 @@ export class Visual implements IVisual {
   // both paths to avoid memory leaks during PBI's frequent re-renders).
   private chart: echarts.ECharts | null = null
   private domVisual: { dispose(): void } | null = null
+  private motionVisibilityCleanup: (()=>void) | null = null
+  private chartReuseKey = ''
+  private backgroundClickHandler: ((event:any)=>void) | null = null
   // Phase 5.3 polish: keep the un-mutated composed option around so we can
   // re-derive a selection-aware option (per-item opacity overrides) without
   // re-running composeOption() — selection should be a render-state shim,
@@ -223,6 +226,9 @@ export class Visual implements IVisual {
   // Dispose any existing ECharts instance. Called before switching render
   // modes (HTML <-> primitive) and on destroy(). Safe to call when chart is null.
   private disposeChart(): void {
+    if(this.backgroundClickHandler)this.chart?.getZr().off?.('click',this.backgroundClickHandler)
+    this.backgroundClickHandler=null;this.chartReuseKey=''
+    this.motionVisibilityCleanup?.();this.motionVisibilityCleanup=null
     this.currentSelectionIds = []
     this.highlightIndexes = null
     this.host.tooltipService?.hide({ isTouchEvent: false, immediately: true })
@@ -245,6 +251,7 @@ export class Visual implements IVisual {
   }
 
   public destroy(): void {
+    this.settleRender('Visual destroyed before its frame completed')
     this.disposeChart()
   }
 
@@ -260,7 +267,7 @@ export class Visual implements IVisual {
 
     const reduceMotion = typeof window !== "undefined" &&
       window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduceMotion) return
+    if (reduceMotion || (this as any).formattingObjects?.motion?.enabled===false || (this as any).formattingObjects?.motion?.reduceMotion===true) return
 
     const nodes = this.root.querySelectorAll("[data-countup]")
     if (!nodes.length) return
@@ -312,8 +319,41 @@ export class Visual implements IVisual {
   }
 
   private specReadError: string | null = null
+  private pendingRender: {options:VisualUpdateOptions;frame?:number;timer?:ReturnType<typeof setTimeout>} | null = null
+
+  private settleRender(error?:string): void {
+    const pending=this.pendingRender
+    if(!pending)return
+    this.pendingRender=null
+    if(pending.frame!==undefined)cancelAnimationFrame(pending.frame)
+    if(pending.timer!==undefined)clearTimeout(pending.timer)
+    if(error)this.host.eventService?.renderingFailed(pending.options,error)
+    else this.host.eventService?.renderingFinished(pending.options)
+  }
 
   public update(options: VisualUpdateOptions): void {
+    this.settleRender('Superseded by a newer visual update')
+    if(this.host.eventService){
+      this.host.eventService.renderingStarted(options)
+      this.pendingRender={options}
+    }
+    try{
+      this.updateContent(options)
+      // setOption draws synchronously; signal after the browser has a complete
+      // first frame, including the HTML/empty-state paths. Never finish twice.
+      const pending=this.pendingRender
+      if(pending){
+        const finish=()=>{if(this.pendingRender===pending)this.settleRender()}
+        if(typeof requestAnimationFrame==='function')pending.frame=requestAnimationFrame(finish)
+        else pending.timer=setTimeout(finish,0)
+      }
+    }catch(error){
+      this.settleRender((error as Error).message)
+      this.renderError(`Rendering failed: ${(error as Error).message}`,'visual')
+    }
+  }
+
+  private updateContent(options: VisualUpdateOptions): void {
     const dv = options?.dataViews?.[0]
     if (!dv) {
       const spec = this.readPrimitiveSpec({} as DataView)
@@ -408,8 +448,20 @@ export class Visual implements IVisual {
   // Phase 5.3: chart.on('click') wires SelectionIds via the bound category column
   // so click-to-filter and cross-highlight work the same as legacy mode.
   private renderPrimitiveChart(dv: DataView, spec: Record<string, unknown>): void {
-    // Reset root + dispose any prior chart instance
+    // Retain a template's drawing state only when its spec, pane, theme and
+    // bindings are unchanged. New data/viewport updates can then animate from
+    // the previous marks; changing modes or bindings still disposes cleanly.
+    const requestedKey=(spec as any).template?JSON.stringify([spec,effectivePaneObjects(spec,dv?.metadata?.objects as any),reportThemeFromHost(this.host),this.host.locale,(dv?.categorical?.categories||[]).map(c=>c.source),(dv?.categorical?.values||[]).map(c=>c.source)]):''
+    const retained=requestedKey&&requestedKey===this.chartReuseKey&&typeof this.chart?.getDom==='function'?this.chart:null
+    const retainedRoot=retained?.getDom()
+    const retainedIndex=(retained?.getOption() as any)?.timeline?.[0]?.currentIndex
+    if(retained){
+      retained.off()
+      if(this.backgroundClickHandler)retained.getZr().off('click',this.backgroundClickHandler)
+      this.backgroundClickHandler=null;this.chart=null
+    }
     this.disposeChart()
+    if(retained)this.chart=retained
     this.root.textContent = ""
 
     // ── Phase 5.3 polish: card chrome wrapper ────────────────────────────
@@ -542,7 +594,7 @@ export class Visual implements IVisual {
       return
     }
 
-    const chartRoot = document.createElement("div")
+    const chartRoot = retainedRoot || document.createElement("div")
     chartRoot.style.cssText = "width:100%;height:100%;position:relative"
     chartArea.appendChild(chartRoot)
 
@@ -610,7 +662,7 @@ export class Visual implements IVisual {
     // overrides and explicit spec themes have already been resolved above.
     let option: any
     try {
-      option = ((spec as any).template ? resolveVisualSpec(spec, rows, themeContext) : applyModelFormats(applyReportTheme(composeOption(visualType, rows, { ...config, colorScheme: config.colorScheme || reportTheme.palette[0] }, theme), reportTheme, { palette: !config.colorScheme && !config.sectionColors }), spec, measureMetadata, {locale:this.host.locale,rows,width:chartRoot.clientWidth,measureText:(text,font)=>echarts.format.getTextRect(text,font).width}))
+      option = ((spec as any).template ? resolveVisualSpec(spec, rows, {...themeContext,formatPaneOverrides:paneObjects,width:chartRoot.clientWidth,height:chartRoot.clientHeight,skipBorder:true,skipTitle:!isPlain&&hasTitle}) : applyModelFormats(applyReportTheme(composeOption(visualType, rows, { ...config, colorScheme: config.colorScheme || reportTheme.palette[0] }, theme), reportTheme, { palette: !config.colorScheme && !config.sectionColors }), spec, measureMetadata, {locale:this.host.locale,rows,width:chartRoot.clientWidth,measureText:(text,font)=>echarts.format.getTextRect(text,font).width}))
     } catch (err) {
       // Composition errors shouldn't bring down the visual — render a small
       // diagnostic so it's obvious in PBI Service which visual went wrong.
@@ -646,7 +698,9 @@ export class Visual implements IVisual {
     // Per-visual tooltip config (show/hide + trigger) — same helper the web canvas
     // uses, so tooltip behaviour matches on canvas, web export and PBI.
     option = applyTooltipConfig(option, config as any)
-    option = applyPaneFormatting(option,paneObjects,{locale:this.host.locale,width:chartRoot.clientWidth,height:chartRoot.clientHeight,skipBorder:true,skipTitle:!isPlain&&hasTitle})
+    const reduceMotion=paneObjects.motion?.reduceMotion===true||(typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+    if(paneObjects.motion?.enabled===false||reduceMotion){option.animation=false;option.animationDuration=0;option.animationDurationUpdate=0;if(option.timeline)option.timeline={...option.timeline,autoPlay:false}}
+    if(!(spec as any).template)option = applyPaneFormatting(option,paneObjects,{locale:this.host.locale,width:chartRoot.clientWidth,height:chartRoot.clientHeight,skipBorder:true,skipTitle:!isPlain&&hasTitle})
     ;(this as any).formattingOption = option
     const bindingKey = JSON.stringify([(spec as any).template?.meta?.id || visualType,
       (dv?.categorical?.categories || []).map(c=>c.source?.queryName || c.source?.displayName),
@@ -667,6 +721,12 @@ export class Visual implements IVisual {
     // Save the composed option so applyChartSelection can derive selection-
     // aware overrides without recomposing.
     if (secondaryAxisMinimumWidth(option, config)) option = scrollableChartTooltip(option, chartRoot)
+    if((spec as any).template)option=mapTimelineSeries(option,(series:any,path:string)=>({...series,id:series.id??`vilsem-template-${path.split('/series/').pop()}`}))
+    const nativeTooltipRequested=(option.tooltip?.show??option.baseOption?.tooltip?.show)!==false
+    if(this.host.tooltipService?.enabled()){
+      const hide=(block:any):any=>({...block,tooltip:{...block.tooltip,show:false},...(block.baseOption?{baseOption:hide(block.baseOption)}:{}),...(Array.isArray(block.options)?{options:block.options.map(hide)}:{})})
+      option=hide(option)
+    }
     this.lastOption = option
 
     // Render
@@ -677,8 +737,18 @@ export class Visual implements IVisual {
       chartArea.setAttribute('aria-label', 'Chart; scroll horizontally to view both axes')
       chartRoot.style.minWidth = `${minimumWidth}px`
     }
-    this.chart = echarts.init(chartRoot)
-    this.chart.setOption(this.withTreeState(option))
+    this.chart = retained || echarts.init(chartRoot)
+    this.chartReuseKey=requestedKey
+    try {
+      if(retained){this.chart.resize();option=preserveTimelineIndex(option,retainedIndex);this.chart.setOption(this.withTreeState(option),{notMerge:false,replaceMerge:['series','xAxis','yAxis','tooltip']})}
+      else this.chart.setOption(this.withTreeState(option))
+    } catch(error) {this.renderError(`Rendering failed: ${(error as Error).message}`,visualType);return}
+    const visibility=createMotionVisibilityController(this.chart,()=>document.hidden!==true&&chartRoot.clientWidth>0&&chartRoot.clientHeight>0)
+    const syncVisibility=()=>visibility.sync()
+    document.addEventListener?.('visibilitychange',syncVisibility)
+    const visibilityObserver=typeof ResizeObserver!=='undefined'?new ResizeObserver(syncVisibility):null
+    visibilityObserver?.observe(chartRoot);visibility.sync()
+    this.motionVisibilityCleanup=()=>{document.removeEventListener?.('visibilitychange',syncVisibility);visibilityObserver?.disconnect();visibility.dispose()}
     this.chart.on('treeexpandandcollapse',(payload:any)=>{
       const series=this.lastOption?.series?.find(s=>s.id===payload?.seriesId && s.type==='tree')
       if(!series)return
@@ -806,19 +876,19 @@ export class Visual implements IVisual {
         if (selectionIds[index]) this.selectionManager.showContextMenu(selectionIds[index], { x: event?.clientX || 0, y: event?.clientY || 0 })
       })
       const tooltip = this.host.tooltipService
-      if (tooltip?.enabled() && option?.tooltip?.show !== false) {
-        this.chart.setOption({ tooltip: { show: false } }, false)
+      if (tooltip?.enabled() && nativeTooltipRequested) {
         this.lastOption = { ...this.lastOption, tooltip: { ...this.lastOption?.tooltip, show: false } }
         const showTooltip = (params: any) => {
           const indexes = this.primitiveCategoryIndexes(params)
           const index = indexes[0]
           if (!selectionIds[index]) return
           const event = params?.event?.event
-          const series=this.lastOption?.series?.[params?.seriesIndex ?? 0]
+          const liveOption=Array.isArray(this.lastOption?.options)?this.chart?.getOption() as any:this.lastOption
+          const series=liveOption?.series?.[params?.seriesIndex ?? 0]
           const radar=series?.type==='radar' ? (Array.isArray(this.lastOption?.radar)?this.lastOption.radar[series.radarIndex ?? 0]:this.lastOption?.radar) : null
           const modelFormatter = series?.tooltip?.valueFormatter
           const boundFields=series?.type==='heatmap' && modelFormatter?.vilsemDirectBinding!==false ? [...(cat?.categories || []),...(cat?.values || [])].map(column=>({name:column.source?.displayName || column.source?.queryName || 'Value',value:column.values[index],isDate:column.source?.type?.dateTime===true,format:scopedMeasureFormat(spec,column.source?.displayName) ?? column.source?.format,locale:this.host.locale})) : undefined
-          const seriesFormatter = series?.tooltip?.formatter || (typeof series?.tooltip?.valueFormatter==='function' ? p=>series.tooltip.valueFormatter(Array.isArray(p?.value)?p.value[series.tooltip.valueFormatter.vilsemValueIndex ?? p.value.length-1]:p?.value) : this.lastOption?.tooltip?.formatter)
+          const seriesFormatter = series?.tooltip?.formatter || (typeof series?.tooltip?.valueFormatter==='function' ? p=>series.tooltip.valueFormatter(Array.isArray(p?.value)?p.value[series.tooltip.valueFormatter.vilsemValueIndex ?? p.value.length-1]:p?.value) : liveOption?.tooltip?.formatter)
           const categoryItems = modelFormatter?.vilsemDirectBinding===false
             ? [{displayName:'Group',value:String(params?.data?.label ?? params?.name ?? params?.seriesName ?? 'Value')}]
             : (cat?.categories || []).map(column => ({ displayName: column.source?.displayName || 'Category', value: column.values[index] == null ? '(Blank)' : String(column.values[index]) }))
@@ -854,17 +924,19 @@ export class Visual implements IVisual {
       // Click on empty chart area (not on a data point) clears selection.
       // ECharts emits 'click' on zr (the canvas) for background clicks where
       // params is undefined; chart.getZr().on works for the raw canvas.
-      this.chart.getZr().on("click", (zrEvent: any) => {
+      this.backgroundClickHandler=(zrEvent: any) => {
         if (zrEvent?.target) return  // click landed on a series item; series.on already handled it
         this.selectionManager.clear().then(() => {
           this.applyChartSelection(selectionIds, [])
         })
-      })
+      }
+      this.chart.getZr().on("click",this.backgroundClickHandler)
 
       // Re-apply current selection after re-render (cross-highlight from other visuals).
       this.applyChartSelection(
         selectionIds,
         this.selectionManager.getSelectionIds() as powerbi.visuals.ISelectionId[],
+        !!retained && this.hierarchyNavigation.size===0,
       )
     }
   }
@@ -914,10 +986,12 @@ export class Visual implements IVisual {
   private applyChartSelection(
     selectionIds: powerbi.visuals.ISelectionId[],
     selected: powerbi.visuals.ISelectionId[],
+    initial = false,
   ): void {
     if (!this.chart || !this.lastOption) return
 
     if (!selected.length && this.highlightIndexes === null) {
+      if(initial)return // Keep the just-rendered update transition intact.
       // No selection — restore the pristine composed option.
       this.setSelectionOption(this.lastOption)
       return
@@ -942,8 +1016,8 @@ export class Visual implements IVisual {
 
     // Clone the branches we change. JSON cloning loses formatter/symbolSize
     // functions and changes chart semantics merely because a user selected it.
-    const cloned = { ...this.lastOption, series: (this.lastOption.series || []).map((s: any) => ({ ...s })) }
-    const series = Array.isArray(cloned.series) ? cloned.series : []
+    const cloned = mapTimelineSeries(this.lastOption,(s:any)=>({...s}))
+    const series = collectTimelineSeries(cloned)
     for (const s of series) {
       if (!Array.isArray(s.data)) continue
       // Radar has one polygon spanning all categories, not one mark per row.
@@ -991,6 +1065,10 @@ export class Visual implements IVisual {
   }
 
   private setSelectionOption(option:any): void {
+    if(Array.isArray(option.options)&&option.options.length){
+      const active=(this.chart!.getOption() as any)?.timeline?.[0]?.currentIndex
+      option=preserveTimelineIndex(option,active)
+    }
     this.chart!.setOption(this.withTreeState(option),true)
     // Replacing selection styles rebuilds ECharts' tree nodes. Restore only
     // stable ids still present in the new data, using public navigation actions.
@@ -1231,6 +1309,7 @@ export class Visual implements IVisual {
       if (idx >= frames.length - 1) idx = 0
       playing = true; setBtn()
       this.raceTimer = window.setInterval(() => {
+        if(document.hidden||!chartRoot.clientWidth||!chartRoot.clientHeight)return
         idx++
         draw()
         if (idx >= frames.length - 1) stop()
@@ -1778,6 +1857,7 @@ export class Visual implements IVisual {
   }
 
   private renderError(message: string, visualType: string, empty = false): void {
+    if(!empty)this.settleRender(message)
     this.disposeChart()
     this.root.textContent = ""
     const div = document.createElement("div")
@@ -1785,7 +1865,7 @@ export class Visual implements IVisual {
     div.style.boxSizing = 'border-box'
     if (empty) div.style.color = '#94A3B8'
     div.setAttribute('role', empty ? 'status' : 'alert')
-    div.textContent = empty ? message : `Semantica renderer error (${visualType}): ${message}`
+    div.textContent = empty ? message : `vilsem Renderer error (${visualType}): ${message}`
     this.root.appendChild(div)
   }
 
@@ -2188,6 +2268,7 @@ export class Visual implements IVisual {
   // ── Helpers ──────────────────────────────────────────────────────────
 
   private renderEmpty(message = "Bind a measure to Content"): void {
+    this.disposeChart()
     const theme = resolveReportTheme({}, { theme: reportThemeFromHost(this.host) })
     // eslint-disable-next-line powerbi-visuals/no-inner-outer-html
     this.root.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;font-size:11px;color:${theme.foreground};background:transparent;border:1px dashed rgba(148,163,184,0.25);border-radius:8px;text-align:center;"><div><div style="font-size:22px;margin-bottom:8px;">✦</div><div style="font-weight:600;color:${theme.palette[0]};">vilsem Renderer</div><div>${this.escHtml(message)}</div></div></div>`

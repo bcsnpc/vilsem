@@ -22,8 +22,13 @@
 
 import { pal, MULTI_COLORS } from '../shared/palettes.js'
 import { derive, validateTransforms, BLOCKED } from './transforms.js'
-import { contrastingText } from '../shared/colourContrast.js'
+import { contrastingText,readablePalette } from '../shared/colourContrast.js'
 import { createModelFormatter } from '../shared/modelFormatting.js'
+import {validateExpression,resolveExpressionTokens,compileExpressionSeries} from '../expressions/index.js'
+import {applyAnimation,validateAnimation} from './animation.js'
+export {mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex} from './timeline.js'
+export {createMotionVisibilityController} from './motionVisibility.js'
+import {applyTemplateTooltipPolicy} from './tooltipPolicy.js'
 
 // ── numeric formatting (deterministic, no Intl dependency) ──────────────────
 function fmtThousands(v) {
@@ -374,6 +379,7 @@ export function deepResolve(node, ctx, warnings) {
   }
   if (Array.isArray(node)) return node.map(n => deepResolve(n, ctx, warnings))
   if (node && typeof node === 'object') {
+    if(node.language==='vilsem-expression')return resolveExpressionTokens(node,token=>resolveToken(token,ctx))
     if (Object.hasOwn(node,'concat')) {
       if(Object.keys(node).length!==1 || !Array.isArray(node.concat))throw Error('concat requires an array of declarative arrays')
       const arrays=node.concat.map(part=>deepResolve(part,ctx,warnings))
@@ -406,7 +412,7 @@ export function deepResolve(node, ctx, warnings) {
 }
 
 // ── theme context: normalized tokens + palette array the DSL reads ──────────
-export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteOverride) {
+export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteOverride,report = {}) {
   const p = pal(colorScheme)
   const base = [p.start, p.mid, ...MULTI_COLORS.filter(c => c !== p.start && c !== p.mid)]
   // Per-section colours (config.sectionColors) override the scheme palette so each
@@ -415,6 +421,8 @@ export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteO
   const palette = override.length ? override : base
   return {
     palette,
+    readablePalette:readablePalette(palette,report.background||tokens.canvasBg),
+    pageBackground:report.background||tokens.canvasBg||'transparent',
     paletteText: palette.map(colour=>contrastingText(colour,tokens.textPrimary || '#252423')),
     accent: palette[0] || p.start,
     // Font is customizable per-instance (the inspector's Text tab writes it); the
@@ -433,20 +441,27 @@ export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteO
 // Expand only series provenance, using the same bounded repeat/concat sources.
 // This carries unit information to the formatter adapter without adding private
 // metadata to ECharts options or reinterpreting caller calculations.
-function seriesSources(node,ctx,parentRepeat) {
-  if(Array.isArray(node))return node.flatMap(item=>seriesSources(item,ctx,parentRepeat))
+function seriesSources(node,ctx,parentRepeat,frameRepeat) {
+  if(Array.isArray(node))return node.flatMap(item=>seriesSources(item,ctx,parentRepeat,frameRepeat))
   if(!node || typeof node!=='object')return []
-  if(Array.isArray(node.concat))return node.concat.flatMap(item=>seriesSources(item,ctx,parentRepeat))
+  if(Array.isArray(node.concat))return node.concat.flatMap(item=>seriesSources(item,ctx,parentRepeat,frameRepeat))
   if(Object.hasOwn(node,'repeat')) {
     const source=typeof node.repeat==='string'?resolveToken(node.repeat,ctx):node.repeat
     if(!Array.isArray(source))return []
-    return source.flatMap(item=>seriesSources(node.template,{...ctx,item},node.repeat))
+    return source.flatMap(item=>seriesSources(node.template,{...ctx,item},node.repeat,frameRepeat??parentRepeat))
   }
-  return [{data:node.data,repeat:parentRepeat,dataRepeat:node.data?.repeat}]
+  return [{data:node.data,repeat:parentRepeat,dataRepeat:node.data?.repeat,...(frameRepeat?{frameRepeat}:{})}]
+}
+function optionFormatSources(node,ctx,frameRepeat){
+ const out={seriesSources:seriesSources(node?.series,ctx,frameRepeat,frameRepeat)}
+ if(node?.baseOption)out.baseOption=optionFormatSources(node.baseOption,ctx)
+ if(Array.isArray(node?.options))out.options=node.options.map(frame=>optionFormatSources(frame,ctx))
+ else if(node?.options?.repeat){const frames=deepResolve(node.options.repeat,ctx,[]);out.options=frames.map(item=>optionFormatSources(node.options.template,{...ctx,item},node.options.repeat))}
+ return out
 }
 
 // { template, rows, params, theme } → { option, warnings, seriesSources }
-export function instantiateVisual({ template, rows = [], params = {}, theme } = {}) {
+export function instantiateVisual({ template, rows = [], params = {}, theme, motionPolicy={} } = {}) {
   const warnings = []
   const errors=validateTemplate(template).errors
   if(errors.length)throw Error(errors.join('\n'))
@@ -458,7 +473,7 @@ export function instantiateVisual({ template, rows = [], params = {}, theme } = 
   const { calc, warnings: tWarns } = applyTransforms(template?.transforms, shaped, cats, paramValues)
   warnings.push(...tWarns)
   const ctx = { slots: shaped, calc, params: paramValues, theme: theme || {} }
-  const option = deepResolve(template?.template || {}, ctx, warnings)
+  let option = deepResolve(template?.template || {}, ctx, warnings)
   const capabilityErrors=templateCapabilityErrors(option)
   if(capabilityErrors.length)throw Error(capabilityErrors.join('\n'))
   // An absent reference measure is not a zero-valued line. ECharts cannot lay
@@ -470,7 +485,12 @@ export function instantiateVisual({ template, rows = [], params = {}, theme } = 
     })}
   }
   const sources=seriesSources(template?.template?.series,ctx)
-  return { option, warnings, seriesSources: sources.length===(option.series?.length || 0)?sources:[] }
+  // Playground, web and Fabric also use this entry point directly. Compile the
+  // same bounded interpreter here; the spec resolver reapplies pane overrides.
+  option=compileExpressionSeries(option,{textDefaults:{color:theme?.textPrimary,fontFamily:theme?.font,...option.textStyle}})
+  option=applyAnimation(option,template.animation,motionPolicy)
+  option=applyTemplateTooltipPolicy(option)
+  return { option, warnings, seriesSources: sources.length===(option.series?.length || 0)?sources:[],formatSources:optionFormatSources(template.template,ctx) }
 }
 
 // ── map a template's params → the inspector's schema-field shape ────────────
@@ -491,37 +511,48 @@ export function paramsToSchema(template) {
 }
 
 // ── static validation for the playground editor (pure, no rows needed) ──────
-export function collectTokens(node, acc = []) {
+export function collectTokens(node, acc = [], expression=false) {
+  if(node&&typeof node==='object'&&!Array.isArray(node)&&node.language==='vilsem-expression')expression=true
+  if(expression&&node?.op==='literal')return acc
   if (typeof node === 'string') {
     if (node.length > 1 && node[0] === '$') acc.push(node)
   } else if (Array.isArray(node)) {
-    node.forEach(n => collectTokens(n, acc))
+    node.forEach(n => collectTokens(n, acc,expression))
   } else if (node && typeof node === 'object') {
-    for (const v of Object.values(node)) collectTokens(v, acc)
+    for (const v of Object.values(node)) collectTokens(v, acc,expression)
   }
   return acc
 }
 
-const TEMPLATE_SERIES=new Set(['bar','line','pie','scatter','gauge','radar','treemap','sunburst','sankey','graph','heatmap','tree','boxplot','candlestick','parallel','themeRiver','pictorialBar','funnel','chord'])
+const TEMPLATE_SERIES=new Set(['bar','line','pie','scatter','gauge','radar','treemap','sunburst','sankey','graph','heatmap','tree','boxplot','candlestick','parallel','themeRiver','pictorialBar','funnel','chord','custom'])
 function templateCapabilityErrors(option) {
   const errors=[]
   if(option?.geo!=null)errors.push('geo/map rendering requires a shipped registered map asset; the current renderer ships none')
-  const visit=series=>{
-    if(Array.isArray(series)){series.forEach(visit);return}
+  const visit=(series,path='/template/template/series')=>{
+    if(Array.isArray(series)){series.forEach((s,i)=>visit(s,path+'/'+i));return}
     if(!series||typeof series!=='object')return
-    if(series.repeat){visit(series.template);return}
-    if(series.concat){visit(series.concat);return}
+    if(series.repeat){visit(series.template,path+'/template');return}
+    if(series.concat){visit(series.concat,path+'/concat');return}
     if(series.coordinateSystem==='geo'||series.type==='map')errors.push('geo/map rendering requires a shipped registered map asset; the current renderer ships none')
     else if(typeof series.type==='string'&&!series.type.startsWith('$')&&!TEMPLATE_SERIES.has(series.type))errors.push(series.type==='custom'?'custom series requires imperative renderItem; executable callbacks are not supported by the declarative format':`series type "${series.type}" is not shipped by the current renderer; a bounded declarative transform or a sandboxed extension is required`)
+    if(series.type==='custom'){
+      if(!series.renderItem||series.renderItem.language!=='vilsem-expression')errors.push(`${path}/renderItem: custom series requires a bounded expression AST; imperative/executable callbacks are not supported`)
+      else errors.push(...validateExpression(series.renderItem,{path:path+'/renderItem'}).errors.map(e=>`${e.path}: ${e.message}`))
+    }else if(series.renderItem&&!String(series.type).startsWith('$'))errors.push(`${path}/renderItem: expression renderers require type custom`)
   }
   visit(option?.series)
+  if(option?.baseOption)errors.push(...templateCapabilityErrors(option.baseOption))
+  if(Array.isArray(option?.options))for(const frame of option.options)errors.push(...templateCapabilityErrors(frame))
+  else if(option?.options?.repeat)errors.push(...templateCapabilityErrors(option.options.template))
   return [...new Set(errors)]
 }
 export function validateTemplate(template) {
   const errors = []
   const warnings = []
   if (!template || typeof template !== 'object') { errors.push('template must be a JSON object'); return { errors, warnings } }
-  if(template.meta?.formatVersion!=null && ![1,2,3].includes(template.meta.formatVersion))errors.push(`Unsupported template formatVersion ${template.meta.formatVersion}`)
+  errors.push(...validateAnimation(template.animation).map(e=>'/template'+e))
+  if(template.animation&&template.meta?.formatVersion!==4)errors.push('/template/meta/formatVersion: declarative animation requires formatVersion4')
+  if(template.meta?.formatVersion!=null && ![1,2,3,4].includes(template.meta.formatVersion))errors.push(`Unsupported template formatVersion ${template.meta.formatVersion}`)
   if (!template.meta || !template.meta.id) errors.push('meta.id is required')
   if (!template.meta || !template.meta.name) warnings.push('meta.name is recommended')
 
@@ -563,14 +594,18 @@ export function validateTemplate(template) {
     for(const [key,value] of Object.entries(node)) {
       if(BLOCKED.has(key))errors.push(`unsafe object key ${key}`)
       if(typeof value==='function')errors.push('executable functions are not supported')
-      if(key==='renderItem')errors.push('custom series requires imperative renderItem; executable callbacks are not supported by the declarative format')
+      if(key==='renderItem'){
+        if(value?.language!=='vilsem-expression')errors.push('custom series requires a bounded expression AST; imperative/executable callbacks are not supported')
+        else if(template.meta?.formatVersion!==4)errors.push('bounded expression series requires template.meta.formatVersion4')
+        continue // the closed AST validator owns this subtree and its budgets
+      }
       checkSafety(value,depth+1)
     }
   }
   checkSafety(template)
   errors.push(...templateCapabilityErrors(template.template).filter(error=>!errors.includes(error)))
   if(errors.length)return {errors,warnings}
-  const repeatShapes={data:['name','value','rowIndexes'],groups:['name','value','rowIndexes','index','seats','data'],panels:['name','index','categories','values','rowIndexes','data','last','lastLabel','sum','max','avg','left','top','width','height'],pieData:['name','value'],nodes:['id','name','category','label','value','rowIndexes','depth','offset','span','base','data','pixelSpan','labelWidth','labelVisible','cx','cy','radius','diameter','x','y','symbolSize'],links:['source','target','label','value','rowIndexes'],children:['id','name','value','rowIndexes','children']}
+  const repeatShapes={frames:['name','label','index','data','tileData','nodes','links','series','categories','timeLabels'],series:['name','id','data','rowIndexes'],data:['name','value','rowIndexes'],groups:['name','value','rowIndexes','index','seats','data'],panels:['name','index','categories','values','rowIndexes','data','last','lastLabel','sum','max','avg','left','top','width','height'],pieData:['name','value'],nodes:['id','name','category','label','value','rowIndexes','depth','offset','span','base','data','pixelSpan','labelWidth','labelVisible','cx','cy','radius','diameter','x','y','symbolSize'],links:['source','target','label','value','rowIndexes'],children:['id','name','value','rowIndexes','children']}
   const checkItems=(node,fields=null)=>{
     if(node==='$item' && fields===null)errors.push('token "$item" requires a repeat scope')
     else if(typeof node==='string' && node.startsWith('$item.')) {

@@ -1,5 +1,7 @@
-export const CURRENT_SPEC_VERSION='0.6'
-const versions=['0.1','0.2','0.3','0.4','0.5','0.6']
+import{assertSpecJson}from'./jsonBoundary.js'
+export const CURRENT_SPEC_VERSION='0.7'
+export const SUPPORTED_SPEC_VERSIONS=Object.freeze(['0.1','0.2','0.3','0.4','0.5','0.6','0.7'])
+const versions=SUPPORTED_SPEC_VERSIONS
 // The app's original primitive envelope used measures for field display-name
 // metadata. It is NOT the round2 query-scoped DAX block. Preserve it byte-for-
 // value, especially table labels consumed as strings by historical renderers.
@@ -22,11 +24,14 @@ export const migrationRegistry=Object.freeze({
  },
  '0.4':spec=>spec,
  '0.5':spec=>spec,
+ '0.6':spec=>spec,
 })
 
 /** Forward-only, pure migration. No data/model writes, callbacks or inferred
  * business calculations. Unknown future formats fail instead of degrading. */
-export function migrate(spec,fromVersion=spec?.specVersion??'0.1',toVersion=CURRENT_SPEC_VERSION){
+export function migrate(spec,fromVersion,toVersion=CURRENT_SPEC_VERSION){
+ assertSpecJson(spec)
+ fromVersion??=spec?.specVersion??'0.1'
  if(!spec||typeof spec!=='object'||Array.isArray(spec))throw Error('spec must be an object')
  if(spec.version!=null&&spec.version!==1)throw Error(`Unsupported spec version ${spec.version}; current wire version is1`)
  const from=versions.indexOf(String(fromVersion)),to=versions.indexOf(String(toVersion))

@@ -1,9 +1,16 @@
 import { createModelFormatter, scopedMeasureFormat } from './modelFormatting.js'
 import { slotCount } from '../templates/instantiate.js'
 import { formatProvenance } from './formatProvenance.js'
+import {inheritTimelineFrame} from '../templates/timeline.js'
 
 export function applyModelFormats(option, spec, measures = [], options = {}) {
   if (!option) return option
+  if(option.baseOption||Array.isArray(option.options)){
+    const {baseOption,options:frames,...root}=option,sourceTree=options.sourceTree
+    const formatted=applyModelFormats(root,spec,measures,{...options,sourceTree:undefined,seriesSources:sourceTree?.seriesSources??options.seriesSources})
+    const inheritAxes=frame=>inheritTimelineFrame(baseOption,frame)
+    return {...formatted,...(baseOption?{baseOption:applyModelFormats(baseOption,spec,measures,{...options,sourceTree:sourceTree?.baseOption,seriesSources:sourceTree?.baseOption?.seriesSources??[]})}:{}),...(Array.isArray(frames)?{options:frames.map((frame,i)=>applyModelFormats(inheritAxes(frame),spec,measures,{...options,sourceTree:sourceTree?.options?.[i],seriesSources:sourceTree?.options?.[i]?.seriesSources??[]}))}:{})}
+  }
   // Explicit axis bounds can contain ordinary binary floating-point noise.
   // Use the same bounded General formatter as model values when no author or
   // model format exists; never infer a percentage from a fractional value.

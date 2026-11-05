@@ -11,6 +11,7 @@
 const fs   = require('fs')
 const path = require('path')
 const { execFileSync } = require('child_process')
+execFileSync(process.execPath,[path.resolve(__dirname,'../../packages/core/scripts/sync-pane-capabilities.mjs')],{stdio:'inherit'})
 
 // Build the actual app DOM renderer on every package/start; never reuse a stale bundle.
 const UI_ROOT = path.resolve(__dirname, '..', '..', 'ui')

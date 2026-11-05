@@ -1,14 +1,26 @@
 // Trusted finite categorical flow shaping; templates cannot supply algorithms.
+import {createModelFormatter} from '../shared/modelFormatting.js'
+import {intervalDate} from './date-utils.js'
 export function validateFlows(d, field, errors, label) {
   if (!Array.isArray(d.levels) || d.levels.length < 2 || d.levels.length > 6) errors.push(`${label}: flows needs 2..6 levels`)
   else d.levels.forEach(field)
   field(d.value)
+  if(d.time!=null)field(d.time)
+  if(d.timeFormat!=null&&(!d.time||!['yyyy-MM','yyyy-MM-dd','yyyy'].includes(d.timeFormat)))errors.push(`${label}: flows timeFormat requires time and yyyy-MM|yyyy-MM-dd|yyyy`)
   if (d.order != null && !['input', 'value'].includes(d.order)) errors.push(`${label}: flows order must be input|value`)
   if (d.layout != null && !['line', 'bipartite'].includes(d.layout)) errors.push(`${label}: flows layout must be line|bipartite`)
   if (d.layout === 'bipartite' && d.levels?.length !== 2) errors.push(`${label}: bipartite layout requires exactly two levels`)
 }
 
 export function deriveFlows(d, get, n) {
+  if(d.time){
+    const times=get(d.time),groups=new Map();for(let i=0;i<n;i++){if(times[i]==null||times[i]==='')continue;const name=String(times[i]);if(!groups.has(name)){if(groups.size>=120)throw Error('flows exceeds120 time frames');groups.set(name,[])}groups.get(name).push(i)}
+    const timeLabels=[...groups.keys()].sort((a,b)=>a<b?-1:a>b?1:0),format=d.timeFormat?createModelFormatter(d.timeFormat):null;let marks=0,lineage=0
+    const frames=timeLabels.map((name,index)=>{const source=groups.get(name),config={...d};delete config.time;delete config.timeFormat;const result=deriveFlows(config,field=>{const values=get(field);return source.map(i=>values[i])},source.length)
+      for(const item of [...result.nodes,...result.links]){item.rowIndexes=item.rowIndexes.map(i=>source[i]);lineage+=item.rowIndexes.length}marks+=result.nodes.length+result.links.length;if(marks>50000||lineage>100000)throw Error('flows timeline exceeds50000 marks or100000 contributor identities')
+      const date=format?intervalDate(name):null;if(format&&date==null)throw Error('flows timeFormat requires ISO dates');return{name,label:format?format(date):name,index,...result}
+    });return{frames,timeLabels,labels:frames.map(frame=>frame.label)}
+  }
   const levels = d.levels.map(get), weights = get(d.value), nodes = new Map(), links = new Map()
   let lineage = 0
   const add = (item, value, index) => {

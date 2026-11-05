@@ -15,6 +15,10 @@ export function formatProvenance(template, slots) {
   }
   return source => {
     let token=source?.data
+    if(Array.isArray(token)&&token.length){
+      const units=token.map(item=>{const value=item&&typeof item==='object'&&!Array.isArray(item)?item.value:item,match=typeof value==='string'?/^\$(slot|calc)\.(\w+)\.(sum|avg|min|max|first|last|lastRowValue|delta)$/.exec(value):null;return match?fieldUnit(match[2]):null})
+      if(units[0]!=null&&units.every(unit=>unit===units[0]))return{index:units[0],direct:false,projection:'values'}
+    }
     if(token?.template?.value==='$item.values') {
       const repeat=/^\$calc\.(\w+)\.panels$/.exec(token.repeat || '')
       const d=transforms.get(repeat?.[1])?.facet
@@ -22,6 +26,14 @@ export function formatProvenance(template, slots) {
     }
     if(typeof token!=='string')return null
     if(token.startsWith('$item.')) {
+      const frame=/^\$calc\.(\w+)\.frames$/.exec(source.frameRepeat || source.repeat || ''),transform=transforms.get(frame?.[1])
+      if(transform?.race){const d=transform.race,index=fieldUnit(d.value)
+       if(token==='$item.tileData')return{index,direct:false,projection:'matrix'}
+       if(token==='$item.data'&&d.x){const tupleUnits=[fieldUnit(d.x),fieldUnit(d.y),fieldUnit(d.size??d.value),index];return{index,direct:false,projection:'points',tupleUnits}}
+       if(token==='$item.data'&&source.repeat==='$item.series')return{index,direct:false,projection:'points',tupleUnits:[null,index]}
+       if(token==='$item.data')return{index,direct:false,projection:'values'}
+      }
+      if(transform?.flows&&['$item.nodes','$item.links'].includes(token))return{index:fieldUnit(transform.flows.value),direct:false,projection:'pieData'}
       const repeat=/^\$calc\.(\w+)\.panels$/.exec(source.repeat || source.dataRepeat || '')
       const t=transforms.get(repeat?.[1]),d=t?.facet || t?.chunk
       if(!d || !['$item.data','$item.values'].includes(token))return null

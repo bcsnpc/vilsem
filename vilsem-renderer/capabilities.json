@@ -245,6 +245,23 @@
         }
       }
     },
+    "motion": {
+      "displayName": "Animation",
+      "properties": {
+        "enabled": {
+          "displayName": "Animation",
+          "type": {
+            "bool": true
+          }
+        },
+        "reduceMotion": {
+          "displayName": "Reduce motion",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
     "title": {
       "displayName": "Title",
       "properties": {

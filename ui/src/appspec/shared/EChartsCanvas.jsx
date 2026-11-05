@@ -2,7 +2,7 @@ import { applyAxisTextConfig } from './axisTextConfig.js'
 import { secondaryAxisMinimumWidth, scrollableChartTooltip } from './secondaryAxis.js'
 import React, { useEffect, useRef, useMemo } from 'react'
 import * as echarts from 'echarts/core'
-import { RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart } from 'echarts/charts'
+import { CustomChart, RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart } from 'echarts/charts'
 // Playground Spike: MarkArea (qualitative bands — the bullet needs it), MarkPoint
 // (labeled max/min dots), Polar (radial bar / rose / nightingale) and VisualMap
 // (declarative value-based coloring — the only no-JS way to color by data) are
@@ -10,14 +10,15 @@ import { RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart,
 // Next-C: a broad family set so custom templates can reach chord/candlestick/
 // sankey/graph/boxplot/parallel/themeRiver/pictogram/sunburst/tree/funnel/calendar.
 import { PictorialBarChart, CandlestickChart, BoxplotChart, SankeyChart, GraphChart, ParallelChart, ThemeRiverChart, SunburstChart, TreeChart, FunnelChart, EffectScatterChart } from 'echarts/charts'
-import { TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent } from 'echarts/components'
+import { TimelineComponent, TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
-import { LabelLayout } from 'echarts/features'
+import { LabelLayout, UniversalTransition } from 'echarts/features'
+import {createMotionVisibilityController} from '@vilsem/core/templates'
 echarts.use([
-  RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart,
+  CustomChart, RadarChart, BarChart, GaugeChart, ScatterChart, TreemapChart, PieChart, LineChart, HeatmapChart,
   PictorialBarChart, CandlestickChart, BoxplotChart, SankeyChart, GraphChart, ParallelChart, ThemeRiverChart, SunburstChart, TreeChart, FunnelChart, EffectScatterChart,
-  TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent,
-  CanvasRenderer, LabelLayout,
+  TimelineComponent, TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent, MarkLineComponent, MarkAreaComponent, MarkPointComponent, GraphicComponent, TitleComponent, PolarComponent, VisualMapComponent, CalendarComponent, SingleAxisComponent, ParallelComponent,
+  CanvasRenderer, LabelLayout, UniversalTransition,
 ])
 
 // Dumb ECharts wrapper. Stays ECharts-shaped — forwards raw `params` from
@@ -34,11 +35,16 @@ export default function EChartsCanvas({ option: sourceOption, config, onClick, o
   const option = useMemo(() => applyAxisTextConfig(sourceOption, allowSecondaryAxis ? config : { ...config, secondaryAxisEnabled: false }), [sourceOption, allowSecondaryAxis, config?.axisTickColor, config?.axisFontSize, config?.axisFontFamily, config?.xAxisLabelFamily, config?.xAxisLabelWidth, config?.xAxisLabelOverflow, config?.xAxisLabelHideOverlap, config?.yAxisLabelFamily, config?.yAxisLabelWidth, config?.yAxisLabelOverflow, config?.yAxisLabelHideOverlap, config?.xAxisLabelColor, config?.xAxisLabelSize, config?.xAxisLabelWeight, config?.xAxisLabelRotation, config?.xAxisLabelSpacing, config?.yAxisLabelColor, config?.yAxisLabelSize, config?.yAxisLabelWeight, config?.yAxisLabelRotation, config?.yAxisLabelSpacing, config?.secondaryAxisEnabled, config?.secondaryAxisVisible, config?.secondaryAxisTitle, config?.secondaryAxisTitleColor, config?.secondaryAxisTitleSize, config?.secondaryAxisTitleWeight, config?.secondaryAxisTitleGap, config?.secondaryAxisLabelColor, config?.secondaryAxisLabelSize, config?.secondaryAxisLabelFamily, config?.secondaryAxisLabelWeight, config?.secondaryAxisLabelRotation, config?.secondaryAxisLabelSpacing, config?.secondaryAxisLineColor, config?.secondaryAxisGrid, config?.secondaryAxisGridColor, config?.secondaryAxisPrefix, config?.secondaryAxisSuffix])
   const rootRef = useRef(null)
   const chartRef = useRef(null)
+  const motionVisibilityRef = useRef(null)
 
   useEffect(() => {
     if (!rootRef.current) return
     const chart = echarts.init(rootRef.current)
     chartRef.current = chart
+    const visibility=createMotionVisibilityController(chart,()=>!document.hidden&&!!rootRef.current?.clientWidth&&!!rootRef.current?.clientHeight)
+    motionVisibilityRef.current=visibility
+    const syncVisibility=()=>visibility.sync()
+    document.addEventListener('visibilitychange',syncVisibility)
     onChartReady?.(chart)
 
     let rafId = 0
@@ -46,6 +52,7 @@ export default function EChartsCanvas({ option: sourceOption, config, onClick, o
       if (rafId) cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(() => {
         if (!chartRef.current) return
+        visibility.sync()
         const { clientWidth: w, clientHeight: h } = rootRef.current || {}
         if (!w || !h) return
         chartRef.current.resize()
@@ -56,6 +63,8 @@ export default function EChartsCanvas({ option: sourceOption, config, onClick, o
     return () => {
       if (rafId) cancelAnimationFrame(rafId)
       ro.disconnect()
+      document.removeEventListener('visibilitychange',syncVisibility)
+      visibility.dispose();motionVisibilityRef.current=null
       chart.dispose()
       chartRef.current = null
     }
@@ -71,6 +80,7 @@ export default function EChartsCanvas({ option: sourceOption, config, onClick, o
     const hasUniversalTransition = Array.isArray(option.series) && option.series.some(s => s && s.universalTransition)
     if (hasUniversalTransition) {
       chart.setOption(renderOption, { notMerge: true, lazyUpdate: true })
+      motionVisibilityRef.current?.sync()
       return
     }
     // replaceMerge series/xAxis/yAxis so sub-components that disappear between
@@ -80,6 +90,7 @@ export default function EChartsCanvas({ option: sourceOption, config, onClick, o
     // option simply omits it and merge preserves the prior value. dataZoom,
     // legend, radar, etc. stay merged (not listed) so their state is preserved.
     chart.setOption(renderOption, { notMerge: false, lazyUpdate: true, replaceMerge: ['series', 'xAxis', 'yAxis', 'tooltip'] })
+    motionVisibilityRef.current?.sync()
   }, [option])
 
   useEffect(() => {

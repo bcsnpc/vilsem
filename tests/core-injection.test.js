@@ -77,7 +77,7 @@ describe('core PBIR insertion',()=>{
     expect(()=>makeVisualContainer({...args(),layout:{width:-1}})).toThrow(/layout/)
     expect(()=>makeVisualContainer({...args(),bindings:{measures:[{name:'Sales'}]}})).toThrow(/table/)
   })
-  it('refuses advanced specs against old registered resources before writing any report file',async()=>{
+  it('refuses migrated current writes against an old reader before changing report bytes',async()=>{
     await injectVisual(args())
     await write(`CustomVisuals/${RENDERER_GUID}/package.json`,{visual:{guid:RENDERER_GUID},version:'4.14.2.0'})
     const spec={canvasTheme:'dark',template:{...lollipop,transforms:[{waterfall:{category:'category',value:'value'},as:'steps'}]}}
@@ -86,9 +86,10 @@ describe('core PBIR insertion',()=>{
     const slots=Object.entries(lollipop.slots)
     spec.template.transforms[0].waterfall={category:slots.find(([,s])=>s.kind==='dimension')[0],value:slots.find(([,s])=>s.kind==='measure')[0]}
     const before=await snapshot()
-    await expect(injectVisual({...args(),visualName:'advanced',spec})).rejects.toThrow(/requires vilsem Renderer 4.18/)
+    await expect(injectVisual({...args(),visualName:'advanced',spec})).rejects.toThrow(/requires vilsem Renderer 4.36/)
     expect(await snapshot()).toEqual(before)
-    await expect(injectVisual({...args(),visualName:'basic'})).resolves.toBeTruthy()
+    await expect(injectVisual({...args(),visualName:'basic'})).rejects.toThrow(/4.36/)
+    expect(await snapshot()).toEqual(before)
   })
   it('detects feature floors and compares complete renderer versions',()=>{
     expect(requiredRendererVersion({canvasTheme:'dark',type:'bar'})).toBe(null)

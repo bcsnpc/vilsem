@@ -1,6 +1,7 @@
 // Fixed bounded statistical/relational operations. No evaluated caller code.
 import {stableStatistic} from './distribution-transforms.js'
 import {isoDate} from './date-utils.js'
+import {hexagonGeometry,contourGeometry}from'./gridGeometry.js'
 export const STATISTICAL_OPS=['qq','hexbin','density2d','groupShare','conditional','rebase','cohort','pivot','correlation','pareto']
 const finite=v=>v!=null&&v!==''&&Number.isFinite(Number(v))?Number(v):null
 const name=v=>String(v??'(Blank)')
@@ -14,6 +15,8 @@ export function validateStatistical(op,d,field,errors,label) {
   if(d.names!=null&&(!Array.isArray(d.names)||d.names.length!==d.fields?.length||d.names.some(n=>typeof n!=='string'||n.length>100)))errors.push(`${label}: correlation names must match fields and contain strings up to 100 characters`)
  }
  if(['hexbin','density2d'].includes(op)&&d.bins!=null&&(!Number.isInteger(d.bins)||d.bins<4||d.bins>64))errors.push(`${label}: bins must be 4..64`)
+ if(d.expressionGeometry!=null&&(op!=='hexbin'||typeof d.expressionGeometry!=='boolean'))errors.push(`${label}: expressionGeometry requires hexbin and a boolean flag`)
+ if(d.contourFractions!=null&&(op!=='density2d'||!Array.isArray(d.contourFractions)||d.contourFractions.length<1||d.contourFractions.length>8||d.contourFractions.some((v,i)=>!Number.isFinite(v)||v<=0||v>=1||i>0&&v<=d.contourFractions[i-1])))errors.push(`${label}: density2d contourFractions must contain1..8 increasing fractions strictly between0 and1`)
  if(op==='cohort'&&d.maxPeriods!=null&&(!Number.isInteger(d.maxPeriods)||d.maxPeriods<1||d.maxPeriods>120))errors.push(`${label}: maxPeriods must be 1..120`)
  if(op==='rebase'&&d.base!=null&&!bounded(d.base,-1e6,1e6))errors.push(`${label}: rebase base must be finite within +/-1000000`)
  if(op==='pareto'&&d.threshold!=null&&!bounded(d.threshold,0,1))errors.push(`${label}: pareto threshold must be 0..1`)
@@ -115,7 +118,7 @@ export function deriveStatistical(op,d,get,n,shapeValues,cats) {
   return result(data,{cohorts:labels,periods:ps})
  }
  if(op==='hexbin'||op==='density2d') {
-  const rows=records2d(d,get,n),bins=d.bins??24;if(!rows.length)return {data:[],max:0,...(op==='density2d'?{cells:[],columns:[],rows:[]}: {})}
+  const rows=records2d(d,get,n),bins=d.bins??24;if(!rows.length)return {data:[],max:0,...(op==='density2d'?{cells:[],columns:[],rows:[]}: {}),...(d.expressionGeometry?hexagonGeometry([],1,1):{}),...(d.contourFractions?contourGeometry([],bins,d.contourFractions):{})}
   const rx=range(rows,'x'),ry=range(rows,'y'),norm=rows.map(r=>({x:(r.x/rx.scale-rx.min)/rx.span,y:(r.y/ry.scale-ry.min)/ry.span,index:r.index})),cells=new Map()
   const raw=(v,r)=>checked((r.min+v*r.span)*r.scale,op)
   if(op==='hexbin') {
@@ -134,7 +137,7 @@ export function deriveStatistical(op,d,get,n,shapeValues,cats) {
    }
   }
   const data=[...cells.values()]
-  return result(data,{max:Math.max(0,...data.map(r=>r.value[2])),...(op==='density2d'?{
+  return result(data,{max:Math.max(0,...data.map(r=>r.value[2])),...(d.expressionGeometry?hexagonGeometry(data,rx.scale/bins*rx.span,ry.scale/bins*ry.span):{}),...(d.contourFractions?contourGeometry(data,bins,d.contourFractions):{}),...(op==='density2d'?{
     columns:Array.from({length:bins},(_,x)=>raw((x+.5)/bins,rx)),rows:Array.from({length:bins},(_,y)=>raw((y+.5)/bins,ry)),
     cells:data.map(r=>({value:[...r.grid,r.value[2]],rowIndexes:r.rowIndexes,label:`x ${Number(r.value[0].toPrecision(8))}, y ${Number(r.value[1].toPrecision(8))}, normalized density ${Number(r.value[2].toPrecision(6))}`})),
   }:{})})

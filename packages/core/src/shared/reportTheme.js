@@ -102,5 +102,7 @@ export function applyReportTheme(option, theme, { palette = false } = {}) {
     const color = theme.palette[i % theme.palette.length]
     return { ...s, itemStyle: { ...s.itemStyle, color }, ...(s.lineStyle ? { lineStyle: { ...s.lineStyle, color } } : {}) }
   })
+  if(option.baseOption)out.baseOption=applyReportTheme(option.baseOption,theme,{palette})
+  if(Array.isArray(option.options)){const inherited=out.baseOption??out;out.options=option.options.map(frame=>applyReportTheme({backgroundColor:inherited.backgroundColor,color:inherited.color,...frame,textStyle:{...inherited.textStyle,...frame.textStyle}},theme,{palette}))}
   return out
 }

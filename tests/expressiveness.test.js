@@ -72,7 +72,7 @@ describe('expressiveness declarative data shaping',()=>{
   [{facet:{by:'a',category:'b',value:'v',columns:0},as:'bad'},'columns'],
  ])('rejects invalid transforms before data access', (t,message)=>expect(validateTemplate(tpl([t])).errors.join(' ')).toContain(message))
  it('rejects imperative callbacks and prototype keys without executing them',()=>{
-  expect(()=>resolveVisualSpec({template:tpl([],{series:[{type:'custom',renderItem:'arbitrary code'}]})})).toThrow(/imperative renderItem/)
+  expect(()=>resolveVisualSpec({template:tpl([],{series:[{type:'custom',renderItem:'arbitrary code'}]})})).toThrow(/bounded expression AST/)
   expect(()=>resolveVisualSpec({template:tpl([],JSON.parse('{"__proto__":{"polluted":true}}'))})).toThrow(/unsafe/)
   expect({}).not.toHaveProperty('polluted')
  })

@@ -14,9 +14,13 @@ import {validateDensity,deriveDensity} from './density-transforms.js'
 import {validateJitter,deriveJitter} from './jitter-transform.js'
 import {STATISTICAL_OPS,validateStatistical,deriveStatistical} from './statistical-transforms.js'
 import {validateWords,deriveWords} from './word-layout.js'
+import {validateMosaic,deriveMosaic} from './mosaic-transform.js'
+import {validateSetOverlaps,deriveSetOverlaps} from './set-overlaps.js'
+import {validateVoronoi,deriveVoronoi}from'./voronoi-transform.js'
+import {validateRace,deriveRace}from'./race-transform.js'
 import {isoDate} from './date-utils.js'
 export {isoDate} from './date-utils.js'
-const OPS = ['window', 'date', 'take', 'links', 'flows', 'hierarchy', 'facet', 'stat', 'density', 'jitter', 'words', ...LAYOUT_OPS, ...SEQUENCE_OPS, ...TEMPORAL_OPS, ...ANALYTIC_OPS, ...DISTRIBUTION_OPS, ...STATISTICAL_OPS]
+const OPS = ['window', 'date', 'take', 'links', 'flows', 'hierarchy', 'facet', 'stat', 'density', 'jitter', 'words','mosaic','setOverlaps','voronoi','race', ...LAYOUT_OPS, ...SEQUENCE_OPS, ...TEMPORAL_OPS, ...ANALYTIC_OPS, ...DISTRIBUTION_OPS, ...STATISTICAL_OPS]
 const finite = value => value != null && value !== '' && Number.isFinite(Number(value)) ? Number(value) : null
 export function validateTransforms(transforms, slots, params = []) {
   const errors = [], names = new Set(), known = new Set(Object.keys(slots || {}))
@@ -48,6 +52,10 @@ export function validateTransforms(transforms, slots, params = []) {
     else if(op==='density')validateDensity(d,field,errors,`transform "${t.as}"`)
     else if(op==='jitter')validateJitter(d,field,errors,`transform "${t.as}"`)
     else if(op==='words')validateWords(d,field,errors,`transform "${t.as}"`)
+    else if(op==='mosaic')validateMosaic(d,field,errors,`transform "${t.as}"`)
+    else if(op==='setOverlaps')validateSetOverlaps(d,field,errors,`transform "${t.as}"`)
+    else if(op==='voronoi')validateVoronoi(d,field,errors,`transform "${t.as}"`)
+    else if(op==='race')validateRace(d,field,errors,`transform "${t.as}"`)
     else if(op==='hierarchy') {
       if(!Array.isArray(d.levels) || d.levels.length<2 || d.levels.length>6) errors.push(`transform "${t.as}": hierarchy needs 2..6 levels`)
       else d.levels.forEach(field)
@@ -55,6 +63,7 @@ export function validateTransforms(transforms, slots, params = []) {
       if(d.color!=null)field(d.color)
       if(d.layout!=null && !['partition','pack'].includes(d.layout))errors.push(`transform "${t.as}": hierarchy layout must be partition|pack`)
       if(d.size!=null && (typeof d.size!=='number'||!Number.isFinite(d.size)||d.size<1||d.size>2000))errors.push(`transform "${t.as}": hierarchy size must be 1..2000`)
+      if(d.expressionGeometry!=null&&(typeof d.expressionGeometry!=='boolean'||d.expressionGeometry&&d.layout!=='partition'))errors.push(`transform "${t.as}": expressionGeometry requires a partition layout and a boolean flag`)
     } else if(op==='flows') validateFlows(d,field,errors,`transform "${t.as}"`)
     else if(op==='links') { field(d.source);field(d.target);field(d.value) }
     else if(op==='facet') {
@@ -98,6 +107,10 @@ export function derive(t, shaped, calc, cats, shapeValues,params={}) {
   if(t.density)return deriveDensity(t.density,get,n)
   if(t.jitter)return deriveJitter(t.jitter,get,n)
   if(t.words)return deriveWords(t.words,get,n)
+  if(t.mosaic)return deriveMosaic(t.mosaic,get,n)
+  if(t.setOverlaps)return deriveSetOverlaps(t.setOverlaps,get,n)
+  if(t.voronoi)return deriveVoronoi(t.voronoi,get,n)
+  if(t.race)return deriveRace(t.race,get,n)
   if(t.date) { const d=t.date; return shapeValues(get(d.field).slice(0,d.take??10000).map(isoDate),cats.slice(0,d.take??10000)) }
   if(t.take) { const values=get(t.take.field).slice(0,t.take.count);return shapeValues(values,values) }
   if(t.stat) {
@@ -155,7 +168,7 @@ export function derive(t, shaped, calc, cats, shapeValues,params={}) {
     const root=d3Hierarchy({children:roots}).sum(node=>node.children?.length?0:(Array.isArray(node.value)?node.value[0]:node.value)||0)
     if(root.descendants().length>2000)throw Error('hierarchy layout exceeds 2000 nodes; filter the input')
     if(!Number.isFinite(root.value))throw Error('hierarchy aggregate exceeds finite numeric range')
-    if(!root.value)return {children:roots,nodes:[]}
+    if(!root.value)return {children:roots,nodes:[],...(d.expressionGeometry?{expressionData:[]}:{})}
     if(d.layout==='partition')d3Partition().size([1,d.levels.length+1])(root)
     else d3Pack().size([d.size??400,d.size??400]).padding(2)(root)
     const nodes=root.descendants().slice(1).map(node=>{
@@ -169,7 +182,7 @@ export function derive(t, shaped, calc, cats, shapeValues,params={}) {
       return {...record,offset:node.x0,span:node.x1-node.x0,pixelSpan,labelWidth,labelVisible:labelWidth>=32,base,data:span.map((value,index)=>({value:index===depth?value:null,rowIndexes:record.rowIndexes}))}
     })
     if(nodes.reduce((n,node)=>n+node.rowIndexes.length,0)>20000)throw Error('hierarchy layout exceeds 20000 lineage entries')
-    return {children:roots,nodes}
+    return {children:roots,nodes,...(d.expressionGeometry?{expressionData:nodes.map(node=>({name:node.name,rowIndexes:node.rowIndexes,value:[node.offset,node.depth,node.span,node.value,node.name]}))}:{})}
   }
   if(t.facet) {
     const d=t.facet,by=get(d.by),category=get(d.category),weight=get(d.value),panels=new Map(),categories=[...new Set(category)]

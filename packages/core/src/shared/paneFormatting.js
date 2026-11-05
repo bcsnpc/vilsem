@@ -1,8 +1,11 @@
 import {createModelFormatter} from './modelFormatting.js'
+import {applyAnimation} from '../templates/animation.js'
+import {inheritTimelineFrame} from '../templates/timeline.js'
 
 const field=(name,displayName,type,value)=>({name,displayName,type,value})
 export const PANE_GROUPS=[
  {name:'appearance',displayName:'Appearance',fields:[field('useReportTheme','Use report theme','bool',true),field('backgroundColor','Background colour','color','#ffffff'),field('transparency','Transparency (%)','number',100)]},
+ {name:'motion',displayName:'Animation',fields:[field('enabled','Animation','bool',true),field('reduceMotion','Reduce motion','bool',false)]},
  {name:'title',displayName:'Title',fields:[field('show','Show title','bool',true),field('text','Title text','text',''),field('fontFamily','Font family','text','Segoe UI'),field('fontSize','Font size','number',17),field('color','Colour','color','#252423'),field('bold','Bold','bool',false),field('alignment','Alignment (left/center/right)','text','left')]},
  {name:'typography',displayName:'Chart text',fields:[field('fontFamily','Font family','text','Segoe UI'),field('fontSize','Font size','number',12),field('color','Colour','color','#252423')]},
  {name:'seriesColors',displayName:'Series colours',fields:[field('palette','Palette (comma-separated colours)','text','')]},
@@ -16,13 +19,14 @@ export const PANE_GROUPS=[
 export function paneCapabilities(){return Object.fromEntries(PANE_GROUPS.map(g=>[g.name,{displayName:g.displayName,properties:Object.fromEntries(g.fields.map(f=>[f.name,{displayName:f.displayName,type:f.type==='bool'?{bool:true}:f.type==='number'?{numeric:true}:f.type==='color'?{fill:{solid:{color:true}}}:{text:true}}]))}]))}
 
 export function paneFormattingCards(objects={}, {dom=false,canvasTheme,option,config={}}={}){
+ if(option?.baseOption){const index=option.baseOption.timeline?.currentIndex??option.timeline?.currentIndex??0;option={...option,...option.baseOption,...inheritTimelineFrame(option.baseOption,option.options?.[index]??{})}}
  const pane=readPaneObjects(objects)
  const axisValues=option?['yAxis','xAxis'].flatMap(key=>list(option[key])).filter(a=>a.type!=='category'):[]
  const axisCategory=option?['xAxis','yAxis'].flatMap(key=>list(option[key])).find(a=>a.type==='category'):null
  const axisDefaults=a=>a?{show:a.show!==false,title:a.name,...a.axisLabel,fontSize:a.axisLabel?.fontSize,color:a.axisLabel?.color,titleColor:a.nameTextStyle?.color,titleSize:a.nameTextStyle?.fontSize,min:typeof a.min==='number'?a.min:undefined,max:typeof a.max==='number'?a.max:undefined,gridlines:a.type==='category'?a.splitLine?.show===true:a.splitLine?.show!==false,gridColor:a.splitLine?.lineStyle?.color}:{}
  const title=list(option?.title)[0]||{},legend=list(option?.legend)[0]||{},series=list(option?.series)[0]||{}
- const resolved={typography:option?.textStyle||{},title:{show:title.show??config.showTitle??true,text:title.text??config.title,...title.textStyle,fontSize:title.textStyle?.fontSize??config.titleFontSize,fontFamily:title.textStyle?.fontFamily??config.titleFontFamily,color:title.textStyle?.color??config.titleColor,bold:title.textStyle?.fontWeight==='bold'||Number(title.textStyle?.fontWeight??config.titleFontWeight)>=600,alignment:title.left??config.titleAlign},labels:series.label||{},lines:{...series.lineStyle,style:series.lineStyle?.type},legend:{...legend.textStyle,show:legend.show!==false,position:['left','right'].includes(legend.left)?legend.left:legend.top===0?'top':legend.bottom===0?'bottom':undefined},seriesColors:{palette:Array.isArray(option?.color)?option.color.join(','):undefined},categoryAxis:axisDefaults(axisCategory),primaryAxis:axisDefaults(axisValues[0]),secondaryAxis:axisDefaults(axisValues[1])}
- return PANE_GROUPS.filter(g=>!dom||['appearance','title','border'].includes(g.name)).map(g=>{
+ const resolved={motion:{enabled:option?.animation!==false,reduceMotion:false},typography:option?.textStyle||{},title:{show:title.show??config.showTitle??true,text:title.text??config.title,...title.textStyle,fontSize:title.textStyle?.fontSize??config.titleFontSize,fontFamily:title.textStyle?.fontFamily??config.titleFontFamily,color:title.textStyle?.color??config.titleColor,bold:title.textStyle?.fontWeight==='bold'||Number(title.textStyle?.fontWeight??config.titleFontWeight)>=600,alignment:title.left??config.titleAlign},labels:series.label||{},lines:{...series.lineStyle,style:series.lineStyle?.type},legend:{...legend.textStyle,show:legend.show!==false,position:['left','right'].includes(legend.left)?legend.left:legend.top===0?'top':legend.bottom===0?'bottom':undefined},seriesColors:{palette:Array.isArray(option?.color)?option.color.join(','):undefined},categoryAxis:axisDefaults(axisCategory),primaryAxis:axisDefaults(axisValues[0]),secondaryAxis:axisDefaults(axisValues[1])}
+ return PANE_GROUPS.filter(g=>!dom||['appearance','motion','title','border'].includes(g.name)).map(g=>{
   const descriptor=propertyName=>({objectName:g.name,propertyName})
   const shown={...resolved[g.name],...pane[g.name]}
   return {uid:`vilsem-${g.name}`,displayName:g.displayName,groups:[{uid:`vilsem-${g.name}-settings`,displayName:g.displayName,slices:g.fields.map(f=>{
@@ -85,7 +89,13 @@ export function paneTitleConfig(config={},objects={}){
  return {...config,...(p.show!==undefined?{showTitle:p.show}:{}),...(p.text!==undefined?{title:p.text}:{}),...(p.fontFamily?{titleFontFamily:p.fontFamily}:{}),...(size(p.fontSize)?{titleFontSize:size(p.fontSize)}:{}),...(color(p.color)?{titleColor:color(p.color)}:{}),...(p.bold!==undefined?{titleFontWeight:p.bold?700:400}:{}),...(['left','center','right'].includes(p.alignment)?{titleAlign:p.alignment}:{})}
 }
 export function applyPaneFormatting(option,objects={},context={}){
+ if(option?.baseOption||Array.isArray(option?.options)){
+  const {baseOption,options:frames,...root}=option
+  return {...applyPaneFormatting(root,objects,context),...(baseOption?{baseOption:applyPaneFormatting(baseOption,objects,context)}:{}),...(Array.isArray(frames)?{options:frames.map(frame=>applyPaneFormatting(inheritTimelineFrame(baseOption,frame),objects,context))}:{})}
+ }
  const pane=readPaneObjects(objects),appearance=pane.appearance || {},out={...option}
+ if(pane.motion?.enabled!==undefined)out.animation=pane.motion.enabled
+ if(pane.motion?.enabled===false||pane.motion?.reduceMotion===true||context.reduceMotion===true)Object.assign(out,applyAnimation(out,null,{enabled:pane.motion?.enabled,reduceMotion:pane.motion?.reduceMotion===true||context.reduceMotion===true}))
  const color=appearance.backgroundColor?.solid?.color
  if(typeof color==='string'&&/^#[\da-f]{6}$/i.test(color)){
   const transparency=Math.min(100,Math.max(0,Number(appearance.transparency??100)))

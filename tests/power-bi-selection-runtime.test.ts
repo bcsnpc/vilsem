@@ -1,10 +1,10 @@
 import { prepareVisualRows, rowsFromCategorical, normaliseRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
-import {migrate} from '@vilsem/core/spec/migrate'
+import {migrate,CURRENT_SPEC_VERSION} from '@vilsem/core/spec/migrate'
 import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
-import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
+import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController } from '@vilsem/core/templates'
 import { lollipop as templateExample } from '@vilsem/core/templates/examples'
 import { describe, it, expect, vi } from 'vitest'
 import fs from 'node:fs'
@@ -25,19 +25,20 @@ const source = fs.readFileSync('vilsem-renderer/src/visual.ts', 'utf8')
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
 
 function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories'], configOverrides = {}) {
+  const frames=new Map<number,Function>();let nextFrame=0
   const events: Record<string, Function> = {}, zrEvents: Record<string, Function> = {}
-  const chart = { on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
+  const chart = { getOption:()=>({timeline:[{currentIndex:1}]}), on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
   const rootEvents: Record<string, Function> = {}
   const node = () => ({ style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
   const exports: any = {}
-  vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, cancelAnimationFrame() {}, require: (name: string) => {
+  vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, clearTimeout, setTimeout, requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame}, cancelAnimationFrame(id){frames.delete(id)}, require: (name: string) => {
     if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
     if (name === '@vilsem/core/spec/migrate') return {migrate}
     if (name === '@vilsem/core/formatting/pane') return {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig}
     if (name === '@vilsem/core/theme/report') return { resolveReportTheme, reportThemeFromHost, applyReportTheme }
     if (name === '@vilsem/core/formatting') return { createModelFormatter, scopedMeasureFormat, applyModelFormats }
-    if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems }
+    if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController }
     if (name === 'echarts/core') return { use() {}, init: () => chart, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
@@ -64,12 +65,54 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
       { source: { displayName: 'Returns', queryName: 'Measures.Returns', roles: { secondary: true }, isMeasure: true, type: { numeric: true } }, values: categories.map((_, i) => [269, 429, 1130][i] ?? i + 1) },
     ] }).build()!
   visual.renderPrimitiveChart(dv, { type, canvasTheme: 'dark', config: { cardStyle: 'plain', animationEnabled: false, ...configOverrides } })
-  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, dataView: dv, restoreSelection: ids => restoreSelection?.(ids) }
+  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, dataView: dv, restoreSelection: ids => restoreSelection?.(ids),flushFrames(){for(const [id,fn]of [...frames]){frames.delete(id);fn()}} }
 }
 
-describe.each(['composition', 'template'])('SDK categorical host contracts: %s', layer => {
-  const spec = () => layer === 'composition' ? {type:'column',config:{animationEnabled:false,cardStyle:'plain'}} : {
-    type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'sdk-host-contract'},slots:{category:{kind:'dimension'},amount:{kind:'measure'},returns:{kind:'measure'}},template:{animation:false,xAxis:{type:'category',data:'$slot.category.categories'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.amount.values'}]}}
+describe('Power BI render lifecycle',()=>{
+ it('retains template drawing state for changed data and rewires handlers; a rebound field disposes it',()=>{
+  const h=harness(),dom={style:{},clientWidth:600,clientHeight:400};Object.assign(h.chart,{getDom:()=>dom,off:vi.fn(()=>{for(const key of Object.keys(h.events))delete h.events[key]}),resize:vi.fn(),dispose:vi.fn()});const zrOff=vi.fn();const originalZr=h.chart.getZr;h.chart.getZr=()=>({...originalZr(),off:zrOff})
+  const spec={type:'custom',template:{meta:{id:'retained-test',formatVersion:4},slots:{category:{kind:'dimension'},amount:{kind:'measure'}},animation:{update:{duration:400}},template:{xAxis:{type:'category',data:'$slot.category.categories'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.amount.values'}]}}}
+  h.visual.renderPrimitiveChart(h.dataView,spec);h.chart.dispose.mockClear();h.chart.setOption.mockClear();const changed={...h.dataView,categorical:{...h.dataView.categorical,values:h.dataView.categorical!.values!.map(c=>({...c,values:c.values.map(v=>Number(v)+1)}))}}
+  h.visual.renderPrimitiveChart(changed,spec);expect(h.chart.dispose).not.toHaveBeenCalled();expect(h.chart.resize).toHaveBeenCalledOnce();expect(h.chart.setOption).toHaveBeenCalledTimes(1);expect(h.chart.setOption.mock.calls[0][1]).toMatchObject({notMerge:false});expect(h.events.click).toBeTypeOf('function');expect(zrOff).toHaveBeenCalledWith('click',expect.any(Function))
+  const rebound={...changed,categorical:{...changed.categorical,categories:changed.categorical.categories!.map(c=>({...c,source:{...c.source,queryName:'Other.Field'}}))}};h.visual.renderPrimitiveChart(rebound,spec);expect(h.chart.dispose).toHaveBeenCalledOnce()
+ })
+ it('dims timeline frames by source identity and preserves the active frame on selection reset',()=>{
+  const h=harness();h.visual.templateRowSources=[0,1,2];h.visual.lastOption={baseOption:{timeline:{currentIndex:0},series:[]},options:[{series:[{type:'bar',data:[{value:1,rowIndexes:[0]}]}]},{series:[{type:'bar',data:[{value:2,rowIndexes:[1]}]}]}]}
+  h.visual.applyChartSelection(h.ids,[h.ids[1]]);const selected=h.chart.setOption.mock.calls.at(-1)![0]
+  expect(selected.options[0].series[0].data[0].itemStyle.opacity).toBe(.25);expect(selected.options[1].series[0].data[0].itemStyle.opacity).toBe(1);expect(selected.baseOption.timeline.currentIndex).toBe(1)
+  h.visual.applyChartSelection(h.ids,[]);const reset=h.chart.setOption.mock.calls.at(-1)![0];expect(reset.options[0].series[0].data[0].itemStyle).toBeUndefined();expect(reset.baseOption.timeline.currentIndex).toBe(1)
+ })
+ function setup(){const h=harness();(h.host as any).eventService={renderingStarted:vi.fn(),renderingFinished:vi.fn(),renderingFailed:vi.fn()};return {...h,lifecycle:(h.host as any).eventService}}
+ const options=(h:any)=>({dataViews:[h.dataView],viewport:{width:600,height:400}})
+ it('finishes exactly once after the first completed frame',()=>{
+  const h=setup(),update=options(h);h.visual.update(update)
+  expect(h.lifecycle.renderingStarted).toHaveBeenCalledWith(update);expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled()
+  h.flushFrames();h.flushFrames();expect(h.lifecycle.renderingFinished).toHaveBeenCalledExactlyOnceWith(update);expect(h.lifecycle.renderingFailed).not.toHaveBeenCalled()
+ })
+ it('fails a superseded frame and completes the current update without stale callbacks',()=>{
+  const h=setup(),first=options(h),second=options(h);h.visual.update(first);h.visual.update(second);h.flushFrames()
+  expect(h.lifecycle.renderingFailed).toHaveBeenCalledExactlyOnceWith(first,expect.stringContaining('Superseded'))
+  expect(h.lifecycle.renderingFinished).toHaveBeenCalledExactlyOnceWith(second)
+ })
+ it('reports invalid specs as failed, while filtered empty states finish successfully',()=>{
+  const h=setup();h.dataView.metadata.objects={semantica:{primitiveSpec:'broken-json'}};h.visual.update(options(h));h.flushFrames()
+  expect(h.lifecycle.renderingFailed).toHaveBeenCalledOnce();expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled()
+  h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify({type:'bar'})}};h.dataView.categorical!.categories![0].values=[];h.dataView.categorical!.values!.forEach(c=>{c.values=[]});h.visual.update(options(h));h.flushFrames()
+  expect(h.lifecycle.renderingFinished).toHaveBeenCalledOnce()
+ })
+ it('settles a pending update when destroyed',()=>{
+  const h=setup();h.visual.update(options(h));h.visual.destroy();h.flushFrames();expect(h.lifecycle.renderingFailed).toHaveBeenCalledOnce();expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled()
+ })
+})
+
+describe.each(['composition', 'template','expression'])('SDK categorical host contracts: %s', layer => {
+  const spec = () => {const result:any=layer === 'composition' ? {type:'column',config:{animationEnabled:false,cardStyle:'plain'}} : {
+    type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'sdk-host-contract'},slots:{category:{kind:'dimension'},amount:{kind:'measure'},returns:{kind:'measure'}},template:{animation:false,xAxis:{type:'category',data:'$slot.category.categories'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.amount.values'}]}}}
+    if(layer==='expression'){
+      result.template.meta.formatVersion=4
+      result.template.template.series[0]={type:'custom',data:'$slot.amount.values',renderItem:{language:'vilsem-expression',version:1,root:{type:'circle',shape:{cx:{op:'add',args:[20,{op:'mul',args:[{op:'dataIndex',args:[]},30]}]},cy:40,r:5},style:{fill:'#336699'}}}}
+    }
+    return result
   }
   function setup(){const h=harness();h.visual.renderPrimitiveChart(h.dataView,spec());return h}
   it('routes single/Ctrl/empty-area clicks to SDK row identities',async()=>{
@@ -294,7 +337,7 @@ describe('Power BI production primitive selection routing', () => {
     h.visual.bakedSpecRaw = () => JSON.stringify({ type, config: {} })
     h.visual.renderPrimitiveChart = vi.fn()
     h.visual.update({ dataViews: [] })
-    expect(h.visual.renderPrimitiveChart).toHaveBeenCalledWith({}, { type, config: {},specVersion:'0.6' })
+    expect(h.visual.renderPrimitiveChart).toHaveBeenCalledWith({}, { type, config: {},specVersion:CURRENT_SPEC_VERSION })
   })
   it('shows a precise unsupported-version error instead of silently rendering a different legacy chart',()=>{
     const h=harness();h.visual.bakedSpecRaw=()=>JSON.stringify({specVersion:'99',type:'bar'})
@@ -711,6 +754,9 @@ it('renders scoped-measure host query results identically to the SSR resolver fi
   h.visual.renderPrimitiveChart({categorical},spec)
   const actual=h.chart.setOption.mock.calls.at(-1)[0]
   const ssr=resolveVisualSpec(spec,normaliseRows(values.map((v,i)=>({'P[C]':['A','B','C'][i],'[Margin]':v})),'P[C]',['Margin']))
-  expect(JSON.stringify(actual.series)).toBe(JSON.stringify(ssr.series))
+  // Native needs stable generated series ids for retained update transitions.
+  // They are runtime identity only; all data, style and format fields match SSR.
+  expect(actual.series[0].id).toBe('vilsem-template-0')
+  expect(JSON.stringify(actual.series.map(({id,...series})=>series))).toBe(JSON.stringify(ssr.series))
   expect(actual.xAxis.data).toEqual(ssr.xAxis.data)
 })

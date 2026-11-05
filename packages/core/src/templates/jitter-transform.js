@@ -4,6 +4,7 @@ export function validateJitter(d,field,errors,label) {
   if(d.method!=='collision')errors.push(`${label}: jitter method must be collision`)
   for(const key of ['width','height'])if(d[key]!=null&&(typeof d[key]!=='number'||!Number.isFinite(d[key])||d[key]<100||d[key]>2000))errors.push(`${label}: jitter ${key} must be 100..2000`)
   if(d.radius!=null&&(typeof d.radius!=='number'||!Number.isFinite(d.radius)||d.radius<1||d.radius>12))errors.push(`${label}: jitter radius must be 1..12`)
+  if(d.expressionGeometry!=null&&typeof d.expressionGeometry!=='boolean')errors.push(`${label}: jitter expressionGeometry must be boolean`)
 }
 export function deriveJitter(d,get,n) {
   const raw=get(d.field),by=get(d.by),names=d.name?get(d.name):[],groups=new Map(),width=d.width??700,height=d.height??420
@@ -14,7 +15,7 @@ export function deriveJitter(d,get,n) {
     groups.get(group).push({value,index:i,name:String(names[i]??group)});count++;min=Math.min(min,value);max=Math.max(max,value)
   }
   if(count>2000||groups.size>36)throw Error('jitter exceeds 2000 points or 36 groups; filter the input')
-  if(!count)return {data:[],groups:[],min:null,max:null,height,symbolSize:2*(d.radius??3)}
+  if(!count)return {data:[],groups:[],min:null,max:null,height,symbolSize:2*(d.radius??3),...(d.expressionGeometry?{expressionData:[]}: {})}
   const scale=Math.max(1,Math.abs(min),Math.abs(max));let low=min/scale,high=max/scale
   if(low===high){const span=Math.max(Math.abs(low)*0.1,0.01);low-=span/2;high+=span/2}
   const padding=(high-low)*10/(width-20);low-=padding;high+=padding
@@ -46,7 +47,7 @@ export function deriveJitter(d,get,n) {
       }
       if(failed)break
     }
-    if(!failed)return {data,groups:ordered.map(g=>({name:g.name,value:(g.index+0.5)*band,rowIndexes:g.rows.map(r=>r.index)})),min:low*scale,max:high*scale,height,symbolSize:2*radius}
+    if(!failed)return {data,groups:ordered.map(g=>({name:g.name,value:(g.index+0.5)*band,rowIndexes:g.rows.map(r=>r.index)})),min:low*scale,max:high*scale,height,symbolSize:2*radius,...(d.expressionGeometry?{expressionData:data.map(point=>({...point,value:[...point.value,radius,(high-low)*scale,width,height]}))}:{})}
     if(radius===1)throw Error('jitter collision layout is too dense; reduce points/categories or enlarge the viewport')
     radius=Math.max(1,radius*0.8)
   }

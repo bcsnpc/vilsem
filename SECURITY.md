@@ -132,3 +132,46 @@ targets only: embedded passwords and impersonation properties are not used.
 The clean public source tree reports0high/0critical,6moderate findings; native renderer tooling0high/0critical,13moderate+4low; UI0 and MCP0. These are registry results at this checkpoint, not a permanent absence-of-vulnerability guarantee. Existing dependency exposure/mitigations above still apply. The JSON Patch implementation is fast-json-patch3.1.1 with operation validation and prototype modifications prohibited; tool guards additionally refuse renderer identity/version paths, whole-document replacement and implicit rebinding. Edits operate on a clone, preview before writing, preserve unrelated/manual objects, and check original bytes/etag with an MCP-writer lock. Desktop does not honor that lock, so external-save races cannot be claimed impossible; avoid concurrent Desktop saves and use reviewed etags.
 
 No expression-series interpreter is shipped in0.6. Executable renderItem, arbitrary JavaScript, DOM and network callbacks remain outside the authored format. GroupC requires a separate grammar/threat-model/security-test review before enabling any new execution surface.
+
+## GroupC development: bounded expression series
+
+The format4 surface accepts a closed JSON AST, never JavaScript source. One
+core interpreter serves native rendering and SSR. Data/API operations are
+limited to numeric values, coordinates, sizes, colour and safe styles. There
+is no property dereference, loop, recursion, assignment, closure, global
+lookup, DOM, network, image loading or function constructor. Graphic paths
+use a bounded SVG path grammar; labels are plain text.
+
+Threats include prototype/accessor attacks, callbacks, mutation after
+validation, expensive repeated expressions, nonfinite geometry, external
+resource styles and selection-identity loss. Validation rejects non-plain
+objects, accessors, cycles, forbidden keys and unknown operations. A frozen
+copy prevents post-validation mutation. Limits: depth32,16000 AST nodes,
+2000 elements/item,50000 elements/visual,50000 steps/item,2000000 estimated
+steps/visual. Paths, text, coordinates and aggregate string content have
+separate limits. Authored specs cannot raise these budgets. They reduce
+denial-of-service exposure without proving every graphic cheap on every GPU.
+
+Tests include1000 valid and1000 invalid generated AST probes, blocked
+Function/eval/fetch operations, prototype/getter/cycle inputs, immutability,
+path grammar, budget overflow and actual SVG text escaping. Host contracts
+exercise expression selection/highlights/tooltips/bookmarks/empty states.
+This is not an external security audit or certification. Development checks
+alone do not approve a0.7 release.
+
+## Optional browser motion preview boundary
+
+The MCP can launch an installed Chromium browser in a fresh headless profile
+for bounded animation capture. It does not attach to the user's browser or
+Power BI. The Chromium sandbox remains enabled; outbound page requests and
+WebSocket routes are blocked, service workers are disabled, and only essential
+OS environment variables are forwarded. Connector/authentication modules and
+credentials are excluded from the statically built browser runtime. Payloads
+cross as JSON into the same closed resolver, never author-provided scripts.
+
+Limits include an8MiB payload,2..12 frames,12million decoded pixels,45second
+capture deadline,3second APNG and2MiB encoded output. Only one capture runs
+per MCP process. Browser dependencies and the locally installed browser still
+need normal security updates; this is not isolation from a compromised browser
+binary or arbitrary JavaScript supplied by a caller outside the JSON boundary.
+Controlled-clock screenshots demonstrate motion, not real-time performance.
