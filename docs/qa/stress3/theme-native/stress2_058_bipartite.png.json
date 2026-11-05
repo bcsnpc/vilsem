@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_15",
+  "visualName": "stress2_058_bipartite",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "f56385cc608b5d638248a199fa8dc3ea51b318b77c5490564da701720eb7abca",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "b219b44747545871eac8e636f035bdc3b25a5d45b103056f7e990aa10f591a96",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

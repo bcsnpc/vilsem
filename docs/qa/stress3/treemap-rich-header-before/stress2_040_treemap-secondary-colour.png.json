@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_treemap_contrast",
+  "visualName": "stress2_040_treemap-secondary-colour",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "522c43664b297efe2046d3a5c7f33de47ab0b0d0e85ba00a0d2c5b6e2bc12f7d",
+  "visualSha256": "5a7ae5f397129fde1324193e5da8003b5d1939b1007da3aee5d48b81c311ae86",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "2468c25913505488d25826f628d4b28a89648b039703c69adb614684a516b8e5",
+  "status": "Captured; visual inspection pending"
+}

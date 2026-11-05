@@ -1,0 +1,74 @@
+[
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_15",
+    "visualName": "stress2_057_adjacency-matrix",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "357085e8ac15a6fe117b5e049dde8b9304a7d11aa697e2bcc3367791b034f49b",
+    "region": {
+      "x": 0,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "e3b7a8c3ec0b195c4d22f5803e15e45487a0cbf8ef95e8ae67c1c6f2e49b4bac",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_15",
+    "visualName": "stress2_058_bipartite",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "f56385cc608b5d638248a199fa8dc3ea51b318b77c5490564da701720eb7abca",
+    "region": {
+      "x": 900,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "b219b44747545871eac8e636f035bdc3b25a5d45b103056f7e990aa10f591a96",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_15",
+    "visualName": "stress2_059_radar-benchmark",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "944d1852e339c47a7edf75087f78838583fb251fa8c03fc3bdf71e23e3303a3e",
+    "region": {
+      "x": 0,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "68d48c07d0478b3ed0fba7a08ac95a13e05fd7a16c31f075d2e83c2b8fbe6c16",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_15",
+    "visualName": "stress2_060_radar-small-multiples",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "64c25d6bf65283d3d134fdedc0e62f5d7f2a49bc7cc7cda6385c2ba9e3f26583",
+    "region": {
+      "x": 900,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "d9aaa4e7369dd5abce3d8b7230bff536112a7340a657ec9c4d9f5196fdff2943",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  }
+]

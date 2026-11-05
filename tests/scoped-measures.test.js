@@ -6,6 +6,15 @@ import {makeVisualContainer,validateVisualContainer} from '@vilsem/core/pbir'
 const schema={tables:[{name:'M',columns:[]},{name:'Date',columns:[{name:'Date'}]},{name:'Product',columns:[{name:'Category'}]}],measures:[{table:'M',name:'Profit'},{table:'M',name:'Revenue'}]}
 const measures={'Margin':'DIVIDE([Profit],[Revenue])','Prior Year':"CALCULATE([Revenue], SAMEPERIODLASTYEAR('Date'[Date]))",'Rank':"RANKX(ALL('Product'[Category]), [Margin], , DESC, DENSE)"}
 describe('visual-scoped DAX measures',()=>{
+  it('carries declared display formats to NativeMeasure without persisting them to the model',async()=>{
+    const scoped={Margin:{expression:measures.Margin,format:'0.00%'}}
+    const compiled=compileScopedMeasures(scoped,{schema,homeTable:'M'})
+    expect(compiled.format('margin')).toBe('0.00%')
+    expect(compiled.define).toContain(measures.Margin)
+    const visual=makeVisualContainer({visualName:'formatted-margin',spec:{type:'bar',measures:scoped},bindings:{dimensions:[],measures:[{table:'M',name:'Margin'}]}})
+    expect(visual.visual.query.queryState.content.projections[0].field.NativeMeasure.Format).toBe('0.00%')
+    await expect(validateVisualContainer(visual)).resolves.toBe(true)
+  })
   it('compiles ratio, time intelligence and rank into query-only definitions',()=>{
     const result=compileScopedMeasures(measures,{schema,homeTable:'M'})
     expect(result.define).toContain("MEASURE 'M'[Margin] = DIVIDE([Profit],[Revenue])")

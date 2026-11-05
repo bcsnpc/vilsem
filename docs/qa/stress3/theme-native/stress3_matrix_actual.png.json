@@ -1,0 +1,16 @@
+{
+  "method": "report.snapshot.capture/v2",
+  "pageName": "stress3_matrix_formats",
+  "visualName": "stress3_matrix_actual",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "dimensions": {
+    "width": 1495,
+    "height": 997
+  },
+  "sha256": "7fddd1103979d9f5102646b775c9278c7e26959a2609734fd63d49a481bb72c8"
+}

@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_18",
+  "visualName": "stress2_069_normalized-area",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "573f2fe45a962539e318af9a1bc8db368db1d3d11ff0bdf4828694ef895ea8c1",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "1e179e5d569c8a965bac036176518c2057c892b05311c7ab792bb09f5ad65d9d",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

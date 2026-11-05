@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_10",
+  "visualName": "stress2_038_daily-heat-strip",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "8a9c8f40cfd5b683de3835c39a1161eee793381b7cabbdb66126e6ef8a39b1ec",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "e3548f8f4bc33f6cfcafb250ab3d44754d16881f3c3b2e9635b12f2963bd532f",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

@@ -544,11 +544,11 @@ var RadarMarks = (props, ctx) => {
         padding: 0,
         // Theme-aware: pulls bg/border/text/shadow from theme tokens so the radar's
         // multi-row tooltip matches the rest of the app's tooltips in both modes.
-        formatter: (params) => {
+        formatter: Object.assign((params, modelFormatter) => {
           const vals = Array.isArray(params.value) ? params.value : [params.value];
           const lines = vals.map((v, i) => {
             const name = indicators[i]?.name ?? "";
-            const formatted = fmtVal(v, prefix, suffix);
+            const formatted = typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(v) : fmtVal(v, prefix, suffix);
             return `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;padding:2px 0">
               <span style="color:${t.echartsLegendText}">${escapeHtml(name)}</span>
               <span style="color:${p.start};font-weight:700">${escapeHtml(formatted)}</span>
@@ -556,7 +556,7 @@ var RadarMarks = (props, ctx) => {
           }).join("");
           const shadow = t.canvasBg && t.canvasBg.startsWith("#0") ? "0 12px 28px rgba(0,0,0,0.48)" : "0 8px 24px rgba(0,0,0,0.12)";
           return `<div style="background:${t.echartsTooltipBg};border:1px solid ${t.echartsTooltipBorder};border-radius:10px;padding:10px 13px;min-width:160px;box-shadow:${shadow};color:${t.echartsTooltipText}">${lines}</div>`;
-        }
+        }, { vilsemFormatter: true })
       }
     }
   };
@@ -655,7 +655,7 @@ var GaugeMarks = (props, ctx) => {
           color: t.textMuted,
           fontSize: 9,
           distance: -(arcWidth + 22),
-          formatter: (v) => v === min || v === max ? fmtLabel(v) : ""
+          formatter: Object.assign((v, modelFormatter) => v === min || v === max ? typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(v) : fmtLabel(v) : "", { vilsemFormatter: true })
         } : { show: false },
         detail: {
           show: true,
@@ -665,7 +665,7 @@ var GaugeMarks = (props, ctx) => {
           ...valueFontFamily ? { fontFamily: valueFontFamily } : {},
           color: valueColor || fillColor,
           offsetCenter: [0, "15%"],
-          formatter: () => fmtVal(val ?? displayVal, prefix, suffix)
+          formatter: Object.assign((_value, modelFormatter) => typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(val ?? displayVal) : fmtVal(val ?? displayVal, prefix, suffix), { vilsemFormatter: true })
         },
         title: { show: false },
         data: [{ value: displayVal, name: val != null ? String(val) : "" }]
@@ -739,13 +739,15 @@ var PointMarks = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params) => {
+        formatter: Object.assign((params, modelFormatter) => {
           const [x, y] = params.value;
           const name = params.name || "";
-          const xStr = `${xLabel || "X"}: ${fmtAxisNumber(x)}`;
-          const yStr = `${yLabel || "Y"}: ${fmtAxisNumber(y)}`;
+          const xFormat = modelFormatter?.vilsemTupleFormatters?.[0];
+          const yFormat = modelFormatter?.vilsemTupleFormatters?.[1];
+          const xStr = `${xLabel || "X"}: ${typeof xFormat === "function" ? xFormat(x) : fmtAxisNumber(x)}`;
+          const yStr = `${yLabel || "Y"}: ${typeof yFormat === "function" ? yFormat(y) : fmtAxisNumber(y)}`;
           return name ? `${escapeHtml(name)}<br/>${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}` : `${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}`;
-        }
+        }, { vilsemFormatter: true })
       },
       series: [{
         type: "scatter",
@@ -754,7 +756,7 @@ var PointMarks = (props, ctx) => {
         itemStyle: { color: p.start, opacity: fillOpacity },
         label: showLabels ? {
           show: true,
-          formatter: (params) => params.name || "",
+          formatter: Object.assign((params) => params.name || "", { vilsemFormatter: true }),
           position: "top",
           color: t.textMuted,
           fontSize: 9
@@ -813,12 +815,15 @@ var TreemapMarks = (props, ctx) => {
       }
     };
   });
-  const labelFormatter = (params) => {
+  const labelFormatter = Object.assign((params, modelFormatter) => {
     const lines = [];
     if (showLabels) lines.push(`{name|${params.name || ""}}`);
-    if (showValues) lines.push(`{value|${fmtVal(params.data?._rawValue ?? params.value, prefix, suffix)}}`);
+    if (showValues) {
+      const value = params.data?._rawValue ?? params.value;
+      lines.push(`{value|${typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(value) : fmtVal(value, prefix, suffix)}}`);
+    }
     return lines.join("\n");
-  };
+  }, { vilsemFormatter: true });
   return {
     option: {
       animation: animEnabled,
@@ -827,11 +832,11 @@ var TreemapMarks = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params) => {
+        formatter: Object.assign((params, modelFormatter) => {
           const name = params.name || "";
           const v = params.data?._rawValue ?? params.value;
-          return `${escapeHtml(name)}<br/>${escapeHtml(fmtVal(v, prefix, suffix))}`;
-        }
+          return `${escapeHtml(name)}<br/>${escapeHtml(typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(v) : fmtVal(v, prefix, suffix))}`;
+        }, { vilsemFormatter: true })
       },
       series: [{
         type: "treemap",
@@ -981,15 +986,15 @@ var PieMarks = (props, ctx) => {
     top: showLegend && isTopLegend ? "10%" : 0,
     bottom: showLegend && isBottomLegend ? "20%" : 0
   };
-  const labelFormatter = (params) => {
+  const labelFormatter = Object.assign((params, modelFormatter) => {
     if (labelStyle === "percent") {
       const pct = total > 0 ? params.value / total * 100 : 0;
       return `${pct.toFixed(0)}%`;
     }
-    if (labelStyle === "value") return fmtVal(params.value, prefix, suffix);
+    if (labelStyle === "value") return typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(params.value) : fmtVal(params.value, prefix, suffix);
     const name = String(params.name || "");
     return name.length > 10 ? name.slice(0, 9) + "\u2026" : name;
-  };
+  }, { vilsemFormatter: true });
   return {
     option: {
       animation: animEnabled,
@@ -1001,10 +1006,10 @@ var PieMarks = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params) => {
+        formatter: Object.assign((params, modelFormatter) => {
           const pct = total > 0 ? params.value / total * 100 : 0;
-          return `${escapeHtml(params.name)}<br/>${escapeHtml(fmtVal(params.value, prefix, suffix))} (${pct.toFixed(1)}%)`;
-        }
+          return `${escapeHtml(params.name)}<br/>${escapeHtml(typeof modelFormatter === "function" && !prefix && !suffix ? modelFormatter(params.value) : fmtVal(params.value, prefix, suffix))} (${pct.toFixed(1)}%)`;
+        }, { vilsemFormatter: true })
       },
       // Always emit the legend block with explicit `show` flag — ECharts setOption
       // merges by default, so toggling `legend: undefined` would leave the old legend

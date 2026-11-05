@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_20",
+  "visualName": "stress2_079_control-chart",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "f9cc259e9f6bdd2d6a58520467a986a274b7fdd1b7b3e1706776c584c473f323",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "0b49825da0ffb9e6added078bcbf3785f08c113dee01b4c36e859cf29512e91f",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

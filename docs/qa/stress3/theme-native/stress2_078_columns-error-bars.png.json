@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_20",
+  "visualName": "stress2_078_columns-error-bars",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "79e9ba9b9928fb6936ee7e53e1cf0e1530607b0e293f747517a816589f96fad9",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "0993238efb9edafda03ff3d8f01d05914e02f1db09be9ff4ed6330d04ad3e85e",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

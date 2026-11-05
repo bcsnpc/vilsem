@@ -30,6 +30,6 @@ describe('bounded deterministic density series',()=>{
  })
  it('validates samples, fields, bandwidth, layout and compatibility floor',()=>{
   for(const d of [{samples:1},{samples:257},{bandwidth:0},{bandwidth:Infinity},{layout:'custom'}])expect(validateTemplate(spec({layout:'violin',...d})).errors.length).toBeGreaterThan(0)
-  expect(requiredRendererVersion({template:spec({layout:'violin'})})).toBe('4.28.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:spec({layout:'violin'})})).toBe('4.28.0.0')
  })
 })

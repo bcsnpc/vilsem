@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_01",
+  "visualName": "stress2_004_confidence-band",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "bceed6906c093d1d5a4f197424200f00c3d92d3fdf11f6ea58cb8e0b0aaa0c17",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "e50a745520cc84f03dada783b100a820752847099b495fceb27cc84c86e2bbc2",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

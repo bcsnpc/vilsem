@@ -16,7 +16,7 @@ Structured `buildVisualDax` bindings qualify and escape model identifiers. `prep
 
 ## Standalone model connections
 
-Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.4.0/vilsem-core-0.4.0.tgz`.
+Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.5.0/vilsem-core-0.5.0.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -61,3 +61,20 @@ with CALCULATE to preserve measure context transition. The Desktop host evaluate
 these under report filters and delivers numbers to `rowsFromCategorical`; neither
 JavaScript nor the visual executes DAX. Do not write a scoped definition to TMDL.
 See the MCP `vilsem://docs/spec-format` for ratio/time-intelligence/ranking examples.
+
+
+## Core0.5 correctness update
+
+Report-native visuals default to a transparent background and the host palette.
+The shared theme/format converter is used by native rendering and SSR. It
+preserves categorical/share labels, raw numeric query values, explicit styling,
+independent measure units and contributor identities for supported aggregates.
+Report connections follow byPath Desktop/local schema or byConnection configured
+Fabric/SSAS targets without Electron. Refer to the MCP spec-format documentation
+for supported format strings, provenance rules and the native-font limitation.
+Renderer4.34 is bundled; the existing GUID and primitiveSpec property remain
+unchanged. Older registered renderers are rejected when a requested feature
+requires the new version. No model definitions are written.
+
+Mixed-unit scatter/bubble coordinates retain independent model formats even when
+the primary measure uses General. Category labels keep their configured meaning.

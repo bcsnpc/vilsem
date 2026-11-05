@@ -1,0 +1,18 @@
+{
+  "method": "report.snapshot.capture/v2",
+  "pageName": "stress3_bar_currency",
+  "visualName": "stress3_bar_currency",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "dimensions": {
+    "width": 2991,
+    "height": 1994
+  },
+  "sha256": "a47e247b727f05921e934d409a51e2ce60fc2902238ac10ae5bc37246794d423",
+  "status": "Verified in restored Desktop: full$23,642,495 label fits; Accessories$906,673 and Clothing$365,419 render with unchanged axis range.",
+  "rendererSha256": "522c43664b297efe2046d3a5c7f33de47ab0b0d0e85ba00a0d2c5b6e2bc12f7d"
+}

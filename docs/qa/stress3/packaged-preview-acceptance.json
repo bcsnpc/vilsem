@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-11-04T17:24:17.137Z",
+  "cwd": "D:\\vilsem-mcp-acceptance-050-gutter",
+  "localCandidateCoreOverride": true,
+  "appPathEnvironmentPresent": false,
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.5.0"
+  },
+  "tools": [
+    "connect_model",
+    "get_schema",
+    "run_dax",
+    "list_templates",
+    "validate_spec",
+    "explain_visual",
+    "preview_visual",
+    "list_pages",
+    "commit_visual",
+    "validate_visuals"
+  ],
+  "connection": {
+    "connectionId": "dd66c89d-38d9-4766-bf06-aae0ec5efc20",
+    "kind": "desktop",
+    "schemaOnly": false,
+    "discovery": "process-workspace-port-file",
+    "port": 64913
+  },
+  "tables": 13,
+  "measures": 39,
+  "explained": true,
+  "preview": {
+    "rowCount": 3,
+    "measureFormats": [
+      {
+        "table": "Measure Table",
+        "name": "Total Revenue",
+        "formatString": "\\$#,0;(\\$#,0);\\$#,0"
+      }
+    ],
+    "themeSource": "explicit preview theme",
+    "pngBytes": 12369
+  },
+  "specFormatResource": true,
+  "noReportWrites": true,
+  "status": "PASS",
+  "publicDependencyLimitation": "Installed local candidate tarballs with an explicit core override. Public release-URL installation must be verified after core-v0.5.0 exists."
+}

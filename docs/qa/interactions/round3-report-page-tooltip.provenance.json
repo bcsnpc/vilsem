@@ -1,0 +1,13 @@
+{
+  "source": "Power BI Desktop native window capture",
+  "originalPrivateFile": "cache/round3-native-report-tooltip-window.jpg",
+  "originalSha256": "58cbf15bf4a1e7b1a562fbb9e875e9bdb0fd12c3f908417e9395b667b87339ef",
+  "crop": [
+    0,
+    160,
+    1135,
+    672
+  ],
+  "purpose": "Requested permanent QA evidence; title/account strip excluded",
+  "alterations": "Crop only; no chart or tooltip values/styles edited"
+}

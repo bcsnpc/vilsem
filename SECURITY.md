@@ -11,7 +11,7 @@ anything exploitable.
 
 ## Status — beta software
 
-vilsem is early beta (`v1.0.0-beta.2`) and is **not recommended for production or
+vilsem is early beta (`v1.0.0-beta.3`) and is **not recommended for production or
 sensitive data**. It ships unsigned (Windows SmartScreen will warn), the App Spec
 format may still change, and the hardening below is a first pass — not a
 completed audit.
@@ -62,19 +62,66 @@ telemetry**. The only outbound traffic goes to services you already use:
   Execute Queries REST API, issued from the **main process** (never the renderer).
 - Nothing else is sent anywhere.
 
-## adm-zip — accepted advisory (conditional)
+## Dependency audit checkpoint (Round 3, 2026-11-03)
 
-`adm-zip` is pinned at 0.5.x. A high-severity advisory —
-[GHSA-xcpc-8h2w-3j85](https://github.com/advisories/GHSA-xcpc-8h2w-3j85): a
-**crafted ZIP file triggers a ~4GB memory allocation** (a memory-exhaustion
-denial of service) — is fixed only in the breaking 0.6.0. We accept the pin
-because the exploit is **not reachable** in this app: adm-zip only ever parses
-our **own bundled `.pbiviz`** files (shipped read-only, read into memory) — it
-never parses a **user-supplied, downloaded, or imported** archive, so an attacker
-never controls the ZIP it reads.
+The previous conditional acceptance of adm-zip 0.5.x is retired: the app now
+uses **adm-zip 0.6.1**. Electron is **45.2.2**, electron-builder **26.18.0**,
+Vitest **5.1.0**, Vite **8.3.5**, and UI/native ECharts **6.1.0**.
+Build and runtime acceptance are recorded separately in the QA work log;
+installing a patched dependency is not proof that the app still works.
 
-**This acceptance is conditional and load-bearing.** If adm-zip is ever passed a
-**user-supplied, downloaded, or imported** archive, this reasoning **no longer
-holds**, and upgrading to **adm-zip ≥ 0.6.0 becomes mandatory**. The three call
-sites in `electron/ipc/powerbi.js` carry a comment pointing to this note so the
-constraint is tripped if the input source ever changes.
+Fresh `npm audit --json` results for the installed lockfiles:
+
+| Tree | Critical | High | Moderate | Low |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop root | 0 | 0 | 15 | 0 |
+| UI | 0 | 0 | 0 | 0 |
+| Native visual tooling | 0 | 0 | 16 | 4 |
+| MCP | 0 | 0 | 0 | 0 |
+
+The root's remaining moderate chain originates in **minimatch**
+([globparts amplification](https://github.com/advisories/GHSA-g3hv-75wg-m249))
+through electron-builder's build tools. npm proposes a downgrade to builder
+20.23.1, rather than a compatible upgrade; it is not applied. Run builds only
+against the controlled repository and do not accept untrusted glob patterns.
+This is a development/build dependency exposure, not a reason to claim an
+entire distribution has no vulnerabilities.
+
+Native build tooling retains these advisory origins and their dependent chains:
+
+- **minimatch**: globparts amplification, as above. Controlled build inputs;
+  do not expose the packaging tool to arbitrary user globs.
+- **ajv**: [ReDoS with `$data`](https://github.com/advisories/GHSA-2g4f-4pwh-qvx6).
+  Do not enable `$data` for attacker-provided schemas. Report specs use the
+  shipped validation grammar, not arbitrary caller schemas.
+- **qs**: comma/array parsing and stringify denial-of-service advisories
+  (including [GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26)).
+  Keep the pbiviz development server private/local and do not expose it to
+  untrusted requests. A compatible patch is still being evaluated.
+- **uuid**: [buffer bounds checking](https://github.com/advisories/GHSA-w5hq-g745-h8pq).
+  No caller-provided output buffer is accepted by our visual runtime.
+- **elliptic** (low): [risky primitive](https://github.com/advisories/GHSA-848j-6mx2-7j84).
+  This toolchain is not used to implement product authentication or signing.
+
+For the non-qs native chains npm currently proposes powerbi-visuals-tools 7.2.1,
+a breaking toolchain change. This has not been silently forced. These
+mitigations reduce exposure; they do not fix the advisory. Re-audit at release,
+and replace these counts if lockfiles or the advisory database change.
+Private machine audit snapshots: `cache/round3-{root,ui,native,mcp}-audit-current.json`.
+
+## MCP data boundary
+
+The MCP itself makes no LLM calls and requires no LLM API key. It queries the
+connected model with the configured identity and returns metadata, query
+results and rendered images to the calling MCP client. That client may be a
+cloud-backed agent; its data handling is a separate trust boundary. Review
+which model and report you expose to it. Query-scoped measures do not write
+model definitions. Model-enforced permissions and RLS depend on the connecting
+identity, including the different privileges of a service principal.
+
+Committed bindings refer to model fields. Arbitrary author-supplied JSON can
+still contain literal text, constants or data, so a blanket claim that every
+possible spec contains no embedded information would be incorrect. Native
+report permissions, labels and refresh are owned by Power BI; the MCP does
+not create or modify their policy. Report connection strings are parsed for
+targets only: embedded passwords and impersonation properties are not used.

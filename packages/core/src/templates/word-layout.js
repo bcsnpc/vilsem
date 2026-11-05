@@ -32,7 +32,7 @@ export function deriveWords(d,get,n) {
    if(!collides){placement={x,y};break}
   }
   if(!placement)throw Error(`words cannot place ${ranked.length} terms without overlap; reduce limit/font size or increase explicit plot dimensions`)
-  data.push({id:term.name,name:term.name,value:[placement.x,placement.y,term.weight],rowIndexes:term.rowIndexes,bounds:{width:w,height:h},symbolSize:1,itemStyle:{opacity:0},label:{show:true,opacity:1,position:'inside',fontFamily:'Segoe UI',fontSize:font,color:'#e2e8f0'}})
+  data.push({id:term.name,name:term.name,value:[placement.x,placement.y,term.weight],rowIndexes:term.rowIndexes,bounds:{width:w,height:h},symbolSize:1,itemStyle:{opacity:0},label:{show:true,opacity:1,position:'inside',fontFamily:'Segoe UI',fontSize:font}})
  }
  return {data,width,height,count:data.length,omittedCount:Math.max(0,terms.size-data.length)}
 }

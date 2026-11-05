@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_07",
+  "visualName": "stress2_025_bullet-bands-delta",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "d1909fd7012a9ccbd6fa1c12eb6a530e408e4c5d1f52a4e7b9348174b530847d",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "85e13c2be160d4823b1fb38d7bb244974b4cde907c6701eaa32b9fdec2b66876",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

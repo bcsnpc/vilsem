@@ -5,7 +5,7 @@ export function isPrimitiveCovered(visualType) {
   return PRIMITIVE_COVERED_TYPES.has(visualType)
 }
 
-export function buildPrimitiveSpec(visual, canvasTheme = 'dark') {
+export function buildPrimitiveSpec(visual, canvasTheme) {
   const config = { ...(visual?.config || {}) }
   // Strip web-only runtime keys
   for (const k of Object.keys(config)) {
@@ -30,7 +30,7 @@ export function buildPrimitiveSpec(visual, canvasTheme = 'dark') {
     // Phase 5.3: carry the canvas theme so the .pbiviz uses the same dark/light
     // tokens as Semantica without relying on host.colorPalette inference (which
     // doesn't always reflect Semantica's actual canvas in PBI Service).
-    canvasTheme: canvasTheme === 'light' ? 'light' : 'dark',
+    ...(['light', 'dark'].includes(canvasTheme) ? { canvasTheme } : {}),
     config,
     ...(drill && drill.length >= 2 ? { drill } : {}),
     measures: {

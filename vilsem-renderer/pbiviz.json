@@ -4,7 +4,7 @@
     "displayName": "vilsem Renderer",
     "guid": "semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D",
     "visualClassName": "Visual",
-    "version": "4.31.0.0",
+    "version": "4.34.0.0",
     "description": "Render Vilsem visual specifications in Power BI with shared ECharts compositions and native report interactions.",
     "supportUrl": "https://github.com/bcsnpc/vilsem/issues",
     "gitHubUrl": "https://github.com/bcsnpc/vilsem"

@@ -1,5 +1,7 @@
 import { prepareVisualRows, rowsFromCategorical } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
+import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
 import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
 /*
  * vilsem Renderer — Power BI custom visual
@@ -418,12 +420,18 @@ export class Visual implements IVisual {
       this.renderEmpty("No data matches the current filters")
       return
     }
-    const themeMode     = ((spec as any).canvasTheme === "light") ? "light" : "dark"
+    const appearance = (dv?.metadata?.objects as any)?.appearance || {}
+    ;(this as any).formattingAppearance = appearance
+    ;(this as any).formattingCanvasTheme = spec.canvasTheme
+    const measureMetadata = (dv?.categorical?.values || []).map(column => ({ name: column.source?.displayName || column.source?.queryName || '', formatString: column.source?.format }))
+    const themeContext = { theme: reportThemeFromHost(this.host), useReportTheme: appearance.useReportTheme, locale: this.host.locale, measures: measureMetadata }
+    const reportTheme = resolveReportTheme(spec, themeContext)
+    const themeMode     = reportTheme.mode
     const isDark        = themeMode === "dark"
-    const theme         = isDark ? DARK_THEME : LIGHT_THEME
-    const cardStyle     = String(config.cardStyle || "tile")
+    const theme         = { ...(isDark ? DARK_THEME : LIGHT_THEME), ...reportTheme.tokens }
+    const cardStyle     = String(config.cardStyle || "plain")
     const isPlain       = cardStyle === "plain" || ["shape", "divider"].includes(visualType)
-    const colorVal      = colorValFor(config.colorScheme)
+    const colorVal      = config.colorScheme ? colorValFor(config.colorScheme) : reportTheme.palette[0]
     const showAccent    = config.showAccentStrip !== false
     const titleText     = String(config.title || config.label || "")
     const hasTitle      = titleText.length > 0 && config.showTitle !== false
@@ -441,6 +449,7 @@ export class Visual implements IVisual {
       // getCardChromeStyle. getThemeTokens supplies the full token set it reads.
       const fullT = getThemeTokens(themeMode)
       const chrome = getCardChromeStyle({ config, colorVal, T: fullT, isKpi: false })
+      chrome.background = 'transparent'
       Object.assign(card.style, {
         position: "absolute", inset: "0",
         overflow: "hidden", display: "flex", flexDirection: "column", boxSizing: "border-box",
@@ -452,6 +461,13 @@ export class Visual implements IVisual {
       card.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;box-sizing:border-box"
     }
     this.root.appendChild(card)
+    const background = appearance.backgroundColor?.solid?.color
+    const requestedTransparency = Number(appearance.transparency ?? 100)
+    const transparency = Number.isFinite(requestedTransparency) ? Math.min(100, Math.max(0, requestedTransparency)) : 100
+    if (typeof background === 'string' && /^#[\da-f]{6}$/i.test(background)) {
+      const rgb = [1, 3, 5].map(i => parseInt(background.slice(i, i + 2), 16))
+      card.style.background = `rgba(${rgb.join(',')},${1 - transparency / 100})`
+    }
 
     // Left accent strip — full-card height, 3px wide, gradient. Skipped on plain.
     if (!isPlain && showAccent) {
@@ -568,17 +584,16 @@ export class Visual implements IVisual {
     if (!(spec as any).template && ['waffle', 'bullet', 'progress', 'stat_card', 'metric_tile', 'funnel', 'waterfall', 'heatmap', 'ranked_list', 'chord', 'sankey', 'sunburst', 'narrative', 'insight', 'shape', 'divider'].includes(visualType)) {
       this.domVisual = mountPowerBIDomVisual(chartRoot, visualType, rows, {
         // AppSpecRenderer owns chart titles and removes them from component config.
-        ...config, title: undefined, label: undefined, _T: getThemeTokens(themeMode),
+        ...config, title: undefined, label: undefined, _T: theme,
       })
       return
     }
 
-    // Compose option via the primitives runtime. Theme already resolved above
-    // from spec.canvasTheme — Semantica's actual canvas theme rather than PBI's
-    // host.colorPalette inference (which often disagrees in PBI Service).
+    // Compose through shared core using the current host/report theme. Pane
+    // overrides and explicit spec themes have already been resolved above.
     let option: any
     try {
-      option = ((spec as any).template ? resolveVisualSpec(spec, rows) : composeOption(visualType, rows, config, theme))
+      option = ((spec as any).template ? resolveVisualSpec(spec, rows, themeContext) : applyModelFormats(applyReportTheme(composeOption(visualType, rows, { ...config, colorScheme: config.colorScheme || reportTheme.palette[0] }, theme), reportTheme, { palette: !config.colorScheme && !config.sectionColors }), spec, measureMetadata, {locale:this.host.locale,rows,width:chartRoot.clientWidth,measureText:(text,font)=>echarts.format.getTextRect(text,font).width}))
     } catch (err) {
       // Composition errors shouldn't bring down the visual — render a small
       // diagnostic so it's obvious in PBI Service which visual went wrong.
@@ -601,7 +616,11 @@ export class Visual implements IVisual {
     // - textStyle.fontFamily: same stack as the web canvas (Inter primary).
     //   ECharts' default sans-serif looks visibly different, esp. for axis
     //   labels and tooltip text.
-    option.backgroundColor = (spec as any).template ? (option.backgroundColor ?? "transparent") : "transparent"
+    option.backgroundColor ??= "transparent"
+    if (typeof background === 'string' && /^#[\da-f]{6}$/i.test(background)) {
+      option.backgroundColor = card.style.background
+      card.style.background = 'transparent'
+    }
     option.textStyle = {
       fontFamily: "Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
       ...(option.textStyle || {}),
@@ -778,8 +797,24 @@ export class Visual implements IVisual {
           const event = params?.event?.event
           const series=this.lastOption?.series?.[params?.seriesIndex ?? 0]
           const radar=series?.type==='radar' ? (Array.isArray(this.lastOption?.radar)?this.lastOption.radar[series.radarIndex ?? 0]:this.lastOption?.radar) : null
-          const boundFields=series?.type==='heatmap' ? [...(cat?.categories || []),...(cat?.values || [])].map(column=>({name:column.source?.displayName || column.source?.queryName || 'Value',value:column.values[index],isDate:column.source?.type?.dateTime===true})) : undefined
-          const dataItems = this.templateRowSources !== null ? nativeTemplateTooltipItems(params,this.lastOption?.tooltip?.formatter,radar?.indicator,boundFields) : (cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: String(column.values[index] ?? "(Blank)") }))
+          const modelFormatter = series?.tooltip?.valueFormatter
+          const boundFields=series?.type==='heatmap' && modelFormatter?.vilsemDirectBinding!==false ? [...(cat?.categories || []),...(cat?.values || [])].map(column=>({name:column.source?.displayName || column.source?.queryName || 'Value',value:column.values[index],isDate:column.source?.type?.dateTime===true,format:scopedMeasureFormat(spec,column.source?.displayName) ?? column.source?.format,locale:this.host.locale})) : undefined
+          const seriesFormatter = series?.tooltip?.formatter || (typeof series?.tooltip?.valueFormatter==='function' ? p=>series.tooltip.valueFormatter(Array.isArray(p?.value)?p.value[series.tooltip.valueFormatter.vilsemValueIndex ?? p.value.length-1]:p?.value) : this.lastOption?.tooltip?.formatter)
+          const categoryItems = modelFormatter?.vilsemDirectBinding===false
+            ? [{displayName:'Group',value:String(params?.data?.label ?? params?.name ?? params?.seriesName ?? 'Value')}]
+            : (cat?.categories || []).map(column => ({ displayName: column.source?.displayName || 'Category', value: column.values[index] == null ? '(Blank)' : String(column.values[index]) }))
+          const modelItems=Array.isArray(params?.value) && Array.isArray(modelFormatter?.vilsemTupleFields)
+            ? modelFormatter.vilsemTupleFields.flatMap((field,index)=>field?[{displayName:field.name,value:field.format(params.value[index])}]:[])
+            : modelFormatter?.vilsemMeasureName && !Array.isArray(params?.value) ? [{displayName:modelFormatter.vilsemMeasureName,value:modelFormatter(params?.value)}] : []
+          const dataItems = this.templateRowSources !== null
+            ? (radar && modelFormatter && !series?.tooltip?.formatter && !this.lastOption?.tooltip?.formatter
+              ? nativeTemplateTooltipItems(params,undefined,radar.indicator,undefined,modelFormatter)
+              : boundFields && !series?.tooltip?.formatter && !this.lastOption?.tooltip?.formatter
+              ? nativeTemplateTooltipItems(params,undefined,undefined,boundFields)
+              : !series?.tooltip?.formatter && modelItems.length
+              ? [...categoryItems, ...modelItems]
+              : nativeTemplateTooltipItems(params,seriesFormatter,radar?.indicator,boundFields))
+            : [...categoryItems, ...(cat?.values || []).map(column => ({ displayName: column.source?.displayName || "Value", value: createModelFormatter(scopedMeasureFormat(spec,column.source?.displayName) ?? column.source?.format,{locale:this.host.locale})(column.values[index]) }))]
           tooltip.show({ coordinates: [event?.clientX || 0, event?.clientY || 0], isTouchEvent: false, identities: indexes.map(i=>selectionIds[i]).filter(Boolean), dataItems })
         }
         this.chart.on("mouseover", showTooltip)
@@ -873,8 +908,12 @@ export class Visual implements IVisual {
     selectionIds.forEach((selId, i) => {
       if (selected.some((s) => s.equals(selId))) selectedSet.add(i)
     })
+    // A bookmark/local selection may reference rows removed by a slicer or
+    // rebound field. Keep the host's selection, but do not dim the entire new
+    // result when no current identity matches it.
+    const hasVisibleSelection = selectedSet.size > 0
     if (this.highlightIndexes !== null) {
-      if (!selected.length) this.highlightIndexes.forEach(index => selectedSet.add(index))
+      if (!hasVisibleSelection) this.highlightIndexes.forEach(index => selectedSet.add(index))
       else selectedSet.forEach(index => { if (!this.highlightIndexes!.has(index)) selectedSet.delete(index) })
     }
     if (selectedSet.size === 0 && this.highlightIndexes === null) {
@@ -2002,7 +2041,15 @@ export class Visual implements IVisual {
   }
 
   public getFormattingModel(): powerbi.visuals.FormattingModel {
-    return { cards: [] }
+    const appearance = (this as any).formattingAppearance || {}
+    const descriptor = propertyName => ({ objectName: 'appearance', propertyName })
+    const slice = (name, displayName, type, value) => ({ uid: `appearance-${name}`, displayName,
+      control: { type, properties: { descriptor: descriptor(name), value } } })
+    return { cards: [{ uid: 'vilsem-appearance', displayName: 'Appearance', groups: [{ uid: 'vilsem-theme', displayName: 'Theme & background', slices: [
+      slice('useReportTheme', 'Use report theme', 'ToggleSwitch', appearance.useReportTheme ?? !['light','dark'].includes((this as any).formattingCanvasTheme)),
+      slice('backgroundColor', 'Background colour', 'ColorPicker', { value: appearance.backgroundColor?.solid?.color || '#ffffff' }),
+      slice('transparency', 'Transparency (%)', 'NumUpDown', appearance.transparency ?? 100),
+    ] }], revertToDefaultDescriptors: ['useReportTheme', 'backgroundColor', 'transparency'].map(descriptor) }] } as any
   }
 
   // ── Mode 1: KPI / HTML render ────────────────────────────────────────
@@ -2130,8 +2177,9 @@ export class Visual implements IVisual {
   // ── Helpers ──────────────────────────────────────────────────────────
 
   private renderEmpty(message = "Bind a measure to Content"): void {
+    const theme = resolveReportTheme({}, { theme: reportThemeFromHost(this.host) })
     // eslint-disable-next-line powerbi-visuals/no-inner-outer-html
-    this.root.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;font-size:11px;color:#94A3B8;background:#0B0B14;border:1px dashed rgba(148,163,184,0.25);border-radius:8px;text-align:center;"><div><div style="font-size:22px;margin-bottom:8px;">✦</div><div style="font-weight:600;color:#14B8A6;">vilsem Renderer</div><div>${this.escHtml(message)}</div></div></div>`
+    this.root.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:Segoe UI,sans-serif;font-size:11px;color:${theme.foreground};background:transparent;border:1px dashed rgba(148,163,184,0.25);border-radius:8px;text-align:center;"><div><div style="font-size:22px;margin-bottom:8px;">✦</div><div style="font-weight:600;color:${theme.palette[0]};">vilsem Renderer</div><div>${this.escHtml(message)}</div></div></div>`
   }
 
   private formatNumber(n: number): string {

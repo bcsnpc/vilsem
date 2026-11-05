@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_01",
+  "visualName": "stress2_001_step-line",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "07261683cf5940d3b4ad45f9800598e5ccec11cae19d806f7edbaca6a05ea894",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "856c15263409d7f27cb0d799397638a614e34d30ab8c0b5506a30a61d480ae7e",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

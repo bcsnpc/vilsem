@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_09",
+  "visualName": "stress2_034_revenue-ohlc",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "f2514901b77cf7ec70d8297a893a0b591dc53ed78a5694e966d490326fbf3439",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "c4fffddef605238e667c59ca185e6d0ff3c1b5f1d8d574d276fddcd03e481d07",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

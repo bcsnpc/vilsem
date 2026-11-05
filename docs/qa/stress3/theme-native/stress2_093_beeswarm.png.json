@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_23",
+  "visualName": "stress2_093_beeswarm",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "33b66aed95479d02221953dcebeab08bc0306802febb7844a3c1e94c39ade53b",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "20ad972bfcdc4f55965b56abc4d65b757cde1e9710906e66dade06f9e170ad77",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

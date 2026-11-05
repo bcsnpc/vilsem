@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_27",
+  "visualName": "stress2_110_radial-histogram",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "0bcd316788ad6eaca595c31e32d1bc4610a768e7266a70e652e0fcd872b5b914",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "3bbd9a20685c33ec9766622d97b1dbe848e1076e1eb4af51c403658e0df7f7fd",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

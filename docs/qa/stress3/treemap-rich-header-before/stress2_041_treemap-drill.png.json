@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_treemap_contrast",
+  "visualName": "stress2_041_treemap-drill",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "522c43664b297efe2046d3a5c7f33de47ab0b0d0e85ba00a0d2c5b6e2bc12f7d",
+  "visualSha256": "df434e493ba63d488830038a497c017e615ea47f7ed262aeb8c3d730b63b8446",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "f544942d35d5abd4992de179a5d533afc1c7da6ea0837c755f37980dd3661b94",
+  "status": "Captured; visual inspection pending"
+}

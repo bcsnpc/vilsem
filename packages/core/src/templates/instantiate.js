@@ -22,6 +22,8 @@
 
 import { pal, MULTI_COLORS } from '../shared/palettes.js'
 import { derive, validateTransforms, BLOCKED } from './transforms.js'
+import { contrastingText } from '../shared/colourContrast.js'
+import { createModelFormatter } from '../shared/modelFormatting.js'
 
 // ── numeric formatting (deterministic, no Intl dependency) ──────────────────
 function fmtThousands(v) {
@@ -292,7 +294,7 @@ export function resolveToken(token, ctx) {
 // ── whitelist formatter DSL → real function (built in OUR code, no eval) ─────
 export function makeFormatter(tpl,emptyText='') {
   const template = String(tpl)
-  return function formatter(p) {
+  const formatter = function formatter(p, modelFormatter) {
     return template.replace(/\{([^}]+)\}/g, (_, expr) => {
       const [rawKey, fmt] = expr.split(':')
       // Accept ECharts' native placeholders as aliases — models reach for them
@@ -309,6 +311,12 @@ export function makeFormatter(tpl,emptyText='') {
         const v = Array.isArray(raw) ? raw[indexed ? Number(indexed[2]) : raw.length - 1] : indexed ? null : raw
         if(v==null || v==='' || (typeof v==='number'&&!Number.isFinite(v)))return emptyText
         if (fmt === 'date') { const ms=typeof v==='number'?v:Date.parse(String(v??''));return Number.isFinite(ms)?new Date(ms).toISOString().slice(0,10):'' }
+        if(typeof modelFormatter==='function') {
+          const component=Array.isArray(raw)?(indexed?Number(indexed[2]):raw.length-1):undefined
+          const tupleFormatter=component==null?null:modelFormatter.vilsemTupleFormatters?.[component]
+          if(typeof tupleFormatter==='function')return tupleFormatter(v)
+          if(!Array.isArray(raw) || component===(modelFormatter.vilsemValueIndex ?? raw.length-1))return modelFormatter(v)
+        }
         if (fmt === 'thousands') return fmtThousands(v)
         if (fmt === 'percent') return fmtPercent(v)
         return v == null ? '' : String(v)
@@ -316,26 +324,29 @@ export function makeFormatter(tpl,emptyText='') {
       return `{${expr}}` // unknown key → leave literal (never eval)
     })
   }
+  formatter.vilsemFormatter=true
+  return formatter
 }
 
 // Power BI host tooltips do not consume ECharts' formatter automatically.
 // Reuse only the formatter resolved by trusted core, retaining host identities
 // at the caller. Never stringify tuples as unlabelled raw decimal arrays.
-export function nativeTemplateTooltipItems(params, formatter, tupleLabels, boundFields) {
+export function nativeTemplateTooltipItems(params, formatter, tupleLabels, boundFields, modelFormatter) {
   if(typeof formatter==='function') {
     const formatted=formatter(params)
     if(formatted!=null && typeof formatted!=='object')return [{displayName:'Details',value:String(formatted)}]
   }
   const raw=params?.value ?? params?.data?.value
-  const show=value=>value==null?'(Blank)':typeof value==='number'?fmtThousands(value):String(value)
+  const show=value=>value==null?'(Blank)':typeof value==='number'?(modelFormatter?modelFormatter(value):fmtThousands(value)):String(value)
   if(Array.isArray(raw) && Array.isArray(tupleLabels)) {
     const items=raw.slice(0,50).map((value,index)=>({displayName:`${params?.name || params?.seriesName || 'Value'}: ${tupleLabels[index]?.name ?? tupleLabels[index] ?? `Indicator ${index+1}`}`,value:show(value)}))
     if(raw.length>50)items.push({displayName:'Additional indicators',value:`${raw.length-50} omitted`})
     return items
   }
   if(Array.isArray(boundFields))return boundFields.map(field=>{
-    let value=show(field.value)
-    if(field.value!=null && (field.isDate || Object.prototype.toString.call(field.value)==='[object Date]')) {
+    const hasFormat=Object.hasOwn(field,'format')
+    let value=hasFormat?createModelFormatter(field.format,{locale:field.locale})(field.value):show(field.value)
+    if(!field.format && field.value!=null && (field.isDate || Object.prototype.toString.call(field.value)==='[object Date]')) {
       const date=new Date(field.value)
       if(Number.isFinite(date.getTime()))value=date.toISOString().slice(0,10)
     }
@@ -402,6 +413,7 @@ export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteO
   const palette = override.length ? override : base
   return {
     palette,
+    paletteText: palette.map(colour=>contrastingText(colour,tokens.textPrimary || '#252423')),
     accent: palette[0] || p.start,
     // Font is customizable per-instance (the inspector's Text tab writes it); the
     // template consumes it via $theme.font. Falls back to the app's default stack.
@@ -416,7 +428,22 @@ export function buildThemeContext(tokens = {}, colorScheme, fontFamily, paletteO
 }
 
 // ── the pure entry point ─────────────────────────────────────────────────────
-// { template, rows, params, theme } → { option, warnings }
+// Expand only series provenance, using the same bounded repeat/concat sources.
+// This carries unit information to the formatter adapter without adding private
+// metadata to ECharts options or reinterpreting caller calculations.
+function seriesSources(node,ctx,parentRepeat) {
+  if(Array.isArray(node))return node.flatMap(item=>seriesSources(item,ctx,parentRepeat))
+  if(!node || typeof node!=='object')return []
+  if(Array.isArray(node.concat))return node.concat.flatMap(item=>seriesSources(item,ctx,parentRepeat))
+  if(Object.hasOwn(node,'repeat')) {
+    const source=typeof node.repeat==='string'?resolveToken(node.repeat,ctx):node.repeat
+    if(!Array.isArray(source))return []
+    return source.flatMap(item=>seriesSources(node.template,{...ctx,item},node.repeat))
+  }
+  return [{data:node.data,repeat:parentRepeat,dataRepeat:node.data?.repeat}]
+}
+
+// { template, rows, params, theme } → { option, warnings, seriesSources }
 export function instantiateVisual({ template, rows = [], params = {}, theme } = {}) {
   const warnings = []
   const errors=validateTemplate(template).errors
@@ -440,7 +467,8 @@ export function instantiateVisual({ template, rows = [], params = {}, theme } = 
       return points.every(point=>point && !['xAxis','yAxis'].some(key=>Object.hasOwn(point,key)&&point[key]==null) && (!Array.isArray(point.coord)||point.coord.every(v=>v!=null)))
     })}
   }
-  return { option, warnings }
+  const sources=seriesSources(template?.template?.series,ctx)
+  return { option, warnings, seriesSources: sources.length===(option.series?.length || 0)?sources:[] }
 }
 
 // ── map a template's params → the inspector's schema-field shape ────────────

@@ -1,0 +1,3249 @@
+[
+  {
+    "path": "docs/qa/evidence/axis-number-line-after.png",
+    "sha256Before": "749fa864071eaa695f10cd29c5fe641123d88289748f8073285874b8cbdf5b2f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/axis-number-service-before.png",
+    "sha256Before": "f7161f4071e5004865d2118296976b54f458970010419d7ea72591e1a9930f1d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/cycle-1-desktop.png",
+    "sha256Before": "611fdc6f4e29ba736fcec28b0f0874234048b4ad9970859b303f875458f4e241",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/cycle-1-reopened.png",
+    "sha256Before": "95424bb36ae89a7264bcc3ba6ea4d57da4aa9575d8e8208934e53faa18b45062",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/cycle-2-signed-stacks.png",
+    "sha256Before": "11dc83a692f14258c1224cc36251b1d4d99a0d5753d7f2c35cb75bb6699748f0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/cycles-browser-start.png",
+    "sha256Before": "4ee668dfdd1163c41e45f722db735c94e095838691e1978873a4f9f2c55e67e3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/desktop-service-principal.png",
+    "sha256Before": "349900200bf093ce1d3f90caab1e7ab7c129cffc6264641fef6ba98b48ee62f8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/desktop-startup.png",
+    "sha256Before": "1d685f48ef198fc3e33567348e440e70830e94b9701332b39603d8455e8d4855",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-area-secondary-axis.png",
+    "sha256Before": "f10bc0fe0d7b5c2e7b3c7fc3cb0207207f2de2746cf786cd1b004423b1d65b5f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-dialog.png",
+    "sha256Before": "b3aff408d598fc9731ba2544f89ff2a157f699b3d98d45d72cfbaefb66806314",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-line-secondary-axis.png",
+    "sha256Before": "47b90a326d0c31112caab79bb137cb04eef225f0a650ff15abc0f63d61276d2c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-1-6-bottom.png",
+    "sha256Before": "86caee10d3b83ce53c1a3eeca619af17bc3e4ffd8da6c46b78c692b0ee3d1357",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-1-6.png",
+    "sha256Before": "e354d166dacb7e3be4c3eec2429547526788d9a128a71b0f6cee344311b93b17",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-13-18-bottom.png",
+    "sha256Before": "e1b4fb7dc813c8d847b86740faea87dafcd470c366173cd1af89c94a35c72c1a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-13-18.png",
+    "sha256Before": "7b6104aab59f176cb128cff47c6786e26de3d7883f64ebf24af5e2ee709bf443",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-19-24-bottom.png",
+    "sha256Before": "66e8530d5fb3b0b8ab82d8ac6505c7809ed89623d1a3164838bd6d83ae6d64a9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-19-24.png",
+    "sha256Before": "88db9341c5ab59af8c885ca9693b7ebb4a0b9cae51ffbb53f78e2aefcbb55228",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-25-30-bottom.png",
+    "sha256Before": "f4dbd03d1403e14cbbe4c82033ff8172d400d9388b29712fafdf94b7de539262",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-25-30.png",
+    "sha256Before": "4b5e26824f70aca6aee6110265a8282f6d6c161d1bce03de17ba58fca667f2f0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-31-36-bottom.png",
+    "sha256Before": "f1c88d5f13d18539ebc6dd2403c3dee06acb9d799389ba449e3f30601bf3ad9f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-31-36.png",
+    "sha256Before": "a8d1546bc7d1e9b5dfb1d649e8a712b10230397ac7c28f5570cbe0c0b3e8c817",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-37-41-bottom.png",
+    "sha256Before": "2f48e5c7ecdc43e410061f56272b4b250c75b0fafcc89db17dd095fae6dcf177",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-37-41.png",
+    "sha256Before": "7a89514860daee7d60c98afded960af41b5eb8b6a9cb386a560211decd743cc2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-7-12-bottom.png",
+    "sha256Before": "e8c0336a420c794336760dc33c2fae53ed5412d9c5f5d61e77b27b0c49e41b0d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-live-visuals-7-12.png",
+    "sha256Before": "f5cc2a2ef2764001240a91056ad12e888b396398624e64fc5d2269c8cb51c945",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-theme-dark.png",
+    "sha256Before": "f5cc2a2ef2764001240a91056ad12e888b396398624e64fc5d2269c8cb51c945",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-theme-light-before-pie-bounds.png",
+    "sha256Before": "d4873b3ffdf69ab72de84932bfaaac66bcb16c535f0bbf967f7842103a13a8f1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/fabric-theme-light.png",
+    "sha256Before": "5d330bc62ea704c91f543a9d67be90e2ba9d1d5edb80483c280651410ea87fe0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-all-page1.png",
+    "sha256Before": "c6466bbe088dc0576f73468c06d63fdab091bf920d4ecb702b3ce66e5ae65425",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-all-page2.png",
+    "sha256Before": "6a26a6f67f87e20dbbf61464c2c9139fa2768d407489f56de70bf4205137d22d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-all-page3.png",
+    "sha256Before": "5a1dd391d8eca112973b4678a26437ff0fee21d55fcbd3b9894c1522471ab81b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-all-page4.png",
+    "sha256Before": "4eabf368a5d7cffb9ad156695e2ea8d37e297def4553e3bc8fde4cab9a41cfcc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-all-reopened.png",
+    "sha256Before": "0c4268f17169d332d4bdc291415e5d60bf38dfeb3e4115912f569673f29de520",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-dom-cards-desktop.png",
+    "sha256Before": "1b0915232f5e9bfc6efba7947816bbb9e4afe4f15ed945091f8c0a80dd8cbcf3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-export-ui-desktop.png",
+    "sha256Before": "1fe32ed2ebeb7911d858a22e464ddbf9123d45c452b4a6994508f13751198593",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-native-treemap-selection.png",
+    "sha256Before": "da97094d68ff11c0e153c1d9581d18ee9fee6ea4fbf651824e6d483468563b4a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-pbir-dark-theme.png",
+    "sha256Before": "6924bc5d34783bd8b16bc41288d002380c101faeeb65089838f7e1d6aa700905",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-pbir-desktop-fresh.png",
+    "sha256Before": "87b538c4920ddd8e69bd598758bbca0c97ba05462382a980aa9f635742c3a50d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-pbir-desktop.png",
+    "sha256Before": "8313da18ff90f7ceb5a164ad0e24602763e322560ffa7804cb3646bfdd4c9c93",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-pbir-full-page.png",
+    "sha256Before": "608754575b6f6cdf66deb5680044a7474c5f650856bdb5635511c30e15618a37",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-pbir-resource-fix.png",
+    "sha256Before": "13a4b78d2b716c3a5cade6f518793ab17480c72a21583970270f877f2f5835f8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-report-canvas.png",
+    "sha256Before": "9aef9ea3764cab5ce2147167e4ba01d13e60ea9e14e04d057ab0ee0c48ba6cc8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-secondary-desktop-cleared.png",
+    "sha256Before": "4609457e6761a069906dd8e80fbb496e9d63b3faf4d6749b924191edfc1a214d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-secondary-desktop-latest.png",
+    "sha256Before": "cb93c4b7d57cb6b1d5543aaae3fc2f4ae6846b1508ae0b2f13105b94663fe411",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-secondary-desktop-render.png",
+    "sha256Before": "cd5135f6b1c7c43e814e5f1fd3e9b538fdfd5977e06f789f57dd8acf2a64ffe7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-secondary-desktop-selected.png",
+    "sha256Before": "8e724d187d3e24332ec92e9eaacf60553c57f43bfec2a7447f3bc774515617da",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-secondary-desktop-window.png",
+    "sha256Before": "a02f0eafd35282f0df3d56e1722133942ce83cba0661f01bf2bbec28e01c44b3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-selection-page3.png",
+    "sha256Before": "6f98cf94f3a8279176030840355a2e0e6df6f9a0016ee62391dbf3b9cd38d8bd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/local-waffle-desktop.png",
+    "sha256Before": "d1e2e430ed9987025db0077338cd3052ac0b3da2a473207f1d6ee34abeca80e6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/powerbi-table.png",
+    "sha256Before": "1558fde165b1c1e4fdf19140b0dc7d8ce9a0ef697f56d0e07d4e0c4301801ec8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/race-controls-narrow.png",
+    "sha256Before": "18f8f540138d217239753abd4a9510cee413af242120633da0ff5e357053df2a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/renderers-empty.png",
+    "sha256Before": "623de3ded0ed2be9ce6672570b1609905ff6c4bd6f4faa34af1255001d6b76bc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/renderers-standard.png",
+    "sha256Before": "6d5b650abb860388f4a13f3a9f20bfdeed2db75a884ace9f19ac82be59178d11",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-160-scrolled.png",
+    "sha256Before": "ea58e6fc7e5500f0ebe3da580f7fe283f52f9ebd96573c027f055ff49b693f5f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-160.png",
+    "sha256Before": "ea58e6fc7e5500f0ebe3da580f7fe283f52f9ebd96573c027f055ff49b693f5f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-320-scrolled.png",
+    "sha256Before": "16614055949d876c13ded3957e204b923ba751f9be8d02dc5d999ca098f6f07a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-320.png",
+    "sha256Before": "46c9fdaea777ab4b5b26d3a79cff3b30976e70505902c4895a40d4927eae1657",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-640-scrolled.png",
+    "sha256Before": "11a8340701da2785f0bb7d9c847ff5c9b3dbf23ff38c363875fa918e0acee492",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-640.png",
+    "sha256Before": "4387fb6e15e44b454a285f6cffa79c85a0c84c5201c45daca12fd5af5dfce5bb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/secondary-axis-settings.png",
+    "sha256Before": "0d4934a9bcd440bd155d31912e70cf93e534863fe49e6243aaf105bbcaf328fa",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-dom-cards-empty.png",
+    "sha256Before": "824f75dfb10cc24f510efd2f7a04b30d85f2a583aabaf5e495a2b6f89a5ee58a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-dom-cards-one.png",
+    "sha256Before": "5cb3eb98587d767858ca2526ebf8635cc43450f5bf89b569d0ff2ee9729dd1a1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-dom-cards.png",
+    "sha256Before": "c9489ecbf3627f3f18bcb7c545f1c4881386ae4b29b57b2bd2388e46bed2e4fe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-dom-title-final.png",
+    "sha256Before": "0804a1488959a0b468e9b4dc100917f0b75e1095b3d9332bcd8b4a288de0cde6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-area-selection.png",
+    "sha256Before": "528329e31a33ad29a2956682b62884effbf3720da2b5b2cf15bd9267ed2d7dbf",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-area-tooltip.png",
+    "sha256Before": "6285d4f653e149e5cb5c50b2ba381ecaa4cf61410b66242a944121dab68b687b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-bar-selection.png",
+    "sha256Before": "9ce3deda93f7bd5ce9857c27d2a6a11a04dc48eed7d9591eec19b4d9dd4ccd52",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-bubble-selection.png",
+    "sha256Before": "c073f2661d6cc433306dc5074c93c15f639838dd3335d50e756536f485961885",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-bump-selection.png",
+    "sha256Before": "23033fd34b5103338aeca850fd10bf0bdbe90cc5bf52cdab03874e707d2cfeae",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-column-selection.png",
+    "sha256Before": "a0bed3787b5b2e77345c9a6617e5cb4da6c660e1665e54dfb83540e5f31247df",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-donut-selection.png",
+    "sha256Before": "ee4ee8e3be5fcc90dee8dc9a707915fd2f2956d4407739c523b4798363413622",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-grouped_bar-selection.png",
+    "sha256Before": "67fc546028c8e141c657174522cdda24e9bd2d7490de78387d2d500499b2b463",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-grouped_bar-tooltip.png",
+    "sha256Before": "8e8039adfddc134aaed4db0016163563b9013d19d8c95e4eea0c873478f11ff3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-line-selection.png",
+    "sha256Before": "3abf51ed9b7a9345f9ce549a365980efecc869ba332693f2b88f669d73be2e1b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-line-tooltip.png",
+    "sha256Before": "15cafdbc9d1aff9ada1ac2c5a51c69726e552f755a10c20f6b2cc16b597788ed",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-lollipop-selection.png",
+    "sha256Before": "26697eb1f8bd22baa87f273a92ed241b168e66ad35bbdad262e50f842a3308d8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-pie-selection.png",
+    "sha256Before": "c0a5a5e5b31312f90e3726c07d0c0fe895d6ac1907e2cc2592c86ba09f3bcd2d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-radar-selection.png",
+    "sha256Before": "a1453ecfdff54816cad4b7952acbcc36f2be11d99deed963013a23fc24db8c19",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-scatter-selection.png",
+    "sha256Before": "8f37496db7ca06abc3dea33b65cffc00047c44b415dc2a2a78b53281606addd1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-selection.png",
+    "sha256Before": "8ca85e130ec83814ab2a8863920e6e8a743d4d9e80d3a677acdd8cc320a4c93d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-slope-selection.png",
+    "sha256Before": "3fb0b37f9b6aec18180086cdb74dd952d78c729ac5273fe93d713a91fe8a8cd1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-stacked_area-selection.png",
+    "sha256Before": "21eeb74bae26d9dbe92a03e72561d61d16cd5ae28d329976c2f1185cef3a5895",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-stacked_bar-selection.png",
+    "sha256Before": "35c01773dcdde944bb3a6b859ee4b7f66b669d88888cbbeeaf49bf1851ac63ad",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-stacked_bar-tooltip.png",
+    "sha256Before": "d1ecd6cfc0c4d65b5f47a48dca2e6732f43032c860322103a7c5c54b417bbb3a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-treemap-selection-before.png",
+    "sha256Before": "82674f39cbba99673f52e9c0526b73ec97d4e7cee842a2023e52cb05fb3bed6f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-native-treemap-selection.png",
+    "sha256Before": "94f35d485928783a40f8babd94c2fbcd8af411fe92fad991c6cf8f7dbd0f8ace",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page1-empty.png",
+    "sha256Before": "a19c72fe506465ef42309ba12456586921c02eaa7ffd39ac3855242eef5855c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page1-one.png",
+    "sha256Before": "900c0d89fb307f055f51139d0b883f2e63435527ac68c78713a6d41c5348a464",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page1.png",
+    "sha256Before": "7e20e2a23ccd2708ceb1719fc56e2addca8348ef7cede10e7e7db03a6b0d3d09",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page2-empty.png",
+    "sha256Before": "b4e316be0db7242b298180f6f2c98fc562f74b99e45184cf19415f996d3d9328",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page2-one.png",
+    "sha256Before": "a3cf674132b036e17c59fea57902c1bfe5c2bdac1a68938196ec2556a2029d26",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page2.png",
+    "sha256Before": "7854e503f3838d56cf25108ffd5398f64b82772401bc8b5b7b62b96c78c5d388",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page3-empty.png",
+    "sha256Before": "14434b024b074415a8bdc2680edda17ff23f66f09725aa9dae4ecb2af3f6f029",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page3-one.png",
+    "sha256Before": "9ea1019acc7ff81d7588c35f20aa3b35cfd9ee08b28704180b6250f33376aaba",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page3.png",
+    "sha256Before": "8288b264e7d8da1179e81939b5b30052254b0a19892d9d0e72cb152824a3e602",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page4-empty.png",
+    "sha256Before": "162c2247dce13fab2e157d25dbfe563f63de9bc343be4987f378375962f0b8b6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page4-one.png",
+    "sha256Before": "0356ca410c9c14d4c0659a34a1ec9718c7fc465f5dadb927f0aa3bd1b8f13afc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page4.png",
+    "sha256Before": "8b25d44cc5d6cf025ece158b356d25818521af619fb83e6b1d256f00a1bb9942",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page5-empty.png",
+    "sha256Before": "18caae39a5b9b45fb8a7324e5e3a19c2f3912fcc253584d1a9de35c8cb94077a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page5-one.png",
+    "sha256Before": "9b6741420e82e2ec045152014c4e127d05bc782fff8c8570ca5cbb3ee23f0630",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page5.png",
+    "sha256Before": "0fec3f03ead5489d523128573d747d32fa409127c33495db69109c632c7894cc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page6-empty.png",
+    "sha256Before": "8900d10bffe20fa2e889f9d6b3909dc7d958d2f6d0155c75619467ee782cd745",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page6-one.png",
+    "sha256Before": "54df8cddd038f70ec4954631af2eab8b8e7e2e16471d1e84a1a78b0d56310bba",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-page6.png",
+    "sha256Before": "ffd6984b061b6a7e480e2c7af1778f1a09df05c0c73476b824ade4eaa67b569a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-scalar-cards.png",
+    "sha256Before": "0a6450d83ffbc1d1f2385db3eaa51f2935d6394ea5752aeed19129bbdf9f9dbb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-static-objects.png",
+    "sha256Before": "ffd6984b061b6a7e480e2c7af1778f1a09df05c0c73476b824ade4eaa67b569a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-table-interactions.png",
+    "sha256Before": "ce51fd953e7453e8769fe8dc1619b4d46350621e69b5944c76ecb58054150eef",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-waffle-empty.png",
+    "sha256Before": "75d7fa9eb9510d366c68e0e294349a078c793af783c632acf1c96985e6903e88",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-waffle-one.png",
+    "sha256Before": "fef36cf30c2aa2440b3dc611164b89b615aa624d3b8ec50f4a2a11a776b58dde",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/service-waffle.png",
+    "sha256Before": "a0ca5b854c8fed5027cc4a8ad150af1f084c413883b12221a7efaf306ac36883",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/shell-ux-modal.png",
+    "sha256Before": "9ae27114c0462f1c31fc9ac93bcc40d0e734f03844378c5fbb7fd90741ceeced",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/text-box-large-font-scroll.png",
+    "sha256Before": "c296c545d8e0eba60095e5156f769a9f824d3994ca957ab118992fad20bed5b3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-editor-1.png",
+    "sha256Before": "f196e8abd7089a25a8f153e47ea0599a447a4a75163dd81ef57cd89cb9bb8309",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-editor-2.png",
+    "sha256Before": "b83b1e1791a3d299ad4b5a9da6b1373ab36cb28e7a4b4d11a3576df6fd6e491a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-editor-3.png",
+    "sha256Before": "a3475c47d6e55a28bfd7536d2352a291e47c5ff1a6902d198c03e5b0b97f5a96",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-editor-4.png",
+    "sha256Before": "fb12ee45ebe1d05b8fd9fe941c30e315e9208d4887ca60a66785d2cee4c01890",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-editor-5.png",
+    "sha256Before": "1f29bd1845887325e999061d6538e0a36076050c2eb17bda6a1695353c00fd5f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-viewer-1.png",
+    "sha256Before": "c8f23dfb65f0551b0856bf3d43ac5650a16a6751956013ae4c630c4ae25e9854",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-viewer-2.png",
+    "sha256Before": "eebe3c0bc41f6d501b23b54c5e08eed31281e2248a9b461eee268c9ebc830feb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-viewer-3.png",
+    "sha256Before": "2d8ec3ce0f9929f1cbce61dd855e83d02561cdad2ae09bbb93cf2094e4c8d55f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-viewer-4.png",
+    "sha256Before": "e5da13b07e3dbb56eee44da34c42e06d34a1548a662fbe7111a68dce13e9a29e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/visibility-contact-viewer-5.png",
+    "sha256Before": "d7e7ff7777fb383f116ad99e7992dea77daff2603f588317b97fd7e54a4430dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/waffle-narrow.png",
+    "sha256Before": "fef05f6a94e6b720c215b0123aa07205a2f22c0af9980fd6257e73b7a4fc5e5b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/web-area-secondary-axis.png",
+    "sha256Before": "c9ca966f9119612dd43c04f72327bac5a75633f207e5366ee96b74d887d33967",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/web-line-secondary-axis.png",
+    "sha256Before": "4b3ddcf128353f4b0c4cb7e18f622adfb8136a4ad590b277f16f69c2c56bd2fd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/stress2/001-step-line.png",
+    "sha256Before": "14a3ab9c670dccb411f26ea5d0cd2d4daa5145d87812bf94ea5a5a5eb753e23e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_001_step-line.png",
+    "replacementSha256": "856c15263409d7f27cb0d799397638a614e34d30ab8c0b5506a30a61d480ae7e"
+  },
+  {
+    "path": "docs/qa/stress2/002-spline-gradient.png",
+    "sha256Before": "1c56fb7556fdc84762847d388c0cb66149788c8d4b6ff611bb36fd3161d032a9",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_002_spline-gradient.png",
+    "replacementSha256": "ea3143117b878cd86025afdb5463093b009d7c5886c2f119af0aad5e8fd323f9"
+  },
+  {
+    "path": "docs/qa/stress2/003-rolling-line.png",
+    "sha256Before": "f44b2110c2e98a8dcaca068c3e566a04358acb3054f6382aad22e5ebd9ad5bb0",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_003_rolling-line.png",
+    "replacementSha256": "8aad5cdfe1e361ec044a4ac6a67de37d4748a4fa3cf1afc46efd5f9cc34dee0c"
+  },
+  {
+    "path": "docs/qa/stress2/004-confidence-band.png",
+    "sha256Before": "85774cf0a536ba00aede2f660d26007c7428e70fbf1b6f190c5c1d8e7f0548ef",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_004_confidence-band.png",
+    "replacementSha256": "e50a745520cc84f03dada783b100a820752847099b495fceb27cc84c86e2bbc2"
+  },
+  {
+    "path": "docs/qa/stress2/005-fan-chart.png",
+    "sha256Before": "59118046a9d88fdc228f7123f595cb73a0355279c6c66cb022c19aee6ad9dde3",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_005_fan-chart.png",
+    "replacementSha256": "a0b42d5c663db6effa8bde12c06915fba9ee9da036111ebc049bb19a60ab26ec"
+  },
+  {
+    "path": "docs/qa/stress2/006-horizon.png",
+    "sha256Before": "71294e1027e1237469438f086a097490ff98b61e7b11872d2957408cbd4bd9e7",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_006_horizon.png",
+    "replacementSha256": "d7314d1c8314d6eb0b2c9c8147f8404684a8f956825c72ec40e5a686a5556298"
+  },
+  {
+    "path": "docs/qa/stress2/007-sparkline-grid.png",
+    "sha256Before": "77d42b64b31c741f491a740fbf3c5c0307fc56f5c42471e5b494062513506034",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_007_sparkline-grid.png",
+    "replacementSha256": "cde2e3dcff9bb345b4bb6e4d8e0765269fc3a70bca4b5ac4b71a2783e8b90f1f"
+  },
+  {
+    "path": "docs/qa/stress2/008-100-percent-column.png",
+    "sha256Before": "c052633518b594abf973c93ee20783ed66f416009585c06a83436fc0353713d2",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_008_100-percent-column.png",
+    "replacementSha256": "95cc61bb85a26c152b1dbb6c225f97ab79ff9fae1d0b927ce3396b6e3ceef595"
+  },
+  {
+    "path": "docs/qa/stress2/009-diverging-stack.png",
+    "sha256Before": "e411ba31e5abcdf56edf843b8aae1202e59a03445cec02dd53b51160007d0d1b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_009_diverging-stack.png",
+    "replacementSha256": "58551249b99c279b7ec1e12135d90b3e6186478e1bfb424da90e0838425fd4a6"
+  },
+  {
+    "path": "docs/qa/stress2/010-population-pyramid.png",
+    "sha256Before": "effce2b3c3676a4ead0c9175fb1bb035d15b13ba1061c9372f96ad695ba27429",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_010_population-pyramid.png",
+    "replacementSha256": "8a14f7c94eb2a74e774d1c6280b856ee877b46f10a052adaea42982346f8a173"
+  },
+  {
+    "path": "docs/qa/stress2/011-grouped-stacked.png",
+    "sha256Before": "4baade76fd0c4c67a05173efa202046ed309db388c88b132447fe3ba0b14710b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_011_grouped-stacked.png",
+    "replacementSha256": "486e28834db57fea5dd1aa40e5580129074730bdf8667ebb201b3059416512ff"
+  },
+  {
+    "path": "docs/qa/stress2/012-lollipop-target.png",
+    "sha256Before": "1d6a4298c64b83e6414beb82c06f28ae4e5a417d5e6277e1cd7b17d39a7a3412",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_012_lollipop-target.png",
+    "replacementSha256": "82e7e76c93f1106f604e3cf66c15a568b24591d222e39eed996955c660339019"
+  },
+  {
+    "path": "docs/qa/stress2/013-cleveland-dots.png",
+    "sha256Before": "8693ae05a657ba2d4f2f4e4426e5828cc13d59ee0908b4adbfa9ab39b4a69608",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_013_cleveland-dots.png",
+    "replacementSha256": "9d6e4a6808c8c9da97bd37da07b77e623e69e190086206d561a8ab72b24dccd7"
+  },
+  {
+    "path": "docs/qa/stress2/014-range-delta.png",
+    "sha256Before": "85cf6d53ff0ee8ea870b342354a8eb54d1212467e2e223a1a18a93ea52b065cd",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_014_range-delta.png",
+    "replacementSha256": "adc06438527723a8c32d5d3484d6be56884b4f7a09fc88eedee08d76f3011f5c"
+  },
+  {
+    "path": "docs/qa/stress2/015-wrapped-bar.png",
+    "sha256Before": "0aaa6d27a7acb1aaa1a99e067b19324de7371a8497212bc015dfdaf72fbd9702",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_015_wrapped-bar.png",
+    "replacementSha256": "13565e86ebda262a766b18a3761862726ef0cc62432be56fecfe7e92c5db933c"
+  },
+  {
+    "path": "docs/qa/stress2/016-revenue-strip.png",
+    "sha256Before": "da9d966f7dd30b60b89e7fdc8fd4685da4a572ad3e37344be0d4a38087b88dc8",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_016_revenue-strip.png",
+    "replacementSha256": "c143be74503c69414ba225b97e4d58d98b3465f9ab40bad4d249aed1925c0a35"
+  },
+  {
+    "path": "docs/qa/stress2/017-polar-column.png",
+    "sha256Before": "6984d698756fde33473bc39781f773b793fb7cb855bcc5bea2177aff8805489c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_017_polar-column.png",
+    "replacementSha256": "ff9d53cb2c2813ca98cb8efc89e0e364fdb9efb9cac11cfc4a4b4e4b82af07b5"
+  },
+  {
+    "path": "docs/qa/stress2/018-nightingale-rose.png",
+    "sha256Before": "69e1b117a55c1a1e0c52923ab9e335af7aa637602aa9427d17c9c28dc76516ff",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_018_nightingale-rose.png",
+    "replacementSha256": "eb85a92821a07aad545b21c7d18d2380d963e8d23dd07e35c2c5b2c1c2dc8437"
+  },
+  {
+    "path": "docs/qa/stress2/019-semi-donut-kpi.png",
+    "sha256Before": "d26225face6d8124a5568fe56104cb59b8f6a38c6cc950a2c2caeb06d6203213",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_019_semi-donut-kpi.png",
+    "replacementSha256": "6f212b5a5538f65788dd4b0b58f0a46ee37eb1cf6889d1c39d7b4ff4e6104730"
+  },
+  {
+    "path": "docs/qa/stress2/020-nested-donut.png",
+    "sha256Before": "088cb883b062e0ad042d58554158294f8ec2dadc37da3a0e3b02a65094e412bb",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_020_nested-donut.png",
+    "replacementSha256": "a379edc8b4e66f04d90d95e559e7ef6daa65669ed86a9f57641969d34d241e74"
+  },
+  {
+    "path": "docs/qa/stress2/021-pie-top-other.png",
+    "sha256Before": "2d95d3f8b9d147538e21cd1c7c4914a1d40df40145776c1698449a57d06d808a",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_021_pie-top-other.png",
+    "replacementSha256": "26c20bf1abf8d31c16f8a82d2c7d3689912dc0a3eb0669f1721fc6e84a896162"
+  },
+  {
+    "path": "docs/qa/stress2/022-pictogram-icons.png",
+    "sha256Before": "5dd0fe8aac1362793db28a1ff0f0232fc67de8049eb4fef81d67138266b2fd97",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_022_pictogram-icons.png",
+    "replacementSha256": "147ad4c2e335e4ba8d8517c1e73013b28e67930e28e2267999a4a5123a20bfb1"
+  },
+  {
+    "path": "docs/qa/stress2/023-waffle-share.png",
+    "sha256Before": "d8019c90ab8224871c8a1dc766d2599b8c0fb14e19786ed5ee536182dcbaa46a",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_023_waffle-share.png",
+    "replacementSha256": "d24bb6816c5b5175dffd78ef12c703d92996f9a8704693a3b95c922bfc27a16d"
+  },
+  {
+    "path": "docs/qa/stress2/024-hemicycle.png",
+    "sha256Before": "7fc3f70f1436347d0b39bafe08432c8de5ba5eeb6185b5824248a841f3702cd8",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_024_hemicycle.png",
+    "replacementSha256": "78e5cc1f32ba37de0060e97bdb9fdd35144a9c14b52edc5b3d5dbd1e218cb3a5"
+  },
+  {
+    "path": "docs/qa/stress2/025-bullet-bands-delta.png",
+    "sha256Before": "77afc717b4cdca4937780ef7d8dcc5e7d8d9100e371d4adfb57759dedec89506",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_025_bullet-bands-delta.png",
+    "replacementSha256": "85e13c2be160d4823b1fb38d7bb244974b4cde907c6701eaa32b9fdec2b66876"
+  },
+  {
+    "path": "docs/qa/stress2/026-linear-gauge.png",
+    "sha256Before": "555f49e0b844ddae7497edcbff0007ff83cc95a3d7c417d4e6a9191163d1b6c7",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_026_linear-gauge.png",
+    "replacementSha256": "52d96b438c0e0a0e3289028bbb72325928c1038cc182cf3b6aa88bc95a178f45"
+  },
+  {
+    "path": "docs/qa/stress2/027-multi-ring-progress.png",
+    "sha256Before": "ca78e041e0cd1c053fe44162424cc90e621d840beaa763e254e1cc8290308c04",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_027_multi-ring-progress.png",
+    "replacementSha256": "04a1594d295aa5592ad4b1f0799ed7490bc8ffe37d598d3afc66ae6f63a40794"
+  },
+  {
+    "path": "docs/qa/stress2/028-gauge-target-bands.png",
+    "sha256Before": "835dc6b8907f9f03596eb0161fa6abfe0c961904e842a81d1e1d3f8212169f0b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_028_gauge-target-bands.png",
+    "replacementSha256": "794b897d3ce016c86350826babdb71b0a79ca2e88d3402fdbf90ed9932e0c8d0"
+  },
+  {
+    "path": "docs/qa/stress2/029-dual-axis-reference.png",
+    "sha256Before": "0b40903cb600d602e48415b6668af32dc465eb11de40fccf0e61abda302f3820",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_029_dual-axis-reference.png",
+    "replacementSha256": "d5f5a5c548c36f0fd0512b3767a44cc6011c466ecf6860d17d807dd914915bce"
+  },
+  {
+    "path": "docs/qa/stress2/030-pareto.png",
+    "sha256Before": "c796ae72e5cb4799a6a9e3849dcce08c243fb337a73d8459421d757a4f2be566",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_030_pareto.png",
+    "replacementSha256": "8c3c8e403f6a12665a3ad3e53d60d3bbd944913df877578d88b566062ef12a3d"
+  },
+  {
+    "path": "docs/qa/stress2/031-waterfall-subtotals.png",
+    "sha256Before": "3f9cae216a223d33d94b74e11344fc5b46c1e852e4754b1472285691f9938c0a",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_031_waterfall-subtotals.png",
+    "replacementSha256": "a5bcc527e58caf44b6575337e6c6187329c89425468c8b9f451173e027e209ec"
+  },
+  {
+    "path": "docs/qa/stress2/032-double-waterfall.png",
+    "sha256Before": "8548afeef2d9439535e7fae1b4ccf791476eafdd745a5db1c57fb387859c9102",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_032_double-waterfall.png",
+    "replacementSha256": "c50b96cc1d440d03df0199bdbc1ca3fe80f54cb672b882a14dbe6ab6057b1aa3"
+  },
+  {
+    "path": "docs/qa/stress2/033-profit-bridge.png",
+    "sha256Before": "22030cf189b3ed11959c19bcec05db1b94a2b6ebd6bd2daf456c1715fd4a710d",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_033_profit-bridge.png",
+    "replacementSha256": "831fade09017948e5835950c9ec54862b22d66125112a822fd7d2f3cd65ecd5f"
+  },
+  {
+    "path": "docs/qa/stress2/034-revenue-ohlc.png",
+    "sha256Before": "f45514d3a89a5f69c9e13ad70fedf4672921a6292425a1bb56358124b916aafb",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_034_revenue-ohlc.png",
+    "replacementSha256": "c4fffddef605238e667c59ca185e6d0ff3c1b5f1d8d574d276fddcd03e481d07"
+  },
+  {
+    "path": "docs/qa/stress2/035-heikin-ashi.png",
+    "sha256Before": "e442b4b463e3f1cdf2c42ebdba98f24d361886dbee035a4040aa092ececd8c4a",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_035_heikin-ashi.png",
+    "replacementSha256": "f252ee8a73a01c79be201a20f510709c68c0b23cdbe2d4166fe4a1821028b612"
+  },
+  {
+    "path": "docs/qa/stress2/036-diverging-heatmap.png",
+    "sha256Before": "054d7a0f71835fccb7e4612f55691131f61703b78aa96ea901855932c3d38d14",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_036_diverging-heatmap.png",
+    "replacementSha256": "a19fb1cd2706da842176b0f8d0d919a7cbb3d8dafd1c48ef944fe043af7886d4"
+  },
+  {
+    "path": "docs/qa/stress2/037-calendar-margin.png",
+    "sha256Before": "46f71477f3d966e0b5203beb9d5d0234c3467ec74af18323e0d6bd77cfba96d4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_037_calendar-margin.png",
+    "replacementSha256": "0504e63dbf11214d5cc293aa2346db4cf4d444d12fc4b19c911886edea18f351"
+  },
+  {
+    "path": "docs/qa/stress2/038-daily-heat-strip.png",
+    "sha256Before": "2cd0e88df95279aec1bcfb5c80b39bbd01fe44e72d9fa03523b6c2225360d0e4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_038_daily-heat-strip.png",
+    "replacementSha256": "e3548f8f4bc33f6cfcafb250ab3d44754d16881f3c3b2e9635b12f2963bd532f"
+  },
+  {
+    "path": "docs/qa/stress2/039-country-lasagna.png",
+    "sha256Before": "c9fcca6f638e7f339ccd0fcbfb25ac5dc9ee283aad1a5e0c5773763c6ac65d97",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_039_country-lasagna.png",
+    "replacementSha256": "6769b7d4eb2e046d9a6a1d8896bf82bb36a03101989dc24a20dca8f78ef5c807"
+  },
+  {
+    "path": "docs/qa/stress2/040-treemap-secondary-colour.png",
+    "sha256Before": "f54a3631cf6d0279e31cfe551da0da329b3f18de15dcc0956cf7ddd889b1b2c8",
+    "status": "Current native counterpart inspected; STRESS3-THEME-015 leaf and parent contrast/markup retry verified",
+    "replacement": "docs/qa/stress3/theme-native/stress2_040_treemap-secondary-colour.png",
+    "replacementSha256": "7d6c0858df017c51a5e3166823678d97c7d5449b1f3dc335b1d751a348c2e4f5"
+  },
+  {
+    "path": "docs/qa/stress2/041-treemap-drill.png",
+    "sha256Before": "aab6efddffd073cae0de7a8932d0e0967ab1647e04e684299c6b86a99026edc2",
+    "status": "Current native counterpart inspected; STRESS3-THEME-015 leaf and parent contrast/markup retry verified",
+    "replacement": "docs/qa/stress3/theme-native/stress2_041_treemap-drill.png",
+    "replacementSha256": "b10c375215fd46c05b5b0da5d1f872752134ce84372ed5ee3311cf9be70c4ec9"
+  },
+  {
+    "path": "docs/qa/stress2/042-sunburst-products.png",
+    "sha256Before": "e1e21c887d017a652cc6a6eb36932f84161ef7b19901ec4fac7e13fe5c99b77c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_042_sunburst-products.png",
+    "replacementSha256": "d347501de896f02173680dc53cf20f46c2946bca3dea39d3ba6c0c388fe79a1b"
+  },
+  {
+    "path": "docs/qa/stress2/043-icicle-partition.png",
+    "sha256Before": "305689448cdffa4bd2cc73264f5a3c2f58e23224c17e2b15bc877214e72b8775",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_043_icicle-partition.png",
+    "replacementSha256": "59f0fa76aa4dad5bb2eb8265cb110023b372255d12c12f04856a80bba21e72bf"
+  },
+  {
+    "path": "docs/qa/stress2/044-circle-packing.png",
+    "sha256Before": "d42d7da88ff3ad72f0bc82e91cf0e705fbbfc32523f224200b8a8f8fd291b0b6",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_044_circle-packing.png",
+    "replacementSha256": "b71c6fc537c615928146e7b38d00bfd70317b07ab003aedfc951ba91383c6375"
+  },
+  {
+    "path": "docs/qa/stress2/045-orthogonal-tree.png",
+    "sha256Before": "3d3ffb039077f8675bcacc42015f88725e90c09301d22c6ee128d6ec74980983",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_045_orthogonal-tree.png",
+    "replacementSha256": "bc67b5e9fbc662d887b4058682173daa186058a8f6bbbe7fda307a0f55825dfb"
+  },
+  {
+    "path": "docs/qa/stress2/046-radial-tree.png",
+    "sha256Before": "f64a7cba5ea814a9f11280de1a39d4e9f1381ef01d3b7c7a110f385467fe9b08",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_046_radial-tree.png",
+    "replacementSha256": "11a7bde602821c1ed1069a57df85dd80501de34ade8ea7a8e22fdfc8246ad985"
+  },
+  {
+    "path": "docs/qa/stress2/047-taxonomy-org-chart.png",
+    "sha256Before": "e08b48a0b6c8ef95806d006898e7d438c1ef0c8c99ac16105a01a5ad73ddba29",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_047_taxonomy-org-chart.png",
+    "replacementSha256": "af01a14fa82aa5afb2f40e3dad3e32066c98edb832ad2b5535f9d28639319b9b"
+  },
+  {
+    "path": "docs/qa/stress2/048-dendrogram-values.png",
+    "sha256Before": "b6f8345328679269703ebd6138434783558a2a0be9a20256c355cc084f535df4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_048_dendrogram-values.png",
+    "replacementSha256": "ea7b63bd8c4f369d099a63b4f5bef5eb40289f85d7ccced0fbf0f9e8e908ae91"
+  },
+  {
+    "path": "docs/qa/stress2/049-sankey-two-levels.png",
+    "sha256Before": "7e8127bd1a800fdc8503a30a830eb9a94ef8c27a45063a728262ff4c641b9df2",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_049_sankey-two-levels.png",
+    "replacementSha256": "8971280f8e042d4373b3dff4965bac6093314bbc46674abb25cb6b5a36cfa77d"
+  },
+  {
+    "path": "docs/qa/stress2/050-sankey-three-levels.png",
+    "sha256Before": "913d42203ae873b85aba9b930178be1348cf9bdc537f4c3d5b1e10605e5369d0",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_050_sankey-three-levels.png",
+    "replacementSha256": "566a4e9ac2eea30b2452d68751f9ac5287aa5051faf4dbd66246084bb4370af2"
+  },
+  {
+    "path": "docs/qa/stress2/051-parallel-sets.png",
+    "sha256Before": "24387bfaf109c4008319259f27acc9d6dbd1e983b21b55f0628f35f2d92f857e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_051_parallel-sets.png",
+    "replacementSha256": "a92ba5bc7a1b29a40904c8df7519017a4e8627c3141b649352cbbdfda91fce02"
+  },
+  {
+    "path": "docs/qa/stress2/052-chord-ribbons.png",
+    "sha256Before": "78151abb9a56172c433e9f4dd69e4c48ccb52a9290c5f4f8d482fb18206c7d8f",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_052_chord-ribbons.png",
+    "replacementSha256": "4a2cee147ffb85ac5b773c4878dde365a929a4f9a056c883111c95a819ef0c49"
+  },
+  {
+    "path": "docs/qa/stress2/053-chord-arcs.png",
+    "sha256Before": "5de0ec7ed59805846f140c3292b34273a6acb9f9a29f4819c45624064db71334",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_053_chord-arcs.png",
+    "replacementSha256": "818340609b606c0ad24206092c1e26fdfa360b4725dc61d836f2a39d20682bb1"
+  },
+  {
+    "path": "docs/qa/stress2/054-arc-diagram.png",
+    "sha256Before": "c878b9a20eaedea0e43c7731faa5a564ca8c76cc5844e13865679c640aa34ab1",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_054_arc-diagram.png",
+    "replacementSha256": "5151abc679ae5307a2c3f9782cdf1c93092beb08544731cd9826900bbac2e697"
+  },
+  {
+    "path": "docs/qa/stress2/055-relationship-force.png",
+    "sha256Before": "e18d8681ee7d1cc34151f8e33134d206b985a4076967beb99c9560c6f6f0c24b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_055_relationship-force.png",
+    "replacementSha256": "1f10e5b3744687eb067972513178dbfd489f3fdacf1ed9ebf39033518d433e14"
+  },
+  {
+    "path": "docs/qa/stress2/056-network-circular.png",
+    "sha256Before": "0a79854e359cba96fd332d4e89b0da832e7aed80ba4436c01df9dd53c52fd3ef",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_056_network-circular.png",
+    "replacementSha256": "81735a4e65a05089bbd91192079ede040060756ed3b3a0488d3753dd3d104f4f"
+  },
+  {
+    "path": "docs/qa/stress2/057-adjacency-matrix.png",
+    "sha256Before": "1b84b68c027701494ab46521fc5b69d2ea7e1975b4da7adb87242f35dab73640",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_057_adjacency-matrix.png",
+    "replacementSha256": "e3b7a8c3ec0b195c4d22f5803e15e45487a0cbf8ef95e8ae67c1c6f2e49b4bac"
+  },
+  {
+    "path": "docs/qa/stress2/058-bipartite.png",
+    "sha256Before": "32ed57c55210f33b7dbb5fd7a9b4dcca2bb8f6b8d98ecf625767fd1cd27dbea1",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_058_bipartite.png",
+    "replacementSha256": "b219b44747545871eac8e636f035bdc3b25a5d45b103056f7e990aa10f591a96"
+  },
+  {
+    "path": "docs/qa/stress2/059-radar-benchmark.png",
+    "sha256Before": "63e3be3fd1560cbee89e2713ad502b2cbea09e70ca5e7baae8428c9c1adf196c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_059_radar-benchmark.png",
+    "replacementSha256": "68d48c07d0478b3ed0fba7a08ac95a13e05fd7a16c31f075d2e83c2b8fbe6c16"
+  },
+  {
+    "path": "docs/qa/stress2/060-radar-small-multiples.png",
+    "sha256Before": "14faae7ea1fff4e33c1e06da8c96f8f25e9e47d6d7181dbb69a6954af52f744b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_060_radar-small-multiples.png",
+    "replacementSha256": "d9aaa4e7369dd5abce3d8b7230bff536112a7340a657ec9c4d9f5196fdff2943"
+  },
+  {
+    "path": "docs/qa/stress2/061-parallel-six-measures.png",
+    "sha256Before": "aac8a25b78c669f20c115f5d9a70cb60cc6971d62ae5c9e42f98df75045b8d6b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_061_parallel-six-measures.png",
+    "replacementSha256": "6bcd5ca0eb6103e3cc32bd110ea5eadab60fe94398fdc523730aba2fa05b8894"
+  },
+  {
+    "path": "docs/qa/stress2/062-median-quadrants.png",
+    "sha256Before": "866a8903fb81e9228ec1fe01afa5df117e299d302871f9b47daaeeaaf641f310",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_062_median-quadrants.png",
+    "replacementSha256": "658be80572aaea5583d587bac9bea4ce62351d00b30d471074188dbb723c61ae"
+  },
+  {
+    "path": "docs/qa/stress2/063-connected-scatter.png",
+    "sha256Before": "7dd7b824a54200b7f2ea0fbe30d1e5bfcb9b4f6b50bdc07847ebfbb59d057d98",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_063_connected-scatter.png",
+    "replacementSha256": "487848a09299961571c68916a85ffadbe59fbb8f1f350d4f545fee87f31df16e"
+  },
+  {
+    "path": "docs/qa/stress2/064-scatter-matrix.png",
+    "sha256Before": "15a3d408410f392c01cb1bb0311c01a0a88d32dd2c3eec0f7b752eda557ae07b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_064_scatter-matrix.png",
+    "replacementSha256": "6379a4b5689e0d38720431c1c937d6bcfc8cd36c0412ea3370ec0ee6efb900a7"
+  },
+  {
+    "path": "docs/qa/stress2/065-categorical-bubbles.png",
+    "sha256Before": "d759fecc200bccf9996a701bcdcfa2ada19b68bdbe121baf29c8bf3fcb7de2e1",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_065_categorical-bubbles.png",
+    "replacementSha256": "378e3117aa0d5675038d66510790081511de57b99c8bac0e10f4a11853de3cea"
+  },
+  {
+    "path": "docs/qa/stress2/066-bump-rank.png",
+    "sha256Before": "ad987982ae116dbd618f36a30c03b8d88efe50ffb6a5765f53e676fbf169d6f4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_066_bump-rank.png",
+    "replacementSha256": "311b8b722b28417a997749f75ae87c5fe4341fff2e9b70a85993d896f9867dd6"
+  },
+  {
+    "path": "docs/qa/stress2/067-slope-movers.png",
+    "sha256Before": "82b3faa4111139c3cec0ae13d5ea36e2f4c205824ca43b3031d8a3982064c5a7",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_067_slope-movers.png",
+    "replacementSha256": "901dda40fdb47e78f3c45b3a98b1de1bbb7bdd4274866c4138da65562f851233"
+  },
+  {
+    "path": "docs/qa/stress2/068-wiggle-streamgraph.png",
+    "sha256Before": "368319ffeadbb1151888a8a0e1913d149f9e9ad38656dc9943aaa4db923b65db",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_068_wiggle-streamgraph.png",
+    "replacementSha256": "a82e7b57088fb4849de302b67250451a329c26a4087dd5d8d5cc4e0ccc59cdb9"
+  },
+  {
+    "path": "docs/qa/stress2/069-normalized-area.png",
+    "sha256Before": "97edf7d6c8d411ab6fcd035ed54fe6db04f622b25922abc9d71358c4fe0fea81",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_069_normalized-area.png",
+    "replacementSha256": "1e179e5d569c8a965bac036176518c2057c892b05311c7ab792bb09f5ad65d9d"
+  },
+  {
+    "path": "docs/qa/stress2/070-cumulative-flow.png",
+    "sha256Before": "713c8e2c7c8d23f8bc5c2c9d47ae5c2c1c304384387736133ad74d25f10df092",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_070_cumulative-flow.png",
+    "replacementSha256": "87dae0b1a58b8faf89111d7928a4eece4f05009b5cba2c994d1161b14f88c458"
+  },
+  {
+    "path": "docs/qa/stress2/071-gantt-country.png",
+    "sha256Before": "01d08645d93ed8fa7c7b601a80698809c1443995a6ee5175cb7f3ac63872bc22",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_071_gantt-country.png",
+    "replacementSha256": "baaf5588f6929a5ae026bba4818d753f0b5067bd64a48b896298fd0828c85c41"
+  },
+  {
+    "path": "docs/qa/stress2/072-event-timeline.png",
+    "sha256Before": "37d69e9e2f6f76fbb4cab18282fe1f75381cfb4d7e574564fe7552adba5e5930",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_072_event-timeline.png",
+    "replacementSha256": "eb93b42dd44031fd1393929c648b13d2765e0b487ff495ce315c8f2a442bd508"
+  },
+  {
+    "path": "docs/qa/stress2/073-funnel-conversion.png",
+    "sha256Before": "70fdfc3d2ede4a3d43daa5b355a4dc15c3c9825aa96a50bb1498f97344c4a7f0",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_073_funnel-conversion.png",
+    "replacementSha256": "ec9ef50289f141241f3fabbfc39b207ab3d97e2094c639932d9ba822132c311d"
+  },
+  {
+    "path": "docs/qa/stress2/074-mirrored-funnel.png",
+    "sha256Before": "ba1850a11e57928d20e723749c66ceb8042f2884291ffc278eef923e968f31b7",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_074_mirrored-funnel.png",
+    "replacementSha256": "9b5db79a909f9f2f63ec18a91925d06bd5717229d6ce9af5fcce33a1a8906fe2"
+  },
+  {
+    "path": "docs/qa/stress2/075-labelled-quadrants.png",
+    "sha256Before": "c92a9ec373aa94a9e807dd36843ec2d37a85d86b8bfdfd03d43820ff53461765",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_075_labelled-quadrants.png",
+    "replacementSha256": "40664a2e3e6f65a57175e139ff31dc3fd1c9b9c4b80411f47d0e3483b7207078"
+  },
+  {
+    "path": "docs/qa/stress2/076-independent-axis-zoom.png",
+    "sha256Before": "98f8d85b925b985e6f720051513a543bb0f4f9d5f217243685c8e395eb4cbb78",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_076_independent-axis-zoom.png",
+    "replacementSha256": "50e98c1beabdb02c16e7af3c5acb05b6e83693e555554d945672f0b85c2150f2"
+  },
+  {
+    "path": "docs/qa/stress2/077-weekend-bands.png",
+    "sha256Before": "94551303fd75ea39d4165c21ca7feb5102f525d9f1a19854af28f64655e74a14",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_077_weekend-bands.png",
+    "replacementSha256": "bf859404c9a33789e9eeb4eeeb8b5e108999281e96ea0362c59ba58bcc50af68"
+  },
+  {
+    "path": "docs/qa/stress2/078-columns-error-bars.png",
+    "sha256Before": "ceb9133d94c22888df8749571d9ed305b67b13bc09be2d1692403d066a2b77d1",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_078_columns-error-bars.png",
+    "replacementSha256": "0993238efb9edafda03ff3d8f01d05914e02f1db09be9ff4ed6330d04ad3e85e"
+  },
+  {
+    "path": "docs/qa/stress2/079-control-chart.png",
+    "sha256Before": "e9feaed2c7895b929b68f5c558f447f33054f7442523b71c33df45c53a33e38f",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_079_control-chart.png",
+    "replacementSha256": "0b49825da0ffb9e6added078bcbf3785f08c113dee01b4c36e859cf29512e91f"
+  },
+  {
+    "path": "docs/qa/stress2/080-ewma.png",
+    "sha256Before": "5c4b2de8d05f5a4544d935738733ce4d16db7c1d37b1b1fb4e9aaa3e04912bc8",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_080_ewma.png",
+    "replacementSha256": "071cbee5db8a9e366e652000ce37f13aec280ad97ac008d8854a37c7a62e2799"
+  },
+  {
+    "path": "docs/qa/stress2/081-forest-range.png",
+    "sha256Before": "e3332af18c3f51af71940e66bf57c5f316697afcd3381d4d610151d4ded9f313",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_081_forest-range.png",
+    "replacementSha256": "1bedfb783d4175a7b564104c0807b04e3fd8ee444ecd644015c25032f2de15b7"
+  },
+  {
+    "path": "docs/qa/stress2/082-dot-whisker.png",
+    "sha256Before": "ed29ac50c5973ca8ea156e60db2aa6519c1e5a2823b68e8731d47d65bb8181c4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_082_dot-whisker.png",
+    "replacementSha256": "c1691cfdfc7fe8e952f2dd0d568cdb816de745c330538f3660ace8d015eb5e72"
+  },
+  {
+    "path": "docs/qa/stress2/083-bar-shared-axis.png",
+    "sha256Before": "3f3b8b00451f8304e413295497ce1a6fc6925d9f0e1c7308d18088e36c1bb04c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_083_bar-shared-axis.png",
+    "replacementSha256": "b068b8c9d50a31e5247a77e31710f532c5d5f7745e8a2ec2d9b921ef2a104ebc"
+  },
+  {
+    "path": "docs/qa/stress2/084-line-free-axis.png",
+    "sha256Before": "54ddf7351848f16c408e60f60d39657cbdf1e480273264671efeeb8f1a1df536",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_084_line-free-axis.png",
+    "replacementSha256": "459556b9ea2947422f127c8e65fe8f85ab38ddfa999c296ecbd0ef581b28971d"
+  },
+  {
+    "path": "docs/qa/stress2/085-kpi-sparkline.png",
+    "sha256Before": "2d32c813cf2b1c24b18278130728f69364bdf06c9c086419a82ca7b0c82de9f2",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_085_kpi-sparkline.png",
+    "replacementSha256": "7f79c105516ff89d0fb39f972891a44af623003df895a533c7a8421781a6ddb5"
+  },
+  {
+    "path": "docs/qa/stress2/086-ranked-inline-bars.png",
+    "sha256Before": "4d4fcd50a696ece7be6ecc4d296723a00b54c9189d3466c93432a9530d06522c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_086_ranked-inline-bars.png",
+    "replacementSha256": "7deb11812f5c9b2979beb29a61f5d43bea391375320a649bb8ae0b51c56da985"
+  },
+  {
+    "path": "docs/qa/stress2/089-histogram-auto.png",
+    "sha256Before": "c6d393852604b93dd508ea3dfc73e10077740590d3039a14e4a875526b5d196e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_089_histogram-auto.png",
+    "replacementSha256": "e9fc6825b1f96117cdef16e1e482d1653c5096faa92a5092fd8ff407bcf23f87"
+  },
+  {
+    "path": "docs/qa/stress2/090-histogram-width.png",
+    "sha256Before": "9f79919b62cd9f87d57b6f17b7b5b56e9e544cde6efbcd10547906666d0e17ca",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_090_histogram-width.png",
+    "replacementSha256": "0d548fc60f8fe11f0bf0759608a4321fcd1586477c818e48f44ae4a5bcd28bde"
+  },
+  {
+    "path": "docs/qa/stress2/091-box-detail-prices.png",
+    "sha256Before": "07e40c4ce92597cde37679dbf78b95711f9d7660aebf2879f64f82c10a45b42b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_091_box-detail-prices.png",
+    "replacementSha256": "97a33141548adae2c71196bebb023028e2ef4addb81a3f5c70641ab82b6f97af"
+  },
+  {
+    "path": "docs/qa/stress2/092-violin-density.png",
+    "sha256Before": "3c1115a2207c6f07728772f5a98b4587177a96b4f3c507eb4cf2678d383016b6",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_092_violin-density.png",
+    "replacementSha256": "50def2a20304f68f0a75f943f02b575fa11af06fec7a711bb35c4998eae087e0"
+  },
+  {
+    "path": "docs/qa/stress2/093-beeswarm.png",
+    "sha256Before": "7d8b1c216d7bc311277b1271913ad338bcbde3e6a5269546e982cfe26045ac04",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_093_beeswarm.png",
+    "replacementSha256": "20ad972bfcdc4f55965b56abc4d65b757cde1e9710906e66dade06f9e170ad77"
+  },
+  {
+    "path": "docs/qa/stress2/094-strip-mean.png",
+    "sha256Before": "2c87e6a49a3b6259cd6717776dd7a02469270909fa9c34d4f17dfe2aef52e72e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_094_strip-mean.png",
+    "replacementSha256": "dc2c20020dd64c40caae1bd6a0268dfe383f432fd3b6a79f70846e4cd950dd5a"
+  },
+  {
+    "path": "docs/qa/stress2/095-ecdf.png",
+    "sha256Before": "478361fdd730aa42b07cefe3e4cd8c8f1b6622205882a89655efcdcdfcb5a88c",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_095_ecdf.png",
+    "replacementSha256": "73ef55fdce0df9f8cca027be41071eefe05f7ead5e30385271b8ded17f8798e4"
+  },
+  {
+    "path": "docs/qa/stress2/096-ridgeline.png",
+    "sha256Before": "82dcef5ebd4e7c46103ee49a53c34d770babba8b09be39af3b55843532f06ae4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_096_ridgeline.png",
+    "replacementSha256": "3f219526c335135ee552bca98ab57fa3c484ec65ba6f49a198d5bbbd2e7e9e31"
+  },
+  {
+    "path": "docs/qa/stress2/097-normal-qq.png",
+    "sha256Before": "ce423d96d88230cdb92915bb1ac2ed89e1846e95ab3cf9fbfa8b4216589dc50e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_097_normal-qq.png",
+    "replacementSha256": "4bf92acbdd7d4ad3e77761d854b1f37548a33286d875485adb85502fb1803a4a"
+  },
+  {
+    "path": "docs/qa/stress2/098-hexbin-price-cost.png",
+    "sha256Before": "5c9b40a3b21282ca46dcda79a5c9a16092f1fad2fac3ab5cabf979f2881fb448",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_098_hexbin-price-cost.png",
+    "replacementSha256": "7c021ba90d465259149990ce04bd8f657b993c4bc48efe2fddc98f7deaeff49c"
+  },
+  {
+    "path": "docs/qa/stress2/099-density2d-price-cost.png",
+    "sha256Before": "3445e016c4ef4d1f0e2782a2c663654e980969bb8a16ddfefdfc1ac6c76696a8",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_099_density2d-price-cost.png",
+    "replacementSha256": "0c4ea2545762a60994d9c1203af2221ee2fe1da864ee17779c4e6f45dfc7d928"
+  },
+  {
+    "path": "docs/qa/stress2/100-parameter-top-other.png",
+    "sha256Before": "91a127082609b57e9d03c4fd5e5d1ce3c26ca77ef31836e2bcdc5a50b43568fa",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_100_parameter-top-other.png",
+    "replacementSha256": "8fa89452b7dd974ecbd372a88f695cab112b60324f250d95135f54922d8ec022"
+  },
+  {
+    "path": "docs/qa/stress2/101-group-percent-subtotals.png",
+    "sha256Before": "453ec37615b19b228f6e8e14c7b1fc48b834d5ec5d3849f5319713cad73b363f",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_101_group-percent-subtotals.png",
+    "replacementSha256": "8fa14d6011e49298c266eabe5dbed3bab1099871f0016a7283ec964c3ad96213"
+  },
+  {
+    "path": "docs/qa/stress2/102-yoy-variance.png",
+    "sha256Before": "38b8ceda59df145afc53252b755a58d2c87c3b13644067018e33e10e92e3346d",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_102_yoy-variance.png",
+    "replacementSha256": "0b7a234a39650ba9e7ab22b2349d4beae5834b12d4906750ad8995ea6d81f18d"
+  },
+  {
+    "path": "docs/qa/stress2/103-rebase-index.png",
+    "sha256Before": "581062b3eb2631b6188b8365f2922c560aaf5e3463da71cfbc2c1a1465c4a835",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_103_rebase-index.png",
+    "replacementSha256": "5d7f77432d1ee8b3cf6d1c6cd151d14b447331fbb592b03a6ec2f8bf93741cf8"
+  },
+  {
+    "path": "docs/qa/stress2/104-ytd-prior-year.png",
+    "sha256Before": "84089821f7ead60dfaae4810c93e0bce627c2853eb8a904b4d62636d3f7d3d01",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_104_ytd-prior-year.png",
+    "replacementSha256": "36ac973960d6393cb6df33328508f9d6aed3338de9d2d49113155813bdccbd70"
+  },
+  {
+    "path": "docs/qa/stress2/105-cohort-retention.png",
+    "sha256Before": "5cf8a8e793850bdfbb09e6d38f65d5ee9348653a21cf356027f078c854e42cf4",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_105_cohort-retention.png",
+    "replacementSha256": "64cee1a8af5124d492ed9827bdcef8d7cbbcdc43928759970a1a34d94445496e"
+  },
+  {
+    "path": "docs/qa/stress2/106-pivot-heatmap.png",
+    "sha256Before": "64333c74aec46b8a6b63686e65976f05a0328cf0702b61c3049e823a6da22b20",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_106_pivot-heatmap.png",
+    "replacementSha256": "b8c62c0e2b6433fcfc958c14af3d1ba342353be30f7a4a8450149f928f5c8bf7"
+  },
+  {
+    "path": "docs/qa/stress2/107-pearson-six.png",
+    "sha256Before": "4be6eeb32aa55ad5e0ca0b935b71f77c44cfb13109164cf1e5b53d6e43cb2187",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_107_pearson-six.png",
+    "replacementSha256": "112a748ff7e632039d2abe6777469c7531c4412a13fe4ad12909927043be4360"
+  },
+  {
+    "path": "docs/qa/stress2/108-pareto-count.png",
+    "sha256Before": "a05ffb9cb007ff08412b2d2d5cc829863dad93cd2fa13e4c6e224c2b30e46c7b",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_108_pareto-count.png",
+    "replacementSha256": "7701b6b586592d87c1cbb9398bb6337e089eb79dde90d9cff4650ff863ebcd99"
+  },
+  {
+    "path": "docs/qa/stress2/109-date-spikes.png",
+    "sha256Before": "be0b9a02dcc6dd13a6fb5ad8eb0e8e41e878ce294a119b0f6db3a2665851452f",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_109_date-spikes.png",
+    "replacementSha256": "8c8c57b9d49e03c0169b061faddc75389a6bee847867a074faea8de27cf35827"
+  },
+  {
+    "path": "docs/qa/stress2/110-radial-histogram.png",
+    "sha256Before": "e4a5a234255f06330252fa529803b65923a0559dc19c7137ba26763ef130f6cc",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_110_radial-histogram.png",
+    "replacementSha256": "3bbd9a20685c33ec9766622d97b1dbe848e1076e1eb4af51c403658e0df7f7fd"
+  },
+  {
+    "path": "docs/qa/stress2/115-country-tile-grid.png",
+    "sha256Before": "f289ab3d86cac6bf7eb79d4601620af97055ae50c8b4dacc0b8c0c9a70d5ddbb",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_115_country-tile-grid.png",
+    "replacementSha256": "f01ac3c1108a854f09a07f4aad6dd9c7b857378866886590de386a594cfe9980"
+  },
+  {
+    "path": "docs/qa/stress2/116-word-cloud.png",
+    "sha256Before": "ba5a22e10c931136a7a45dcc558615cddf3b7815c4b7fa5fdaa003266ace9237",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_116_word-cloud.png",
+    "replacementSha256": "5a86661760576c52ab77f421fd1af2a4b990a30530e25060ebddf35ef19a920b"
+  },
+  {
+    "path": "docs/qa/stress2/118-hierarchy-flame.png",
+    "sha256Before": "aae6f593692a2815ffdecbcb51f2673057b465cad72c05e8083d68dee162272e",
+    "status": "Historical evidence retained; current native report-theme counterpart captured and inspected",
+    "replacement": "docs/qa/stress3/theme-native/stress2_118_hierarchy-flame.png",
+    "replacementSha256": "23bca93dd6609ee5d475379974b918db6ea61a597d582a688e1a968d6b3c4d8d"
+  },
+  {
+    "path": "docs/qa/stress2/task1-derived-margin.png",
+    "sha256Before": "643dced64b6984bdd9a2ceb16bbdab7d0cc014f06e52cc687dcb3acdb55d4987",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-editor-standard-after.png",
+    "sha256Before": "9efaf6cb1eb0107899c86c2a50d4b7d015771070217819e7914b7b9ab5eb35bd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-editor-standard-visibility-after.png",
+    "sha256Before": "9efaf6cb1eb0107899c86c2a50d4b7d015771070217819e7914b7b9ab5eb35bd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-editor-standard-visibility-broad-round.png",
+    "sha256Before": "9efaf6cb1eb0107899c86c2a50d4b7d015771070217819e7914b7b9ab5eb35bd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-editor-standard-visibility.png",
+    "sha256Before": "9efaf6cb1eb0107899c86c2a50d4b7d015771070217819e7914b7b9ab5eb35bd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-editor-standard.png",
+    "sha256Before": "6bcbe90e1d761b549cb04cfe328eafc65f8d65048b28c614be539a1bc2e2f7bc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-viewer-standard-visibility-after.png",
+    "sha256Before": "dd7e9e9473d1f4bb33464d4f287956169d801ff3d7d7638f2b8ef74b13144888",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "dd7e9e9473d1f4bb33464d4f287956169d801ff3d7d7638f2b8ef74b13144888",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/area-viewer-standard-visibility.png",
+    "sha256Before": "dd7e9e9473d1f4bb33464d4f287956169d801ff3d7d7638f2b8ef74b13144888",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/axis-detail-pane.png",
+    "sha256Before": "52d0cf0852abbbd08c328dae4c61726b16e6b0516cf35d75edfee06108d0dde9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/axis-readability-chart.png",
+    "sha256Before": "11cc07ba1913cdb1d1cdd8186bc9e7a5be13d3765ef1778334ef23f476dca081",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/axis-readability-pane.png",
+    "sha256Before": "2eeba7b1c6770f137ffe645157eff67f17cd249cb619c8d347a74602d7d3e13c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-editor-standard-after.png",
+    "sha256Before": "42c596c5438a5bb1f611bc32d3ac8f9c0732b09be27d6fcdeca675b58e147012",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-editor-standard-visibility-after.png",
+    "sha256Before": "42c596c5438a5bb1f611bc32d3ac8f9c0732b09be27d6fcdeca675b58e147012",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-editor-standard-visibility-broad-round.png",
+    "sha256Before": "42c596c5438a5bb1f611bc32d3ac8f9c0732b09be27d6fcdeca675b58e147012",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-editor-standard-visibility.png",
+    "sha256Before": "42c596c5438a5bb1f611bc32d3ac8f9c0732b09be27d6fcdeca675b58e147012",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-editor-standard.png",
+    "sha256Before": "42c596c5438a5bb1f611bc32d3ac8f9c0732b09be27d6fcdeca675b58e147012",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-settings-text.png",
+    "sha256Before": "55d1705bfb0dc25cbe23928aa409754b8f12609fcb00da6af3e965bb8203a160",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-viewer-standard-visibility-after.png",
+    "sha256Before": "545b50d3eb0a85f861753e96e75c2b0d65ce7b6bcb982642f8d5fa37358cf65c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "545b50d3eb0a85f861753e96e75c2b0d65ce7b6bcb982642f8d5fa37358cf65c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar-viewer-standard-visibility.png",
+    "sha256Before": "545b50d3eb0a85f861753e96e75c2b0d65ce7b6bcb982642f8d5fa37358cf65c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-editor-standard-after.png",
+    "sha256Before": "5b6e941e1dd1e04b92ea6f5b9d8f12c2eff42b13bac126594a25fdd0ea5814c7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-editor-standard-visibility-after.png",
+    "sha256Before": "5b6e941e1dd1e04b92ea6f5b9d8f12c2eff42b13bac126594a25fdd0ea5814c7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-editor-standard-visibility-broad-round.png",
+    "sha256Before": "93440f884af3112902c9f1cd57e0ecc8ed8c15a842b12db98e340410cf5a2abe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-editor-standard-visibility.png",
+    "sha256Before": "5b6e941e1dd1e04b92ea6f5b9d8f12c2eff42b13bac126594a25fdd0ea5814c7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-editor-standard.png",
+    "sha256Before": "5b6e941e1dd1e04b92ea6f5b9d8f12c2eff42b13bac126594a25fdd0ea5814c7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-viewer-standard-visibility-after.png",
+    "sha256Before": "0b60677769147be59c84929805eed28ad96269568ef8b68563c1df964b8f65d7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "bd0c29ada986a8929d4a8cb2911c90a6b1c4ec8b8f963c316d871fb4f1f08831",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bar_race-viewer-standard-visibility.png",
+    "sha256Before": "0b60677769147be59c84929805eed28ad96269568ef8b68563c1df964b8f65d7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-editor-standard-after.png",
+    "sha256Before": "74d09615b044c10811938ec10fa43aaaa49e16b22a3f4236b1391db36ca2920b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-editor-standard-visibility-after.png",
+    "sha256Before": "74d09615b044c10811938ec10fa43aaaa49e16b22a3f4236b1391db36ca2920b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-editor-standard-visibility-broad-round.png",
+    "sha256Before": "74d09615b044c10811938ec10fa43aaaa49e16b22a3f4236b1391db36ca2920b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-editor-standard-visibility.png",
+    "sha256Before": "74d09615b044c10811938ec10fa43aaaa49e16b22a3f4236b1391db36ca2920b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-editor-standard.png",
+    "sha256Before": "74d09615b044c10811938ec10fa43aaaa49e16b22a3f4236b1391db36ca2920b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-viewer-standard-visibility-after.png",
+    "sha256Before": "9fb84af9adb4f2cba85fae738ce7d537ecc8966ded90f6d4d3269f7b8df42112",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "9fb84af9adb4f2cba85fae738ce7d537ecc8966ded90f6d4d3269f7b8df42112",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bubble-viewer-standard-visibility.png",
+    "sha256Before": "9fb84af9adb4f2cba85fae738ce7d537ecc8966ded90f6d4d3269f7b8df42112",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-editor-standard-after.png",
+    "sha256Before": "0bfae86c7db9f10641a3ebd556b3ea9b7c8c07f83776da2a6120b92a456d80dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-editor-standard-visibility-after.png",
+    "sha256Before": "0bfae86c7db9f10641a3ebd556b3ea9b7c8c07f83776da2a6120b92a456d80dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-editor-standard-visibility-broad-round.png",
+    "sha256Before": "0bfae86c7db9f10641a3ebd556b3ea9b7c8c07f83776da2a6120b92a456d80dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-editor-standard-visibility.png",
+    "sha256Before": "0bfae86c7db9f10641a3ebd556b3ea9b7c8c07f83776da2a6120b92a456d80dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-editor-standard.png",
+    "sha256Before": "0bfae86c7db9f10641a3ebd556b3ea9b7c8c07f83776da2a6120b92a456d80dd",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-viewer-standard-visibility-after.png",
+    "sha256Before": "0302a8c92cb80821eda49c86104edc40e4c094ca727bf690d2ba10e3126a430e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "0302a8c92cb80821eda49c86104edc40e4c094ca727bf690d2ba10e3126a430e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bullet-viewer-standard-visibility.png",
+    "sha256Before": "0302a8c92cb80821eda49c86104edc40e4c094ca727bf690d2ba10e3126a430e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-editor-standard-after.png",
+    "sha256Before": "aab19a1a5ad0a149a869a7654d39047a6b3c4ca94ac7b3774f3d16b95ebb8873",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-editor-standard-visibility-after.png",
+    "sha256Before": "aab19a1a5ad0a149a869a7654d39047a6b3c4ca94ac7b3774f3d16b95ebb8873",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-editor-standard-visibility-broad-round.png",
+    "sha256Before": "aab19a1a5ad0a149a869a7654d39047a6b3c4ca94ac7b3774f3d16b95ebb8873",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-editor-standard-visibility.png",
+    "sha256Before": "aab19a1a5ad0a149a869a7654d39047a6b3c4ca94ac7b3774f3d16b95ebb8873",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-editor-standard.png",
+    "sha256Before": "aab19a1a5ad0a149a869a7654d39047a6b3c4ca94ac7b3774f3d16b95ebb8873",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-viewer-standard-visibility-after.png",
+    "sha256Before": "ccf0d7ca08d0b0a2476676b01eff728a3d77ab39cc7062221cee64d009709ac7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "ccf0d7ca08d0b0a2476676b01eff728a3d77ab39cc7062221cee64d009709ac7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/bump-viewer-standard-visibility.png",
+    "sha256Before": "ccf0d7ca08d0b0a2476676b01eff728a3d77ab39cc7062221cee64d009709ac7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-editor-standard-after.png",
+    "sha256Before": "cf7ec2fbf2abf0965bf6490dd6c201c297e78a4706c539b437073bb85f96275c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-editor-standard-visibility-after.png",
+    "sha256Before": "cf7ec2fbf2abf0965bf6490dd6c201c297e78a4706c539b437073bb85f96275c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-editor-standard-visibility-broad-round.png",
+    "sha256Before": "cf7ec2fbf2abf0965bf6490dd6c201c297e78a4706c539b437073bb85f96275c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-editor-standard-visibility.png",
+    "sha256Before": "cf7ec2fbf2abf0965bf6490dd6c201c297e78a4706c539b437073bb85f96275c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-editor-standard.png",
+    "sha256Before": "cf7ec2fbf2abf0965bf6490dd6c201c297e78a4706c539b437073bb85f96275c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-viewer-standard-visibility-after.png",
+    "sha256Before": "7f353cd63c478f4e2849333e8f81e5d9c7fa398f88ccf3c3f99348e7c7b4804f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "7f353cd63c478f4e2849333e8f81e5d9c7fa398f88ccf3c3f99348e7c7b4804f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/chord-viewer-standard-visibility.png",
+    "sha256Before": "7f353cd63c478f4e2849333e8f81e5d9c7fa398f88ccf3c3f99348e7c7b4804f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-clipping-after.png",
+    "sha256Before": "fd0ae766af144007e302ebe717ba24b4579eba6458f92c3d4dd2b92e256357e6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-clipping-before.png",
+    "sha256Before": "fd0ae766af144007e302ebe717ba24b4579eba6458f92c3d4dd2b92e256357e6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-settled.png",
+    "sha256Before": "95054348b398ae4b54b45fbeafdb77967b71359bc79504fbb2f21d556aff6b99",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-standard-after.png",
+    "sha256Before": "95054348b398ae4b54b45fbeafdb77967b71359bc79504fbb2f21d556aff6b99",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-standard-visibility-after.png",
+    "sha256Before": "fd0ae766af144007e302ebe717ba24b4579eba6458f92c3d4dd2b92e256357e6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-standard-visibility-broad-round.png",
+    "sha256Before": "fd0ae766af144007e302ebe717ba24b4579eba6458f92c3d4dd2b92e256357e6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-standard-visibility.png",
+    "sha256Before": "95054348b398ae4b54b45fbeafdb77967b71359bc79504fbb2f21d556aff6b99",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-editor-standard.png",
+    "sha256Before": "95054348b398ae4b54b45fbeafdb77967b71359bc79504fbb2f21d556aff6b99",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-clipping-after.png",
+    "sha256Before": "ae981a5f20db6e2a4f3a78872d225187a91d084186d9c372934d6fdc15067045",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-clipping-before.png",
+    "sha256Before": "ae981a5f20db6e2a4f3a78872d225187a91d084186d9c372934d6fdc15067045",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-settled.png",
+    "sha256Before": "e5a32c20f6af7ad1b537bd030058d0ebf3e6646ea7f3e96d1ad97327490d45ea",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-standard-visibility-after.png",
+    "sha256Before": "ae981a5f20db6e2a4f3a78872d225187a91d084186d9c372934d6fdc15067045",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "ae981a5f20db6e2a4f3a78872d225187a91d084186d9c372934d6fdc15067045",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/column-viewer-standard-visibility.png",
+    "sha256Before": "e5a32c20f6af7ad1b537bd030058d0ebf3e6646ea7f3e96d1ad97327490d45ea",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-editor-standard-after.png",
+    "sha256Before": "7cb4f28b75620e00ccd76007694443e23ffeed35a298cccbbb864097fe8f4f07",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-editor-standard-visibility-after.png",
+    "sha256Before": "7cb4f28b75620e00ccd76007694443e23ffeed35a298cccbbb864097fe8f4f07",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-editor-standard-visibility-broad-round.png",
+    "sha256Before": "7cb4f28b75620e00ccd76007694443e23ffeed35a298cccbbb864097fe8f4f07",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-editor-standard-visibility.png",
+    "sha256Before": "7cb4f28b75620e00ccd76007694443e23ffeed35a298cccbbb864097fe8f4f07",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-editor-standard.png",
+    "sha256Before": "7cb4f28b75620e00ccd76007694443e23ffeed35a298cccbbb864097fe8f4f07",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-viewer-standard-visibility-after.png",
+    "sha256Before": "17bbb2abe9f9f2a019a111b4afbd11d78cf6c85683b008fec239850353882b28",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "17bbb2abe9f9f2a019a111b4afbd11d78cf6c85683b008fec239850353882b28",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/custom-viewer-standard-visibility.png",
+    "sha256Before": "17bbb2abe9f9f2a019a111b4afbd11d78cf6c85683b008fec239850353882b28",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-editor-standard-after.png",
+    "sha256Before": "a4dfb251d772d01dab039991a36de4a2ffaa3035ecb4fb262ecb8b0dbc71c682",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-editor-standard-visibility-after.png",
+    "sha256Before": "a4dfb251d772d01dab039991a36de4a2ffaa3035ecb4fb262ecb8b0dbc71c682",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-editor-standard-visibility-broad-round.png",
+    "sha256Before": "a4dfb251d772d01dab039991a36de4a2ffaa3035ecb4fb262ecb8b0dbc71c682",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-editor-standard-visibility.png",
+    "sha256Before": "a4dfb251d772d01dab039991a36de4a2ffaa3035ecb4fb262ecb8b0dbc71c682",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-editor-standard.png",
+    "sha256Before": "a4dfb251d772d01dab039991a36de4a2ffaa3035ecb4fb262ecb8b0dbc71c682",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-viewer-standard-visibility-after.png",
+    "sha256Before": "ca959b36de11a8492c296ae36f4c1b8389f8209418bac72eb80586270797eda4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "ca959b36de11a8492c296ae36f4c1b8389f8209418bac72eb80586270797eda4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/divider-viewer-standard-visibility.png",
+    "sha256Before": "ca959b36de11a8492c296ae36f4c1b8389f8209418bac72eb80586270797eda4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-legend-top.png",
+    "sha256Before": "6b233426478a87879cf1160766520644ad4fcdce05352871bf0a97fd8144d49d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-standard-after.png",
+    "sha256Before": "8d59f9338dd93fae89109928f851f8e8eaeb6abcd90bedd2ae58147d46be9a0c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-standard-visibility-after.png",
+    "sha256Before": "8d59f9338dd93fae89109928f851f8e8eaeb6abcd90bedd2ae58147d46be9a0c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-standard-visibility-broad-round.png",
+    "sha256Before": "8d59f9338dd93fae89109928f851f8e8eaeb6abcd90bedd2ae58147d46be9a0c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-standard-visibility.png",
+    "sha256Before": "8d59f9338dd93fae89109928f851f8e8eaeb6abcd90bedd2ae58147d46be9a0c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-editor-standard.png",
+    "sha256Before": "8d59f9338dd93fae89109928f851f8e8eaeb6abcd90bedd2ae58147d46be9a0c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-schema-placement-text.png",
+    "sha256Before": "87c80e96f5a1abb72e03840249c578d1f5ed437452bca9d699294ce83c260794",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-viewer-legend-top.png",
+    "sha256Before": "8854eda9c5935414c8a72e94e2064c3db6a9104bca3f6d7c235e9bd6fe1d1360",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-viewer-standard-visibility-after.png",
+    "sha256Before": "26f0544cf63f0f33b096f5de19d21df93f4010b8ac3742fcd6851cdabb881984",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "26f0544cf63f0f33b096f5de19d21df93f4010b8ac3742fcd6851cdabb881984",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/donut-viewer-standard-visibility.png",
+    "sha256Before": "26f0544cf63f0f33b096f5de19d21df93f4010b8ac3742fcd6851cdabb881984",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-editor-standard-after.png",
+    "sha256Before": "ca43cb9d48478d1d4939fda23a81624fa4526e4380b020f2b706cd4f774ca45a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-editor-standard-visibility-after.png",
+    "sha256Before": "ca43cb9d48478d1d4939fda23a81624fa4526e4380b020f2b706cd4f774ca45a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-editor-standard-visibility-broad-round.png",
+    "sha256Before": "ca43cb9d48478d1d4939fda23a81624fa4526e4380b020f2b706cd4f774ca45a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-editor-standard-visibility.png",
+    "sha256Before": "ca43cb9d48478d1d4939fda23a81624fa4526e4380b020f2b706cd4f774ca45a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-editor-standard.png",
+    "sha256Before": "ca43cb9d48478d1d4939fda23a81624fa4526e4380b020f2b706cd4f774ca45a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-viewer-standard-visibility-after.png",
+    "sha256Before": "b30e46e248db327f04f0be024bbe948a4d4a6a1d6fd62c54459f7112e25e5ebe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "b30e46e248db327f04f0be024bbe948a4d4a6a1d6fd62c54459f7112e25e5ebe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/funnel-viewer-standard-visibility.png",
+    "sha256Before": "b30e46e248db327f04f0be024bbe948a4d4a6a1d6fd62c54459f7112e25e5ebe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-editor-standard-after.png",
+    "sha256Before": "f42a413512f54ec8e61fc3814a7b4d9fd6cf3fc625aa9ffa218968d6dd17c1d6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-editor-standard-visibility-after.png",
+    "sha256Before": "f42a413512f54ec8e61fc3814a7b4d9fd6cf3fc625aa9ffa218968d6dd17c1d6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-editor-standard-visibility-broad-round.png",
+    "sha256Before": "f42a413512f54ec8e61fc3814a7b4d9fd6cf3fc625aa9ffa218968d6dd17c1d6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-editor-standard-visibility.png",
+    "sha256Before": "f42a413512f54ec8e61fc3814a7b4d9fd6cf3fc625aa9ffa218968d6dd17c1d6",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-editor-standard.png",
+    "sha256Before": "b6cca3c9e770b0153e5e05cd02f525484f529256fd53cef05f66e972d8a5406c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-settings-style.png",
+    "sha256Before": "900b15ffae9c15e728a09c20838008ccd3da39ead56bcb0202113aef39cf1284",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-viewer-standard-visibility-after.png",
+    "sha256Before": "ef52404ce7222ea0c6b8bba0b61d4605c0a482b14a3028b1ab1ea33b65eb3256",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "ef52404ce7222ea0c6b8bba0b61d4605c0a482b14a3028b1ab1ea33b65eb3256",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/gauge-viewer-standard-visibility.png",
+    "sha256Before": "ef52404ce7222ea0c6b8bba0b61d4605c0a482b14a3028b1ab1ea33b65eb3256",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-legend-top.png",
+    "sha256Before": "a2ed1dbfff6393f8e5bc7b49731b5c35320d3e012515515d15642dd3a57f7288",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-standard-after.png",
+    "sha256Before": "ae90338b8b9a0e152f9cf2a856aec97cd7bd5462cd8e99e336bb5de3d3d85123",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-standard-visibility-after.png",
+    "sha256Before": "ae90338b8b9a0e152f9cf2a856aec97cd7bd5462cd8e99e336bb5de3d3d85123",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-standard-visibility-broad-round.png",
+    "sha256Before": "ae90338b8b9a0e152f9cf2a856aec97cd7bd5462cd8e99e336bb5de3d3d85123",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-standard-visibility.png",
+    "sha256Before": "ae90338b8b9a0e152f9cf2a856aec97cd7bd5462cd8e99e336bb5de3d3d85123",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-editor-standard.png",
+    "sha256Before": "ae90338b8b9a0e152f9cf2a856aec97cd7bd5462cd8e99e336bb5de3d3d85123",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-viewer-legend-top.png",
+    "sha256Before": "19d27006f71d64b21b835f9c17cfc9615b9fb221f9f35201baaf872456529bcb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-viewer-standard-visibility-after.png",
+    "sha256Before": "2c1c92cfd1665dd7cb5eb41c5f58468483510c82117391b20dc4fc87d370e013",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "2c1c92cfd1665dd7cb5eb41c5f58468483510c82117391b20dc4fc87d370e013",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/grouped_bar-viewer-standard-visibility.png",
+    "sha256Before": "2c1c92cfd1665dd7cb5eb41c5f58468483510c82117391b20dc4fc87d370e013",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-settled.png",
+    "sha256Before": "11c98f5fb3e52d1bd61c0ed006cdf0a8bfa6688e77d99cb9bf3408d6889ab39e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-standard-after.png",
+    "sha256Before": "08b260e9c45f3693e56d3dd2c0268e29934d3ea7f9ba7f0440deb3038f1e91fe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-standard-visibility-after.png",
+    "sha256Before": "08b260e9c45f3693e56d3dd2c0268e29934d3ea7f9ba7f0440deb3038f1e91fe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-standard-visibility-broad-round.png",
+    "sha256Before": "08b260e9c45f3693e56d3dd2c0268e29934d3ea7f9ba7f0440deb3038f1e91fe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-standard-visibility.png",
+    "sha256Before": "08b260e9c45f3693e56d3dd2c0268e29934d3ea7f9ba7f0440deb3038f1e91fe",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-editor-standard.png",
+    "sha256Before": "11c98f5fb3e52d1bd61c0ed006cdf0a8bfa6688e77d99cb9bf3408d6889ab39e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-viewer-settled.png",
+    "sha256Before": "404a5642fe10b87e5f1549f1021fefb43b077dfb83feea12f2e01cb9094d886b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-viewer-standard-visibility-after.png",
+    "sha256Before": "876fde47ef5e757d127ed46d83ef82e7be4eb182ce5fb84703e83f5438dc9e6c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "876fde47ef5e757d127ed46d83ef82e7be4eb182ce5fb84703e83f5438dc9e6c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/heatmap-viewer-standard-visibility.png",
+    "sha256Before": "876fde47ef5e757d127ed46d83ef82e7be4eb182ce5fb84703e83f5438dc9e6c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-editor-standard-after.png",
+    "sha256Before": "a8a134bf29caa5b67d07e89aa3cb003c67e8eff73084cd4753deae725f11896f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-editor-standard-visibility-after.png",
+    "sha256Before": "a8a134bf29caa5b67d07e89aa3cb003c67e8eff73084cd4753deae725f11896f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-editor-standard-visibility-broad-round.png",
+    "sha256Before": "a8a134bf29caa5b67d07e89aa3cb003c67e8eff73084cd4753deae725f11896f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-editor-standard-visibility.png",
+    "sha256Before": "a8a134bf29caa5b67d07e89aa3cb003c67e8eff73084cd4753deae725f11896f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-editor-standard.png",
+    "sha256Before": "a8a134bf29caa5b67d07e89aa3cb003c67e8eff73084cd4753deae725f11896f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-viewer-standard-visibility-after.png",
+    "sha256Before": "239b4d1f36fabacb82f0e50c34573fa0f6fa497f47e5efa4e2f376827157b4dc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "239b4d1f36fabacb82f0e50c34573fa0f6fa497f47e5efa4e2f376827157b4dc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/image-viewer-standard-visibility.png",
+    "sha256Before": "239b4d1f36fabacb82f0e50c34573fa0f6fa497f47e5efa4e2f376827157b4dc",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-editor-standard-after.png",
+    "sha256Before": "60bf2b7f1ee067d14639540b668a2d1408b2261e270790fabaadeefde93528a7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-editor-standard-visibility-after.png",
+    "sha256Before": "60bf2b7f1ee067d14639540b668a2d1408b2261e270790fabaadeefde93528a7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-editor-standard-visibility-broad-round.png",
+    "sha256Before": "60bf2b7f1ee067d14639540b668a2d1408b2261e270790fabaadeefde93528a7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-editor-standard-visibility.png",
+    "sha256Before": "60bf2b7f1ee067d14639540b668a2d1408b2261e270790fabaadeefde93528a7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-editor-standard.png",
+    "sha256Before": "e4a8b46e62fa11ba56250edee75c87176ef24bba70493d23eeff8a7603b11fd5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-viewer-standard-visibility-after.png",
+    "sha256Before": "f532d5eb8e96748c93ef8a0d5866f3634e7bee8f3d954e99dd50cf3ee91b61fa",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "f532d5eb8e96748c93ef8a0d5866f3634e7bee8f3d954e99dd50cf3ee91b61fa",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/insight-viewer-standard-visibility.png",
+    "sha256Before": "f532d5eb8e96748c93ef8a0d5866f3634e7bee8f3d954e99dd50cf3ee91b61fa",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-editor-standard-after.png",
+    "sha256Before": "6d8b0b883024cd9a8cb427863634128d358b3f0a94ff3f6b79437745da7a7ea9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-editor-standard-visibility-after.png",
+    "sha256Before": "6d8b0b883024cd9a8cb427863634128d358b3f0a94ff3f6b79437745da7a7ea9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-editor-standard-visibility-broad-round.png",
+    "sha256Before": "6d8b0b883024cd9a8cb427863634128d358b3f0a94ff3f6b79437745da7a7ea9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-editor-standard-visibility.png",
+    "sha256Before": "6d8b0b883024cd9a8cb427863634128d358b3f0a94ff3f6b79437745da7a7ea9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-editor-standard.png",
+    "sha256Before": "6d8b0b883024cd9a8cb427863634128d358b3f0a94ff3f6b79437745da7a7ea9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-viewer-standard-visibility-after.png",
+    "sha256Before": "f8a076512bd775459c457f43822e12948c0729e479cc88c2dfd3fbd8af9ca6ab",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "f8a076512bd775459c457f43822e12948c0729e479cc88c2dfd3fbd8af9ca6ab",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/kpi-viewer-standard-visibility.png",
+    "sha256Before": "f8a076512bd775459c457f43822e12948c0729e479cc88c2dfd3fbd8af9ca6ab",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-editor-standard-after.png",
+    "sha256Before": "401e23dac4fb7bf4c65afd203af078929398a0c0223c4483f9057ea9ebd3b459",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-editor-standard-visibility-after.png",
+    "sha256Before": "401e23dac4fb7bf4c65afd203af078929398a0c0223c4483f9057ea9ebd3b459",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-editor-standard-visibility-broad-round.png",
+    "sha256Before": "401e23dac4fb7bf4c65afd203af078929398a0c0223c4483f9057ea9ebd3b459",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-editor-standard-visibility.png",
+    "sha256Before": "401e23dac4fb7bf4c65afd203af078929398a0c0223c4483f9057ea9ebd3b459",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-editor-standard.png",
+    "sha256Before": "401e23dac4fb7bf4c65afd203af078929398a0c0223c4483f9057ea9ebd3b459",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-viewer-standard-visibility-after.png",
+    "sha256Before": "87655b6164cc9ccd79e30870a026f1a54b0fc6d8ce9b5fa4b9b3f5b8ca4d68d7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "87655b6164cc9ccd79e30870a026f1a54b0fc6d8ce9b5fa4b9b3f5b8ca4d68d7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/line-viewer-standard-visibility.png",
+    "sha256Before": "87655b6164cc9ccd79e30870a026f1a54b0fc6d8ce9b5fa4b9b3f5b8ca4d68d7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-editor-standard-after.png",
+    "sha256Before": "88e4fb7e8700190345ebea8592d921c2325f275ee2235f73ae00c75d66ebeb38",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-editor-standard-visibility-after.png",
+    "sha256Before": "88e4fb7e8700190345ebea8592d921c2325f275ee2235f73ae00c75d66ebeb38",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-editor-standard-visibility-broad-round.png",
+    "sha256Before": "88e4fb7e8700190345ebea8592d921c2325f275ee2235f73ae00c75d66ebeb38",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-editor-standard-visibility.png",
+    "sha256Before": "88e4fb7e8700190345ebea8592d921c2325f275ee2235f73ae00c75d66ebeb38",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-editor-standard.png",
+    "sha256Before": "88e4fb7e8700190345ebea8592d921c2325f275ee2235f73ae00c75d66ebeb38",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-viewer-standard-visibility-after.png",
+    "sha256Before": "01777abf8c471070f96fc9920b38bb6599e9256b763840e934b0c30f6de0b329",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "01777abf8c471070f96fc9920b38bb6599e9256b763840e934b0c30f6de0b329",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/lollipop-viewer-standard-visibility.png",
+    "sha256Before": "01777abf8c471070f96fc9920b38bb6599e9256b763840e934b0c30f6de0b329",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-editor-standard-after.png",
+    "sha256Before": "7acc233a4fb60f3e47d82401d24f05f30584ae40024ebc5fd9bc2ce6f7c69f3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-editor-standard-visibility-after.png",
+    "sha256Before": "7acc233a4fb60f3e47d82401d24f05f30584ae40024ebc5fd9bc2ce6f7c69f3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-editor-standard-visibility-broad-round.png",
+    "sha256Before": "7acc233a4fb60f3e47d82401d24f05f30584ae40024ebc5fd9bc2ce6f7c69f3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-editor-standard-visibility.png",
+    "sha256Before": "7acc233a4fb60f3e47d82401d24f05f30584ae40024ebc5fd9bc2ce6f7c69f3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-editor-standard.png",
+    "sha256Before": "7acc233a4fb60f3e47d82401d24f05f30584ae40024ebc5fd9bc2ce6f7c69f3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-viewer-standard-visibility-after.png",
+    "sha256Before": "408033dd5bd09d5ef120e7a427056638a8366d48e1c02b267b121d4d7be18222",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "408033dd5bd09d5ef120e7a427056638a8366d48e1c02b267b121d4d7be18222",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/metric_tile-viewer-standard-visibility.png",
+    "sha256Before": "408033dd5bd09d5ef120e7a427056638a8366d48e1c02b267b121d4d7be18222",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-editor-standard-after.png",
+    "sha256Before": "6e813bed367a6bda21b4c334cfb08e98d7347cb76704236b800730291e8b1206",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-editor-standard-visibility-after.png",
+    "sha256Before": "6e813bed367a6bda21b4c334cfb08e98d7347cb76704236b800730291e8b1206",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-editor-standard-visibility-broad-round.png",
+    "sha256Before": "6e813bed367a6bda21b4c334cfb08e98d7347cb76704236b800730291e8b1206",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-editor-standard-visibility.png",
+    "sha256Before": "6e813bed367a6bda21b4c334cfb08e98d7347cb76704236b800730291e8b1206",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-editor-standard.png",
+    "sha256Before": "b368b05eee3140dadf8dc18703ebb717719628526f38442775f15107c50b2710",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-viewer-standard-visibility-after.png",
+    "sha256Before": "7209a16825c4af465cba785f207b4faf81ef6f6150f1c3334b63b563f93056d4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "7209a16825c4af465cba785f207b4faf81ef6f6150f1c3334b63b563f93056d4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/narrative-viewer-standard-visibility.png",
+    "sha256Before": "7209a16825c4af465cba785f207b4faf81ef6f6150f1c3334b63b563f93056d4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-editor-standard-after.png",
+    "sha256Before": "0dac966f554a5df17cb9cda5876533e8af7df4d020ee6b7db45d6671a3c4133d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-editor-standard-visibility-after.png",
+    "sha256Before": "0dac966f554a5df17cb9cda5876533e8af7df4d020ee6b7db45d6671a3c4133d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-editor-standard-visibility-broad-round.png",
+    "sha256Before": "0dac966f554a5df17cb9cda5876533e8af7df4d020ee6b7db45d6671a3c4133d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-editor-standard-visibility.png",
+    "sha256Before": "0dac966f554a5df17cb9cda5876533e8af7df4d020ee6b7db45d6671a3c4133d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-editor-standard.png",
+    "sha256Before": "0dac966f554a5df17cb9cda5876533e8af7df4d020ee6b7db45d6671a3c4133d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-viewer-standard-visibility-after.png",
+    "sha256Before": "8c960413c46e919d38c2a668fd4348162ed8ac96b4917c2154016dae62d56632",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "8c960413c46e919d38c2a668fd4348162ed8ac96b4917c2154016dae62d56632",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/nav_button-viewer-standard-visibility.png",
+    "sha256Before": "86c619e7a7ac99a6ca7d630539cec2fea7f289633190b6137a75664eb48f5069",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-legend-top.png",
+    "sha256Before": "6e159ffa620d90f35f3b7bb87508ff29531c7b2bcf53590caa24d5ae8a385191",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-standard-after.png",
+    "sha256Before": "7b7301d88ba749cbcdf17a5a3c1537ff88b07b8e878a823aa0518e30d672ceb9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-standard-visibility-after.png",
+    "sha256Before": "7b7301d88ba749cbcdf17a5a3c1537ff88b07b8e878a823aa0518e30d672ceb9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-standard-visibility-broad-round.png",
+    "sha256Before": "7b7301d88ba749cbcdf17a5a3c1537ff88b07b8e878a823aa0518e30d672ceb9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-standard-visibility.png",
+    "sha256Before": "7b7301d88ba749cbcdf17a5a3c1537ff88b07b8e878a823aa0518e30d672ceb9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-editor-standard.png",
+    "sha256Before": "7b7301d88ba749cbcdf17a5a3c1537ff88b07b8e878a823aa0518e30d672ceb9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-viewer-legend-top.png",
+    "sha256Before": "efedd1e43ae09b1dcb799139e484f118b1723ffc78efee0015b72893f8116103",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-viewer-standard-visibility-after.png",
+    "sha256Before": "e5019bc4f36214440f726f82ee356766b4c9c96d28ce4e6aa74515079628e59c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "e5019bc4f36214440f726f82ee356766b4c9c96d28ce4e6aa74515079628e59c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/pie-viewer-standard-visibility.png",
+    "sha256Before": "e5019bc4f36214440f726f82ee356766b4c9c96d28ce4e6aa74515079628e59c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-editor-standard-after.png",
+    "sha256Before": "552fc4773b56943c8a128a3d73d02aa4db8dfaeb10259e67db941a520426faa8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-editor-standard-visibility-after.png",
+    "sha256Before": "552fc4773b56943c8a128a3d73d02aa4db8dfaeb10259e67db941a520426faa8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-editor-standard-visibility-broad-round.png",
+    "sha256Before": "552fc4773b56943c8a128a3d73d02aa4db8dfaeb10259e67db941a520426faa8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-editor-standard-visibility.png",
+    "sha256Before": "552fc4773b56943c8a128a3d73d02aa4db8dfaeb10259e67db941a520426faa8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-editor-standard.png",
+    "sha256Before": "552fc4773b56943c8a128a3d73d02aa4db8dfaeb10259e67db941a520426faa8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-settings-style.png",
+    "sha256Before": "a3e79fcc1defa2f35b834dc011f3a28aa6857152031f0e186def2f16b8b4e81f",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-viewer-standard-visibility-after.png",
+    "sha256Before": "dbfa956207c6c4661a2772669c0e2215c484476cd28bd9a0bd975a2ece49ce9e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "dbfa956207c6c4661a2772669c0e2215c484476cd28bd9a0bd975a2ece49ce9e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/progress-viewer-standard-visibility.png",
+    "sha256Before": "dbfa956207c6c4661a2772669c0e2215c484476cd28bd9a0bd975a2ece49ce9e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-editor-standard-after.png",
+    "sha256Before": "ee8e57d91ad72df5deae28cf237e3e7c41f5fd516072a9fa352808af36947bca",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-editor-standard-visibility-after.png",
+    "sha256Before": "ee8e57d91ad72df5deae28cf237e3e7c41f5fd516072a9fa352808af36947bca",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-editor-standard-visibility-broad-round.png",
+    "sha256Before": "ee8e57d91ad72df5deae28cf237e3e7c41f5fd516072a9fa352808af36947bca",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-editor-standard-visibility.png",
+    "sha256Before": "ee8e57d91ad72df5deae28cf237e3e7c41f5fd516072a9fa352808af36947bca",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-editor-standard.png",
+    "sha256Before": "ee8e57d91ad72df5deae28cf237e3e7c41f5fd516072a9fa352808af36947bca",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-schema-placement-text.png",
+    "sha256Before": "88dd26448071f78ec0049567fed50c4ac2c3ec53ec8387a99816c02275fe3c3d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-viewer-standard-visibility-after.png",
+    "sha256Before": "76bbd427428aecdadeb679fa7d8bef43dc579980fe33cb192eb7fd09bbf8b14d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "76bbd427428aecdadeb679fa7d8bef43dc579980fe33cb192eb7fd09bbf8b14d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/radar-viewer-standard-visibility.png",
+    "sha256Before": "76bbd427428aecdadeb679fa7d8bef43dc579980fe33cb192eb7fd09bbf8b14d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-editor-standard-after.png",
+    "sha256Before": "d7f53af27a1f30ff39df5fa1603f0fe3a7f9013f35149f1f940fa106c8ee4508",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-editor-standard-visibility-after.png",
+    "sha256Before": "d7f53af27a1f30ff39df5fa1603f0fe3a7f9013f35149f1f940fa106c8ee4508",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-editor-standard-visibility-broad-round.png",
+    "sha256Before": "d7f53af27a1f30ff39df5fa1603f0fe3a7f9013f35149f1f940fa106c8ee4508",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-editor-standard-visibility.png",
+    "sha256Before": "d7f53af27a1f30ff39df5fa1603f0fe3a7f9013f35149f1f940fa106c8ee4508",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-editor-standard.png",
+    "sha256Before": "d7f53af27a1f30ff39df5fa1603f0fe3a7f9013f35149f1f940fa106c8ee4508",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-viewer-standard-visibility-after.png",
+    "sha256Before": "cdbb459115b1319e0713cfefa949aa4345499c9442def4cc36081f5dc5ecacbb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "cdbb459115b1319e0713cfefa949aa4345499c9442def4cc36081f5dc5ecacbb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/ranked_list-viewer-standard-visibility.png",
+    "sha256Before": "cdbb459115b1319e0713cfefa949aa4345499c9442def4cc36081f5dc5ecacbb",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-editor-standard-after.png",
+    "sha256Before": "3b3c3cbdd893d031bdc1294d5fc9f065d5c23112bf2714ca596d14982399a6c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-editor-standard-visibility-after.png",
+    "sha256Before": "3b3c3cbdd893d031bdc1294d5fc9f065d5c23112bf2714ca596d14982399a6c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-editor-standard-visibility-broad-round.png",
+    "sha256Before": "3b3c3cbdd893d031bdc1294d5fc9f065d5c23112bf2714ca596d14982399a6c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-editor-standard-visibility.png",
+    "sha256Before": "3b3c3cbdd893d031bdc1294d5fc9f065d5c23112bf2714ca596d14982399a6c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-editor-standard.png",
+    "sha256Before": "3b3c3cbdd893d031bdc1294d5fc9f065d5c23112bf2714ca596d14982399a6c3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-viewer-standard-visibility-after.png",
+    "sha256Before": "c32e3f40862cdf2f58d81191143f91311e0fe940a45116b2441d49c7683001f7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "c32e3f40862cdf2f58d81191143f91311e0fe940a45116b2441d49c7683001f7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sankey-viewer-standard-visibility.png",
+    "sha256Before": "c32e3f40862cdf2f58d81191143f91311e0fe940a45116b2441d49c7683001f7",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-editor-standard-after.png",
+    "sha256Before": "b20240ed2c3a0f4ac303d384783893e6568befe0c05e5ab7562ff52c40391db9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-editor-standard-visibility-after.png",
+    "sha256Before": "b20240ed2c3a0f4ac303d384783893e6568befe0c05e5ab7562ff52c40391db9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-editor-standard-visibility-broad-round.png",
+    "sha256Before": "b20240ed2c3a0f4ac303d384783893e6568befe0c05e5ab7562ff52c40391db9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-editor-standard-visibility.png",
+    "sha256Before": "b20240ed2c3a0f4ac303d384783893e6568befe0c05e5ab7562ff52c40391db9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-editor-standard.png",
+    "sha256Before": "b20240ed2c3a0f4ac303d384783893e6568befe0c05e5ab7562ff52c40391db9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-viewer-standard-visibility-after.png",
+    "sha256Before": "d73b9a8c32b83e812b77301f00c9af3954a42dc9ee67ca6b509675dcf6559c17",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "d73b9a8c32b83e812b77301f00c9af3954a42dc9ee67ca6b509675dcf6559c17",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/scatter-viewer-standard-visibility.png",
+    "sha256Before": "d73b9a8c32b83e812b77301f00c9af3954a42dc9ee67ca6b509675dcf6559c17",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-editor-standard-after.png",
+    "sha256Before": "9f6b00b7b02b86c37e54340c012bca01c3ba97ab5db8f5d4d924301740e09f87",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-editor-standard-visibility-after.png",
+    "sha256Before": "9f6b00b7b02b86c37e54340c012bca01c3ba97ab5db8f5d4d924301740e09f87",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-editor-standard-visibility-broad-round.png",
+    "sha256Before": "9f6b00b7b02b86c37e54340c012bca01c3ba97ab5db8f5d4d924301740e09f87",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-editor-standard-visibility.png",
+    "sha256Before": "9f6b00b7b02b86c37e54340c012bca01c3ba97ab5db8f5d4d924301740e09f87",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-editor-standard.png",
+    "sha256Before": "9f6b00b7b02b86c37e54340c012bca01c3ba97ab5db8f5d4d924301740e09f87",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-viewer-standard-visibility-after.png",
+    "sha256Before": "c42952e613be80499810e814dcafb421538350259f79ef367afc738cb673a8a3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "c42952e613be80499810e814dcafb421538350259f79ef367afc738cb673a8a3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/shape-viewer-standard-visibility.png",
+    "sha256Before": "c42952e613be80499810e814dcafb421538350259f79ef367afc738cb673a8a3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-editor-standard-after.png",
+    "sha256Before": "795db23455db3d9600dddd911b512f3d08e7fe0ee7b810bcb34e4e28ea5383a9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-editor-standard-visibility-after.png",
+    "sha256Before": "795db23455db3d9600dddd911b512f3d08e7fe0ee7b810bcb34e4e28ea5383a9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-editor-standard-visibility-broad-round.png",
+    "sha256Before": "7bbcf9d28a05f0340e61052cb49d2d284333b88a46915e74682ffdcb1d2ffec4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-editor-standard-visibility.png",
+    "sha256Before": "795db23455db3d9600dddd911b512f3d08e7fe0ee7b810bcb34e4e28ea5383a9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-editor-standard.png",
+    "sha256Before": "795db23455db3d9600dddd911b512f3d08e7fe0ee7b810bcb34e4e28ea5383a9",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-viewer-standard-visibility-after.png",
+    "sha256Before": "d550e4aab148a69e354f9906bbd306f69e0d061993e377c15d648506f5b06dd3",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "637682a23d0a718fe20ff865dfa2b22f334102d8bac16d9e7e7e6d38c359e73b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/slope-viewer-standard-visibility.png",
+    "sha256Before": "d39013ecf3dc743fedbe64e2ba24dc87f3727f6f5c4b3eae4f90d49392815517",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-editor-standard-after.png",
+    "sha256Before": "a7b9d04495172d06fbaeb2978f02d5fff887c3212dcf282ff9101a409af5508c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-editor-standard-visibility-after.png",
+    "sha256Before": "a7b9d04495172d06fbaeb2978f02d5fff887c3212dcf282ff9101a409af5508c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-editor-standard-visibility-broad-round.png",
+    "sha256Before": "a7b9d04495172d06fbaeb2978f02d5fff887c3212dcf282ff9101a409af5508c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-editor-standard-visibility.png",
+    "sha256Before": "a7b9d04495172d06fbaeb2978f02d5fff887c3212dcf282ff9101a409af5508c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-editor-standard.png",
+    "sha256Before": "a7b9d04495172d06fbaeb2978f02d5fff887c3212dcf282ff9101a409af5508c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-viewer-standard-visibility-after.png",
+    "sha256Before": "8d2af6d40914acd17158517fdc64893cc9683efcaaaa5e340016e3b36be7b5e0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "8d2af6d40914acd17158517fdc64893cc9683efcaaaa5e340016e3b36be7b5e0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sparkline_kpi-viewer-standard-visibility.png",
+    "sha256Before": "8d2af6d40914acd17158517fdc64893cc9683efcaaaa5e340016e3b36be7b5e0",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-settled.png",
+    "sha256Before": "8cf6b34f4d2c96987299e534a8b0020b449ec64b542595cf2bf760528f73c622",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-standard-after.png",
+    "sha256Before": "fe126fb93e05457b96f2fe2ef5eaacf12ab94ce690ee95fac9344a9aa598e708",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-standard-visibility-after.png",
+    "sha256Before": "fe126fb93e05457b96f2fe2ef5eaacf12ab94ce690ee95fac9344a9aa598e708",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-standard-visibility-broad-round.png",
+    "sha256Before": "fe126fb93e05457b96f2fe2ef5eaacf12ab94ce690ee95fac9344a9aa598e708",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-standard-visibility.png",
+    "sha256Before": "fe126fb93e05457b96f2fe2ef5eaacf12ab94ce690ee95fac9344a9aa598e708",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-editor-standard.png",
+    "sha256Before": "8cf6b34f4d2c96987299e534a8b0020b449ec64b542595cf2bf760528f73c622",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-viewer-settled.png",
+    "sha256Before": "f3edea97c47879f8690b1150b0a8dd2496575d23b1bae487c3ffc1237db133fa",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-viewer-standard-visibility-after.png",
+    "sha256Before": "f2a332a4d6402bec4ff5cf4743ab04951eb63819426aae1c7b3d14756c341df4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "f2a332a4d6402bec4ff5cf4743ab04951eb63819426aae1c7b3d14756c341df4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_area-viewer-standard-visibility.png",
+    "sha256Before": "f2a332a4d6402bec4ff5cf4743ab04951eb63819426aae1c7b3d14756c341df4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-legend-top.png",
+    "sha256Before": "10a59548151e1d67ec39ab803e723b04b43df090d8505e40945cbca8bd83ee7e",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-standard-after.png",
+    "sha256Before": "e3f1fe99f4dca76f1afb3b7f4204ed5d145180dff8f2afd854aa3b7e72d84ff1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-standard-visibility-after.png",
+    "sha256Before": "e3f1fe99f4dca76f1afb3b7f4204ed5d145180dff8f2afd854aa3b7e72d84ff1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-standard-visibility-broad-round.png",
+    "sha256Before": "e3f1fe99f4dca76f1afb3b7f4204ed5d145180dff8f2afd854aa3b7e72d84ff1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-standard-visibility.png",
+    "sha256Before": "e3f1fe99f4dca76f1afb3b7f4204ed5d145180dff8f2afd854aa3b7e72d84ff1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-editor-standard.png",
+    "sha256Before": "e3f1fe99f4dca76f1afb3b7f4204ed5d145180dff8f2afd854aa3b7e72d84ff1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-viewer-legend-top.png",
+    "sha256Before": "d25dba69f8b11032900e589ef76a1543fe75388237f3f191f14cb4c15554b43a",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-viewer-standard-visibility-after.png",
+    "sha256Before": "561756ea8e9a3e85726312d81389fa781e6b3a1b9946b3fc5aa6158c5391915c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "561756ea8e9a3e85726312d81389fa781e6b3a1b9946b3fc5aa6158c5391915c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stacked_bar-viewer-standard-visibility.png",
+    "sha256Before": "561756ea8e9a3e85726312d81389fa781e6b3a1b9946b3fc5aa6158c5391915c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-editor-standard-after.png",
+    "sha256Before": "12c9bce56a38f81471627ec4f35455783e9a461ae739d62b2fb6da9c00f576f5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-editor-standard-visibility-after.png",
+    "sha256Before": "12c9bce56a38f81471627ec4f35455783e9a461ae739d62b2fb6da9c00f576f5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-editor-standard-visibility-broad-round.png",
+    "sha256Before": "12c9bce56a38f81471627ec4f35455783e9a461ae739d62b2fb6da9c00f576f5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-editor-standard-visibility.png",
+    "sha256Before": "12c9bce56a38f81471627ec4f35455783e9a461ae739d62b2fb6da9c00f576f5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-editor-standard.png",
+    "sha256Before": "12c9bce56a38f81471627ec4f35455783e9a461ae739d62b2fb6da9c00f576f5",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-viewer-standard-visibility-after.png",
+    "sha256Before": "16200a9529f27a5fdf2a9e0b3a3fec1616f4e17c34ab8afb31fae3217cf84d10",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "16200a9529f27a5fdf2a9e0b3a3fec1616f4e17c34ab8afb31fae3217cf84d10",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/stat_card-viewer-standard-visibility.png",
+    "sha256Before": "16200a9529f27a5fdf2a9e0b3a3fec1616f4e17c34ab8afb31fae3217cf84d10",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-clipping-after.png",
+    "sha256Before": "ed5da07cab6d78bc8c804155aea70fd34a2ee9bc5977e90e872f313099ddee97",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-clipping-before.png",
+    "sha256Before": "256d19a7306d48755bb6e320aceef070b191efe71dee4bd2e5a588653bbc1cac",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-settled.png",
+    "sha256Before": "cbbeb25f3e908fd042756a460312b2daa4aee8fc54542fb7568da1d59f88c28c",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-standard-after.png",
+    "sha256Before": "f6f646ace93296e9737ee6323cf5a90cba0bea87b1dce9065113533a18e24dee",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-standard-visibility-after.png",
+    "sha256Before": "256d19a7306d48755bb6e320aceef070b191efe71dee4bd2e5a588653bbc1cac",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-standard-visibility-broad-round.png",
+    "sha256Before": "256d19a7306d48755bb6e320aceef070b191efe71dee4bd2e5a588653bbc1cac",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-standard-visibility.png",
+    "sha256Before": "f6f646ace93296e9737ee6323cf5a90cba0bea87b1dce9065113533a18e24dee",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-editor-standard.png",
+    "sha256Before": "f6f646ace93296e9737ee6323cf5a90cba0bea87b1dce9065113533a18e24dee",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-clipping-after.png",
+    "sha256Before": "e5124d111a083ef0afe4e3003da0377b6dd6324ba6f7a34713327c5759a338db",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-clipping-before.png",
+    "sha256Before": "e5124d111a083ef0afe4e3003da0377b6dd6324ba6f7a34713327c5759a338db",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-settled.png",
+    "sha256Before": "69fd6642a55cf835e462390253768dfe4b2c3eebe056a731948275bc078dff31",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-standard-visibility-after.png",
+    "sha256Before": "e5124d111a083ef0afe4e3003da0377b6dd6324ba6f7a34713327c5759a338db",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "e5124d111a083ef0afe4e3003da0377b6dd6324ba6f7a34713327c5759a338db",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/sunburst-viewer-standard-visibility.png",
+    "sha256Before": "141069d48796991f7b7250ae525cdbe739d5914d906f197a4084baece5059180",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-editor-standard-after.png",
+    "sha256Before": "e29c192956732614a25e1e800a47675cc7992530a1236d00af966e7efdf07a79",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-editor-standard-visibility-after.png",
+    "sha256Before": "e29c192956732614a25e1e800a47675cc7992530a1236d00af966e7efdf07a79",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-editor-standard-visibility-broad-round.png",
+    "sha256Before": "463dc177457b04938948ebd1c32eb881584b521830bd49c508d1d1c6c44965c4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-editor-standard-visibility.png",
+    "sha256Before": "e29c192956732614a25e1e800a47675cc7992530a1236d00af966e7efdf07a79",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-editor-standard.png",
+    "sha256Before": "e29c192956732614a25e1e800a47675cc7992530a1236d00af966e7efdf07a79",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-viewer-standard-visibility-after.png",
+    "sha256Before": "7d3634aa5e50361f00f01668d588e969d25fcd845ebd50312fda48c93effa913",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "39a6a6cbe7998884a78d50f695f5ff3cec988c4acfa2398070ef6329e51ff963",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/table-viewer-standard-visibility.png",
+    "sha256Before": "7d3634aa5e50361f00f01668d588e969d25fcd845ebd50312fda48c93effa913",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-editor-standard-after.png",
+    "sha256Before": "4b9415e1424141fd9c1290db3fe68d2711905891eb3cd75be09da26aa2976c63",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-editor-standard-visibility-after.png",
+    "sha256Before": "4b9415e1424141fd9c1290db3fe68d2711905891eb3cd75be09da26aa2976c63",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-editor-standard-visibility-broad-round.png",
+    "sha256Before": "4b9415e1424141fd9c1290db3fe68d2711905891eb3cd75be09da26aa2976c63",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-editor-standard-visibility.png",
+    "sha256Before": "4b9415e1424141fd9c1290db3fe68d2711905891eb3cd75be09da26aa2976c63",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-editor-standard.png",
+    "sha256Before": "4b9415e1424141fd9c1290db3fe68d2711905891eb3cd75be09da26aa2976c63",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-settings-text.png",
+    "sha256Before": "e6efa7f2a607cd86d0c94ebbcc1320d003a37174e40aed5c1663b7b350518e8d",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-viewer-standard-visibility-after.png",
+    "sha256Before": "003dac8a9fb921026a1322908fb64ede92ab6a401d3d01c20aeb13683043e2d1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "003dac8a9fb921026a1322908fb64ede92ab6a401d3d01c20aeb13683043e2d1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/text_box-viewer-standard-visibility.png",
+    "sha256Before": "003dac8a9fb921026a1322908fb64ede92ab6a401d3d01c20aeb13683043e2d1",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-editor-standard-after.png",
+    "sha256Before": "e04f9ef95e467ecaa694402a432f708117fd66467b7eae331e9444d00bff490b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-editor-standard-visibility-after.png",
+    "sha256Before": "e04f9ef95e467ecaa694402a432f708117fd66467b7eae331e9444d00bff490b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-editor-standard-visibility-broad-round.png",
+    "sha256Before": "e04f9ef95e467ecaa694402a432f708117fd66467b7eae331e9444d00bff490b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-editor-standard-visibility.png",
+    "sha256Before": "e04f9ef95e467ecaa694402a432f708117fd66467b7eae331e9444d00bff490b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-editor-standard.png",
+    "sha256Before": "e04f9ef95e467ecaa694402a432f708117fd66467b7eae331e9444d00bff490b",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-schema-placement-text.png",
+    "sha256Before": "d4ff39109ac04dce021d0f56bcb34ff3f5d662570ae0344fd837d87acd51f448",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-viewer-standard-visibility-after.png",
+    "sha256Before": "caace9e5bf6af255c5df96cb9570c247c06296e16529a7995f97ff178271f832",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "caace9e5bf6af255c5df96cb9570c247c06296e16529a7995f97ff178271f832",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/treemap-viewer-standard-visibility.png",
+    "sha256Before": "caace9e5bf6af255c5df96cb9570c247c06296e16529a7995f97ff178271f832",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-editor-standard-after.png",
+    "sha256Before": "d48de6295bb53b9da0fa7a78a34d0a3c25f29a39c195f71731bee9cf943fb7a2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-editor-standard-visibility-after.png",
+    "sha256Before": "d48de6295bb53b9da0fa7a78a34d0a3c25f29a39c195f71731bee9cf943fb7a2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-editor-standard-visibility-broad-round.png",
+    "sha256Before": "d48de6295bb53b9da0fa7a78a34d0a3c25f29a39c195f71731bee9cf943fb7a2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-editor-standard-visibility.png",
+    "sha256Before": "d48de6295bb53b9da0fa7a78a34d0a3c25f29a39c195f71731bee9cf943fb7a2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-editor-standard.png",
+    "sha256Before": "d48de6295bb53b9da0fa7a78a34d0a3c25f29a39c195f71731bee9cf943fb7a2",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-viewer-standard-visibility-after.png",
+    "sha256Before": "cd3cfc1bad6d4ff26c341f2473fe8baeab2f63cca9f30b9a206711a65dc396ed",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "cd3cfc1bad6d4ff26c341f2473fe8baeab2f63cca9f30b9a206711a65dc396ed",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waffle-viewer-standard-visibility.png",
+    "sha256Before": "cd3cfc1bad6d4ff26c341f2473fe8baeab2f63cca9f30b9a206711a65dc396ed",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-clipping-after.png",
+    "sha256Before": "521dd19d3d75b5b17b43e4fa6eb65a71ae714802a4d9a0f1b745673231e15cd8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-clipping-before.png",
+    "sha256Before": "521dd19d3d75b5b17b43e4fa6eb65a71ae714802a4d9a0f1b745673231e15cd8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-settled.png",
+    "sha256Before": "a37680bd576dd69c1aa2bc41dc328840da43c4c23dcc044231c6fc7bb718b2c4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-standard-after.png",
+    "sha256Before": "a37680bd576dd69c1aa2bc41dc328840da43c4c23dcc044231c6fc7bb718b2c4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-standard-visibility-after.png",
+    "sha256Before": "521dd19d3d75b5b17b43e4fa6eb65a71ae714802a4d9a0f1b745673231e15cd8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-standard-visibility-broad-round.png",
+    "sha256Before": "521dd19d3d75b5b17b43e4fa6eb65a71ae714802a4d9a0f1b745673231e15cd8",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-standard-visibility.png",
+    "sha256Before": "a37680bd576dd69c1aa2bc41dc328840da43c4c23dcc044231c6fc7bb718b2c4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-editor-standard.png",
+    "sha256Before": "a37680bd576dd69c1aa2bc41dc328840da43c4c23dcc044231c6fc7bb718b2c4",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-clipping-after.png",
+    "sha256Before": "99bf8dd31c0192274e022f5462b3c316fc6f589f5fe3612390641a078616ed53",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-clipping-before.png",
+    "sha256Before": "99bf8dd31c0192274e022f5462b3c316fc6f589f5fe3612390641a078616ed53",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-settled.png",
+    "sha256Before": "31f1f5a17f4680c6e8a4791c1fce97cd83b7c637e5015af54f0a9f64b92d6b40",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-standard-visibility-after.png",
+    "sha256Before": "99bf8dd31c0192274e022f5462b3c316fc6f589f5fe3612390641a078616ed53",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-standard-visibility-broad-round.png",
+    "sha256Before": "99bf8dd31c0192274e022f5462b3c316fc6f589f5fe3612390641a078616ed53",
+    "status": "Needs inspection/regeneration"
+  },
+  {
+    "path": "docs/qa/evidence/screenshots/waterfall-viewer-standard-visibility.png",
+    "sha256Before": "31f1f5a17f4680c6e8a4791c1fce97cd83b7c637e5015af54f0a9f64b92d6b40",
+    "status": "Needs inspection/regeneration"
+  }
+]

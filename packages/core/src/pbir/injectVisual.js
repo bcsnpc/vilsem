@@ -50,7 +50,7 @@ export function makeVisualContainer({ visualName, spec, bindings = {}, layout = 
     const expression = measure ? scoped.expression(property) : undefined
     if(expression!==undefined && field.table.toLowerCase()!==measures[0].table.toLowerCase())throw Error('All visual-scoped measure bindings must use the first measure binding table')
     const projection = expression
-      ? { NativeMeasure: { Language:'dax', Expression:expression, DataType:3, ProposedName:property } }
+      ? { NativeMeasure: { Language:'dax', Expression:expression, DataType:3, ProposedName:property, ...(scoped.format(property)!==undefined?{Format:scoped.format(property)}:{}) } }
       : { [measure ? 'Measure' : 'Column']: { Expression: { SourceRef: { Entity: field.table } }, Property: property } }
     queryState[role] = { projections: [{ field:projection, queryRef: expression ? `NativeMeasure(${property})` : `${field.table}.${property}`, nativeQueryRef: property, ...(!measure ? { active:true } : {}) }] }
   }

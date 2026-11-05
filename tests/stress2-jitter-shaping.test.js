@@ -30,6 +30,6 @@ describe('bounded deterministic beeswarm shaping',()=>{
  })
  it('validates method/viewport/radius and declares the renderer floor',()=>{
   for(const d of [{method:'custom'},{width:1},{height:Infinity},{radius:0}])expect(validateTemplate(spec(d)).errors.length).toBeGreaterThan(0)
-  expect(requiredRendererVersion({template:spec({})})).toBe('4.28.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:spec({})})).toBe('4.28.0.0')
  })
 })

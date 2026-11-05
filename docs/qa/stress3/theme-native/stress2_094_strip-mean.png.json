@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_23",
+  "visualName": "stress2_094_strip-mean",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "8c272d1e286d6930e9e21721d360d12bee30da37c0425c1bd0bda36b8b2a7a26",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "dc2c20020dd64c40caae1bd6a0268dfe383f432fd3b6a79f70846e4cd950dd5a",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

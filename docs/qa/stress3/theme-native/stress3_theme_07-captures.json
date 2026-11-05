@@ -1,0 +1,74 @@
+[
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_07",
+    "visualName": "stress2_025_bullet-bands-delta",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "d1909fd7012a9ccbd6fa1c12eb6a530e408e4c5d1f52a4e7b9348174b530847d",
+    "region": {
+      "x": 0,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "85e13c2be160d4823b1fb38d7bb244974b4cde907c6701eaa32b9fdec2b66876",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_07",
+    "visualName": "stress2_026_linear-gauge",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "34d701bbe7db9814bb1c4edb67ae23f90f080d8e58bdc2e76960933370978836",
+    "region": {
+      "x": 900,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "52d96b438c0e0a0e3289028bbb72325928c1038cc182cf3b6aa88bc95a178f45",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_07",
+    "visualName": "stress2_027_multi-ring-progress",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "1487326a084be74d11989533dfbdfecaae950bd1dbc49c37ddd9616bf79a1d16",
+    "region": {
+      "x": 0,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "04a1594d295aa5592ad4b1f0799ed7490bc8ffe37d598d3afc66ae6f63a40794",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_07",
+    "visualName": "stress2_028_gauge-target-bands",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "b31d572fa281e82bf12315f8b8af7ec126bd3cb5b00cd1bb25f790640c362cfe",
+    "region": {
+      "x": 900,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "794b897d3ce016c86350826babdb71b0a79ca2e88d3402fdbf90ed9932e0c8d0",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_25",
+  "visualName": "stress2_101_group-percent-subtotals",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "473061a64ac472f5eb92b0512bf7463242348f87a65a167af4180936ff016129",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "8fa14d6011e49298c266eabe5dbed3bab1099871f0016a7283ec964c3ad96213",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_13",
+  "visualName": "stress2_051_parallel-sets",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "1deecda55cc0e08348732dcb2479d909037bd24de6d9b5e734b4d5e297e8099d",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "a92ba5bc7a1b29a40904c8df7519017a4e8627c3141b649352cbbdfda91fce02",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_05",
+  "visualName": "stress2_020_nested-donut",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "02c5e1baf36f696574fc7c0c1b6f5f881368ad7602c2d35118eea57d081110c5",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "a379edc8b4e66f04d90d95e559e7ef6daa65669ed86a9f57641969d34d241e74",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

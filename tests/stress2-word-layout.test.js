@@ -34,6 +34,6 @@ describe('bounded word-cloud layout without custom series',()=>{
  it('checks fixed dimensions and requires matching native renderer feature support',()=>{
   expect(validateTemplate(template({limit:10000})).errors.join()).toMatch(/1..100/)
   expect(validateTemplate(template({minFont:30,maxFont:10})).errors.join()).toMatch(/minFont/)
-  expect(requiredRendererVersion({template:template({})})).toBe('4.31.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:template({})})).toBe('4.31.0.0')
  })
 })

@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Dark.Report",
+  "pageName": "stress3_theme_01",
+  "visualName": "stress2_001_step-line",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "f0510631492391c51ba4f8919c98fcdd20660c7367fda8d12fc084dfeb11075d",
+  "visualSha256": "07261683cf5940d3b4ad45f9800598e5ccec11cae19d806f7edbaca6a05ea894",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "06ce73312ac56d6cb0066a3a13f6b6c5f3853fb26c55f36b94373c24ea50b5d8",
+  "status": "Captured; visual inspection pending"
+}

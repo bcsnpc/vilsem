@@ -30,9 +30,11 @@ beforeEach(async()=>{
   await write('definition/bookmarks/bookmark.json',{name:'existing-bookmark',state:{keep:true}})
 })
 afterEach(async()=>{await fs.rm(report,{recursive:true,force:true})})
-const args=()=>({reportDir:report,pageName:'existing',visualName:'new_vilsem',spec:{version:1,type:'bar',config:{title:'Sales'}},bindings:{dimensions:[{table:'Product',column:'Name'}],measures:[{table:'Measures',name:'Sales'}]},layout:{x:80,y:50,width:600,height:300}})
+const args=()=>({reportDir:report,pageName:'existing',visualName:'new_vilsem',spec:{version:1,type:'bar',canvasTheme:'dark',config:{title:'Sales'}},bindings:{dimensions:[{table:'Product',column:'Name'}],measures:[{table:'Measures',name:'Sales'}]},layout:{x:80,y:50,width:600,height:300}})
 
 describe('core PBIR insertion',()=>{
+  // Cold registration decompresses and validates the real multi-MB renderer.
+  // Keep this I/O integration test bounded without a 5s machine-speed race.
   it('inserts exactly one visual, preserves unrelated bytes and registers the bundled renderer',async()=>{
     const before=await snapshot()
     const result=await injectVisual(args())
@@ -48,7 +50,7 @@ describe('core PBIR insertion',()=>{
     expect(reportJson.filterConfig.filters[0].name).toBe('keep-filter')
     expect(reportJson.resourcePackages).toHaveLength(1)
     expect((await fs.readdir(path.join(report,'CustomVisuals',RENDERER_GUID)))).toContain('package.json')
-  })
+  },15000)
   it('does not rewrite report.json when renderer registration already exists',async()=>{
     await injectVisual(args())
     const before=await snapshot()
@@ -78,7 +80,7 @@ describe('core PBIR insertion',()=>{
   it('refuses advanced specs against old registered resources before writing any report file',async()=>{
     await injectVisual(args())
     await write(`CustomVisuals/${RENDERER_GUID}/package.json`,{visual:{guid:RENDERER_GUID},version:'4.14.2.0'})
-    const spec={template:{...lollipop,transforms:[{waterfall:{category:'category',value:'value'},as:'steps'}]}}
+    const spec={canvasTheme:'dark',template:{...lollipop,transforms:[{waterfall:{category:'category',value:'value'},as:'steps'}]}}
     // Use the actual slot names of the fixture; version rejection is separate
     // from ordinary spec validation and must leave every byte intact.
     const slots=Object.entries(lollipop.slots)
@@ -89,17 +91,23 @@ describe('core PBIR insertion',()=>{
     await expect(injectVisual({...args(),visualName:'basic'})).resolves.toBeTruthy()
   })
   it('detects feature floors and compares complete renderer versions',()=>{
-    expect(requiredRendererVersion({type:'bar'})).toBe(null)
-    const spec={template:{transforms:[{heikinAshi:{},as:'ha'}]}}
+    expect(requiredRendererVersion({canvasTheme:'dark',type:'bar'})).toBe(null)
+    const inherited={type:'bar'}
+    expect(requiredRendererVersion(inherited)).toBe('4.34.0.0')
+    expect(()=>assertRendererVersion(inherited,{},'4.32.0.0')).toThrow(/4.34/)
+    expect(requiredRendererVersion({canvasTheme:'dark',measures:{Ratio:{expression:'1',format:'0.0%'}}})).toBe('4.34.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',type:'bar'},{measures:[{name:'Margin',formatString:'0.00%'}]})).toBe('4.34.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',template:{template:{series:[{type:'bar',label:{color:'$theme.paletteText.1'}}]}}})).toBe('4.34.0.0')
+    const spec={canvasTheme:'dark',template:{transforms:[{heikinAshi:{},as:'ha'}]}}
     expect(requiredRendererVersion(spec)).toBe('4.17.0.0')
     expect(()=>assertRendererVersion(spec,{},'4.16.9.9')).toThrow(/4.17/)
     expect(()=>assertRendererVersion(spec,{},undefined)).toThrow(/unreadable/)
     expect(()=>assertRendererVersion(spec,{},'4.17.0.0')).not.toThrow()
     expect(()=>assertRendererVersion(spec,{},'5.0.0.0')).not.toThrow()
-    expect(requiredRendererVersion({measures:{Ratio:'1'}})).toBe('4.15.0.0')
-    expect(requiredRendererVersion({template:{slots:{values:{kind:'measure',count:6}}}})).toBe('4.15.0.0')
-    expect(requiredRendererVersion({template:{template:{series:{concat:[]}}}})).toBe('4.15.0.0')
-    expect(requiredRendererVersion({template:{transforms:[{allocate:{},as:'grid'}]}})).toBe('4.16.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',measures:{Ratio:'1'}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',template:{slots:{values:{kind:'measure',count:6}}}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',template:{template:{series:{concat:[]}}}})).toBe('4.15.0.0')
+    expect(requiredRendererVersion({canvasTheme:'dark',template:{transforms:[{allocate:{},as:'grid'}]}})).toBe('4.16.0.0')
   })
 })
 

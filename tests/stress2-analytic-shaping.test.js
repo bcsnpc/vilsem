@@ -42,6 +42,6 @@ describe('bounded conversion, calendar bands and smoothing',()=>{
   for(const alpha of [0,-1,1.1,NaN,'0.5'])expect(validateTemplate({...ewma,transforms:[{window:{...ewma.transforms[0].window,alpha},as:'e'}]}).errors.join()).toContain('alpha')
   expect(validateTemplate({...bands,transforms:[{dateBands:{field:'date',weekdays:[7]},as:'b'}]}).errors.join()).toContain('weekdays')
   expect(validateTemplate({...conversion,transforms:[{conversion:{category:'missing',value:'weight'},as:'c'}]}).errors.join()).toContain('unknown field')
-  for(const template of [ewma,bands,conversion])expect(requiredRendererVersion({template})).toBe('4.27.0.0')
+  for(const template of [ewma,bands,conversion])expect(requiredRendererVersion({canvasTheme:'dark',template})).toBe('4.27.0.0')
  })
 })

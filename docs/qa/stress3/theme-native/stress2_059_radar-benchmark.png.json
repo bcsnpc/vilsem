@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_15",
+  "visualName": "stress2_059_radar-benchmark",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "944d1852e339c47a7edf75087f78838583fb251fa8c03fc3bdf71e23e3303a3e",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "68d48c07d0478b3ed0fba7a08ac95a13e05fd7a16c31f075d2e83c2b8fbe6c16",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

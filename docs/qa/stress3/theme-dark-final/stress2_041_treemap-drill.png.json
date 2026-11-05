@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_treemap_contrast",
+  "visualName": "stress2_041_treemap-drill",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "768a49b84d5425f1ea4d7365985fca1b56a470d6ab407cc61a3ef9a62a077486",
+  "visualSha256": "df434e493ba63d488830038a497c017e615ea47f7ed262aeb8c3d730b63b8446",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1422,
+  "height": 948,
+  "sha256": "0af7a149e5ea9faf4fe82bd6257c532127a8d2cf2ba0739f7d87b5b984d19f1e",
+  "status": "Verified by native Desktop SDK capture inspection: readable plain headers/labels, no internal markup, bounded contents; dark fixture uses temporary owned report theme when applicable."
+}

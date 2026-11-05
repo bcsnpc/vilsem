@@ -71,7 +71,7 @@ describe('bounded statistical operations for stress round 2',()=>{
   expect(validateTemplate(template('correlation',{fields:['value','missing']})).errors.join()).toMatch(/unknown field/)
   expect(validateTemplate(template('density2d',{x:'x',y:'y',bins:1000})).errors.join()).toMatch(/4..64/)
   expect(validateTemplate(template('conditional',{value:'value',condition:'other',positive:'url(x)'})).errors.join()).toMatch(/hex colour/)
-  expect(requiredRendererVersion({template:template('qq',{field:'x'})})).toBe('4.29.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:template('qq',{field:'x'})})).toBe('4.29.0.0')
  })
  it('uses top countParam without changing literal count or Other behavior',()=>{
   const t=template('top',{category:'group',value:'value',countParam:'n'});t.params=[{name:'n',type:'number',default:1,min:1,max:5}]
@@ -102,6 +102,6 @@ describe('bounded statistical operations for stress round 2',()=>{
   const option=instantiateVisual({template:t,rows:[row('A','Large',0,999),row('A','Tiny',0,1)]}).option
   expect(option.nodes[0].pixelSpan).toBe(700);expect(option.labels[0]).toEqual({width:692,show:true})
   const small=option.nodes.find(n=>n.name==='Tiny');expect(small.labelWidth).toBe(0);expect(small.labelVisible).toBe(false)
-  expect(requiredRendererVersion({template:t})).toBe('4.30.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:t})).toBe('4.30.0.0')
  })
 })

@@ -50,7 +50,6 @@ const extraArgs = process.argv.slice(2).filter(a => a !== '--dev')
 
 const args = [
   mainJs,
-  '--no-sandbox',
   '--disable-gpu',
   ...extraArgs,
 ]

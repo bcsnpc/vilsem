@@ -35,8 +35,8 @@ describe('bounded multi-level flow shaping',()=>{
   const bad={...base,transforms:[{flows:{levels:['a','missing'],value:'v',layout:'code'},as:'f'}]}
   expect(validateTemplate(bad).errors.join()).toMatch(/unknown field/)
   expect(validateTemplate(bad).errors.join()).toMatch(/line\|bipartite/)
-  expect(requiredRendererVersion({template:base})).toBe('4.22.0.0')
-  expect(requiredRendererVersion({template:{template:{data:'$item.rowIndexes'}}})).toBe(null)
+  expect(requiredRendererVersion({canvasTheme:'dark',template:base})).toBe('4.22.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:{template:{data:'$item.rowIndexes'}}})).toBe(null)
  })
  it('exposes facet numeric radar vectors while preserving the whole panel source identity',()=>{
   const t={...base,transforms:[{facet:{by:'a',category:'b',value:'v'},as:'p'}],template:{series:{repeat:'$calc.p.panels',template:{name:'$item.name',data:[{value:'$item.values',rowIndexes:'$item.rowIndexes'}]}}}}
@@ -56,7 +56,7 @@ describe('bounded multi-level flow shaping',()=>{
   const out=run([{_cats:['US','Bikes'],_val:3},{_cats:['US','Clothing'],_val:2},{_cats:['Canada','Bikes'],_val:1},{_cats:['Canada','Clothing'],_val:4}],t)
   expect(out.radar.indicator).toEqual([{name:'Bikes',min:0,max:3},{name:'Clothing',min:0,max:4}])
   expect(out.series.map(s=>s.data)).toEqual([[3,2],[1,4]])
-  expect(requiredRendererVersion({template:t})).toBe('4.24.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:t})).toBe('4.24.0.0')
   expect(run([],t).radar.indicator).toEqual([])
   expect(run([{_cats:['US','Bikes'],_val:0}],t).radar.indicator).toEqual([{name:'Bikes',min:0,max:1}])
  })

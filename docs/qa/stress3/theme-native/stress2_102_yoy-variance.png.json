@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_25",
+  "visualName": "stress2_102_yoy-variance",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "1b18e9ae44b44c2b411f7c1e2ce1c36cff8c8b820b2a6017902ef2268a128e89",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "0b7a234a39650ba9e7ab22b2349d4beae5834b12d4906750ad8995ea6d81f18d",
+  "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+}

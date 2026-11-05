@@ -1,0 +1,182 @@
+[
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_001_step-line",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "0446958e89ae6534baf6c8910ad4507d66d262967a33903712c749d8058a75ec",
+    "status": "Theme/real marks visually inspected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_002_spline-gradient",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "4ee8e38c21824383c89ed9b53390d2a4869dbd40b51e53bcf62ef10b2a85d73f",
+    "status": "Theme/real marks visually inspected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_003_rolling-line",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "5e40417e7dfad88b1403a1bb03dd3d19f97b54b345fc89ae40a8cd78c934cb2a",
+    "status": "Theme/real marks visually inspected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_004_confidence-band",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "d398da5389255df8017dfca9b99996513812629c938fd01568fa6af72e0a1490",
+    "status": "Theme/real marks visually inspected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_005_fan-chart",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 1200,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "4ded721a91dcd2450d7ef85c29290e8dfed428ad4119778acfd34d0c767c5fe3",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_006_horizon",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 1200,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "3a73fdeae7b108515982887d6f4a7316f03b3c79aff13f1ac497f0c27dd5b811",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_007_sparkline-grid",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 1800,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_008_100-percent-column",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 1800,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_009_diverging-stack",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 2400,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_010_population-pyramid",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 2400,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_011_grouped-stacked",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 0,
+      "y": 3000,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  },
+  {
+    "pageName": "stress2_a01",
+    "visualName": "stress2_012_lollipop-target",
+    "method": "report.snapshot.capture/v2",
+    "region": {
+      "x": 900,
+      "y": 3000,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1435,
+    "height": 957,
+    "sha256": "f313255fb91f787c170c35486f8c561a0b929cd224fbbbb9e4e2f2beb21dba5b",
+    "status": "REJECTED: offscreen/partial region; retained privately in cache/round3-native-capture-rejected"
+  }
+]

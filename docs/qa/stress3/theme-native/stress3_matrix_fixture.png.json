@@ -1,0 +1,17 @@
+{
+  "method": "report.snapshot.capture/v2",
+  "pageName": "stress3_matrix_formats",
+  "visualName": "stress3_matrix_fixture",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "dimensions": {
+    "width": 1495,
+    "height": 997
+  },
+  "sha256": "c88245ccbc795861f9d1101b5c5371a8c0d72ece3dc7b7afd7de52450cf5d707",
+  "status": "Verified by native Desktop SDK capture inspection: readable plain headers/labels, no internal markup, bounded contents; dark fixture uses temporary owned report theme when applicable."
+}

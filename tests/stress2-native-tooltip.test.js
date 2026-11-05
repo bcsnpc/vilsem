@@ -3,6 +3,10 @@ import {makeFormatter,nativeTemplateTooltipItems} from '@vilsem/core/templates'
 import {resolveVisualSpec} from '@vilsem/core/spec/resolve'
 import {requiredRendererVersion} from '@vilsem/core/pbir'
 describe('native template tooltip formatting',()=>{
+ it('uses bound model formats and viewer locale instead of rounding small values to zero',()=>{
+  const fields=[{name:'Margin',value:.2345,format:'0.00%',locale:'de-DE'},{name:'Tiny',value:.000012345,format:undefined,locale:'en-US'},{name:'Day',value:'2026-11-04',isDate:true,format:'yyyy-mm-dd'}]
+  expect(nativeTemplateTooltipItems({value:[0,0,.2345]},undefined,undefined,fields)).toEqual([{displayName:'Margin',value:'23,45%'},{displayName:'Tiny',value:'0.000012345'},{displayName:'Day',value:'2026-11-04'}])
+ })
  it('selects bounded tuple components and preserves existing last-value aliases',()=>{
   const f=makeFormatter('{name}: Revenue {value.0:thousands}; Profit {c.1:thousands}; share {value.2:percent}; last {value}')
   expect(f({name:'Bikes',value:[12345.678,-20.5,0.25]})).toBe('Bikes: Revenue 12,345.68; Profit -20.5; share 25%; last 0.25')
@@ -20,7 +24,7 @@ describe('native template tooltip formatting',()=>{
   expect(()=>resolveVisualSpec(spec('{value.0:thousands}'))).not.toThrow()
   expect(()=>resolveVisualSpec(spec('{value.6:thousands}'))).toThrow(/unknown formatter/)
   expect(()=>resolveVisualSpec(spec('{value.constructor}'))).toThrow(/unknown formatter/)
-  expect(requiredRendererVersion(spec('{value.1:thousands}'))).toBe('4.20.0.0')
+  expect(requiredRendererVersion({...spec('{value.1:thousands}'),canvasTheme:'dark'})).toBe('4.20.0.0')
  })
  it('labels radar tuple components and bounds oversized host tooltip payloads',()=>{
   const p={name:'Revenue',value:[12345,null,0]}

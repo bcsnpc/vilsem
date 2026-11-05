@@ -79,11 +79,11 @@ export const RadarMarks: Primitive<RadarMarksProps> = (props, ctx) => {
         padding: 0,
         // Theme-aware: pulls bg/border/text/shadow from theme tokens so the radar's
         // multi-row tooltip matches the rest of the app's tooltips in both modes.
-        formatter: (params: any) => {
+        formatter: Object.assign((params: any, modelFormatter?: any) => {
           const vals: number[] = Array.isArray(params.value) ? params.value : [params.value]
           const lines = vals.map((v, i) => {
             const name = indicators[i]?.name ?? ''
-            const formatted = fmtVal(v, prefix, suffix)
+            const formatted = typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(v) : fmtVal(v, prefix, suffix)
             return `<div style="display:flex;justify-content:space-between;gap:16px;font-size:11px;padding:2px 0">
               <span style="color:${t.echartsLegendText}">${escapeHtml(name)}</span>
               <span style="color:${p.start};font-weight:700">${escapeHtml(formatted)}</span>
@@ -91,7 +91,7 @@ export const RadarMarks: Primitive<RadarMarksProps> = (props, ctx) => {
           }).join('')
           const shadow = t.canvasBg && t.canvasBg.startsWith('#0') ? '0 12px 28px rgba(0,0,0,0.48)' : '0 8px 24px rgba(0,0,0,0.12)'
           return `<div style="background:${t.echartsTooltipBg};border:1px solid ${t.echartsTooltipBorder};border-radius:10px;padding:10px 13px;min-width:160px;box-shadow:${shadow};color:${t.echartsTooltipText}">${lines}</div>`
-        },
+        }, { vilsemFormatter: true }),
       } as any,
     },
   }

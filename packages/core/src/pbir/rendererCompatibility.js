@@ -7,10 +7,16 @@ import {slotCount} from '../templates/instantiate.js'
 export function requiredRendererVersion(spec, bindings = {}) {
   let minor = 0
   const require = version => { minor = Math.max(minor, version) }
+  // Older bundles defaulted to a dark canvas and ignored model formats. Refuse
+  // silent preview/native divergence; never replace an existing report resource.
+  if(!['light','dark'].includes(spec?.canvasTheme))require(34)
+  if(bindings.measures?.some(measure=>typeof measure?.formatString==='string'&&measure.formatString))require(34)
+  if(Object.values(spec?.measures || {}).some(measure=>typeof measure==='object'&&measure?.format))require(34)
   if(spec?.template?.meta?.formatVersion===3)require(28)
   const templateMeasures=Object.values(spec?.template?.slots || {}).filter(slot=>slot?.kind==='measure').reduce((count,slot)=>count+slotCount(slot.count),0)
   if (Object.keys(spec?.measures || {}).length || Math.max(templateMeasures,bindings.measures?.length || 0) > 3) require(15)
   const walk = value => {
+    if(typeof value==='string'&&/^\$theme\.paletteText(?:\.\d+)?$/.test(value))require(34)
     if(typeof value==='string'&&/^\$item\.(pixelSpan|labelWidth|labelVisible)$/.test(value))require(30)
     if(typeof value==='string'&&/^\$(slot|calc)\.[A-Za-z_]\w*\.(lastRowValue|lastRowLabel)$/.test(value))require(28)
     if (typeof value === 'string' && /\{(?:value|c)\.[0-5](?::(?:thousands|percent|date))?\}/.test(value)) require(20)

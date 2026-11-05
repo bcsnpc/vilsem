@@ -1289,3 +1289,654 @@ Verified with the latest package in Service: **22/22 checks pass** across Line, 
 - Status: Verified (automated and actual Desktop).
 - Fix: Compose existing calculate `max(profit,target)*1.1` and bind its maximum to the profit axis. This is expressible in the existing arithmetic format; no custom callback or new core operation was needed.
 - Regression: vilsem-mcp/tests/expressiveness.test.ts checks the derived bound, retained reference coordinate and SVG reference label. Final native Desktop capture shows the target line at 825,829.77.
+## STRESS2-FMT-001 - Query-only visual-scoped DAX
+
+- Area: Core / MCP / PBIR.
+- Category: AI authoring / Data.
+- Severity: High (P1).
+- Description: Specs could bind only existing model measures; derived DAX could not remain scoped to a visual.
+- Reproduction: Declare a margin expression, bind its name, explain/preview and commit to Desktop.
+- Input: `DIVIDE([Total Profit], [Total Revenue])`, category field `Product Categories Lookup[CategoryName]`.
+- Expected: DEFINE in preview; inline host-evaluated DAX in PBIR; no model edits; equal values.
+- Actual before change: No definitions in query; report projected a nonexistent model measure.
+- Evidence: `docs/qa/stress2/task1-derived-margin.png`; ignored MCP four-tool logs `test-results/stress2/003`–`006`.
+- Root cause: `packages/core/src/dax/bindings.js`, `packages/core/src/pbir/injectVisual.js`, MCP server contracts.
+- Fix: Scoped compiler, connected engine validation, NativeMeasure projection, dependency context transition, cycle/schema checks. No TMDL writer added.
+- Regression: `tests/scoped-measures.test.js`; production renderer fixture in `tests/power-bi-selection-runtime.test.ts`; MCP server scoped-measure test.
+- Status: Verified for the Desktop ratio scenario and fixtures; other Desktop/Service versions not certified.
+
+## STRESS2-FMT-002 - Templates limited to three bound measures
+
+- Area: Templates / PBIR / Renderer capabilities / MCP.
+- Category: Architecture / Data.
+- Severity: High (P1).
+- Description: Five-percentile fan charts and six-measure parallel coordinates exceed the three-measure contract; template validation previously only warned, permitting empty extra series.
+- Reproduction: Author five named measure slots and bind five real/scoped measures.
+- Input: Per-day P10/P25/P50/P75/P90 of `Sales Data[Revenue]`.
+- Expected: Each measure survives querying, normalization, export and host rendering, or a precise error prevents commit.
+- Actual before change: MCP and PBIR reject over three bindings; template validator warns and extra values can be empty.
+- Root cause: Hard-coded three roles and missing single-dimension `_vals` propagation.
+- Fix in progress: Six roles, six-slot validation, numeric value preservation; first three legacy roles retained.
+- Regression: `tests/stress2-layout.test.js`, updated `tests/instantiateVisual.test.js`.
+- Evidence: `cache/stress2-targeted-tests.log` (105 passed).
+- Status: Implementation tested with fixtures; new renderer build/Desktop verification pending.
+
+## STRESS2-FMT-003 - Combining repeated facet layers
+
+- Area: Declarative layout.
+- Category: Architecture / Rendering.
+- Severity: Medium (P2).
+- Description: Separate repeated series layers could not compose a flat series list; nested arrays are not a valid ECharts series collection.
+- Reproduction: Layer three country horizon-band facet series in one option.
+- Expected: Explicit bounded concatenation keeps coordinate arrays intact and combines only declared lists.
+- Actual before change: No concatenation operation existed.
+- Root cause: `deepResolve` only supported one repeat per property.
+- Fix in progress: Explicit `{concat:[...]}` list operation; 20000-item bound; no executable expressions.
+- Regression: `tests/stress2-layout.test.js` concatenation/coordinate-preservation test.
+- Status: Fixture verified; live horizon case pending.
+## STRESS2-DATA-004 - Arithmetic after a facet crashes
+
+- Area: Core template transform chaining.
+- Category: Data shaping (b).
+- Severity: High (P1).
+- Reproduction: Calculate horizon band 1, facet it, then calculate horizon band 2.
+- Input: Case 006, monthly country revenue; bounded three-layer horizon.
+- Expected: Arithmetic reads numeric slot/transform vectors; unrelated facet records remain available.
+- Actual: preview_visual fails `Cannot read properties of undefined (reading '0')`.
+- Evidence: ignored MCP `test-results/stress2/006-horizon-preview_visual.json`; reproduced with deterministic rows and stack at instantiate.js applyTransforms.
+- Root cause: Arithmetic scope initialization unconditionally indexed `.values[r]` on prior relational transforms.
+- Fix: Add only numeric-vector transforms to arithmetic scope.
+- Regression: `tests/stress2-layout.test.js` arithmetic-after-facet case.
+- Status: Code changed; rerun/Desktop acceptance pending.
+
+
+## STRESS2-FMT-005 - Facet sparkline tiles lack individual KPI values
+
+- Area: Declarative facet layout; Category: Formatting/layout (a); Severity: Medium (P2).
+- Reproduction: Author case 007, a 3?3 KPI/sparkline grid by subcategory.
+- Input: Monthly revenue, top nine real subcategories.
+- Expected: Each tile has its category and its own latest available KPI, plus sparkline.
+- Actual before fix: Facet records exposed names/data/layout only; the initial authored example showed names and sparklines but no individual KPI.
+- Root cause: Facet panel token contract omitted summary scalars/labels.
+- Fix: Expose per-panel last/lastLabel/sum/max/avg from the panel's actual data. Latest excludes null; lastLabel uses existing deterministic number formatting. Keep source row identities on marks.
+- Regression: tests/stress2-layout.test.js per-facet KPI test.
+- Status: Code implemented; live revision/Desktop verification pending. Initial case 007 is not PASS.
+
+### Stress2 authoring corrections
+
+Cases 004/005 described Sales Data row revenue as order revenue; corrected titles to sales-line revenue and reran the actual four-tool workflow. Case 006 labels need wider left margin and bands sized to observed peak; case 010 requires chronological birth-year order. These are authoring corrections using supported options/slot kinds, not reasons to misclassify an unsupported core feature. Their revised Desktop evidence is still pending.
+
+
+## STRESS2-UX-006 - Invisible confidence-band baselines exposed in legend
+
+- Area: Case 004/005 authored options; Category: Interaction/formatting; Severity: Medium (P2).
+- Reproduction: Click Lower or P10/P25 in the initial legend.
+- Input: Real per-date percentile / mean interval measures.
+- Expected: Toggle the interval or median while keeping its invisible stacking baseline intact; legend colours match visible marks.
+- Actual: Baseline legend entry could hide the offset and shift the band to zero; explicit area/line colours did not also set legend item colours.
+- Root cause: Authoring omitted explicit legend data and itemStyle colour.
+- Fix: Exclude invisible baselines from legend; align visible item colours with band/median colours, preserving all data and calculations.
+- Regression/evidence: Exact authored options and repeated actual MCP tool logs; final Desktop screenshots pending. This is an authoring correction with supported options, not a new declarative token.
+- Status: Rerun in progress; previous case 004 screenshot superseded and PASS withdrawn until final verification.
+
+
+## STRESS2-DESKTOP-007 - Desktop shell becomes blank while report bridge renders
+
+- Area: Live Desktop acceptance; Category: Host/runtime; Severity: High (P1).
+- Steps: Open QA PBIP, reload externally committed Stress2-A1 visuals, inspect Desktop main window.
+- Expected: Visible Desktop ribbon, canvas and report visuals.
+- Actual: Entire main window white; user independently confirmed blank. Native report snapshot API still returns charts and XMLA still responds. Process reports Responding; no crash established.
+- Evidence: ignored test-results/stress2/desktop-blank-ui-diagnostic.png records native report contents; live window screenshot and user confirmation establish blank shell.
+- Suspected cause: Unconfirmed; Desktop/WebView shell/compositor failure is a hypothesis, not a renderer diagnosis.
+- Status: Investigating. Backed up all 162 report files, saved and closed normally; all 12 authored specs preserved and 19 model definitions restored/verified against baseline. Normal reopen in progress.
+- Regression: Manual live host acceptance; not covered by core unit tests.
+- Reference: https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-error-launching-desktop
+
+
+STRESS2-DESKTOP-007 recovery: normal save/close/reopen recovered the visible ribbon and chart canvas (PID 21588). All 12 authored specs were preserved; 19 model definitions byte-identical. Root cause remains unconfirmed; record as Recovered, not a proven code fix. Final native snapshots for 004?007/009?010 inspected. STRESS2-DATA-004, FMT-005 and UX-006 now Verified for these authored cases. App/core suite: 857/857 across 73 files.
+
+
+## STRESS2-DATA-008 - Missing bounded layout/data-shaping operations
+
+- Area: Cases 015/016/021/023/024; Category: Data shaping (b); Severity: Medium (P2).
+- Reproduction: Run validate_spec on fresh wrapped-bar, detail-strip, top-five-Other, waffle or hemicycle templates.
+- Actual: Unsupported operation error for chunk/points/top/allocate.
+- Expected: Bounded declarative grouping/projection/proportional layouts with source identities.
+- Evidence: Actual ignored MCP 015/016/021/023/024 validate_spec JSON outputs.
+- Fix: Added fixed pure layout algorithms, validation, lineage bounds, stable rounding, overflow/collision errors. Updated spec-format docs.
+- Regression: tests/stress2-layout-shaping.test.js (6 tests); targeted suite 63/63.
+- Status: Implemented; MCP retry and Desktop verification pending.
+
+Case 019 authoring error: unused dimension slot required a dimension despite global KPI query. Removed unused slot; no core change required. Retry pending.
+
+
+STRESS2 authoring case 015: Native Desktop exposed overlapping full numeric ticks in narrow wrapped columns. Adjusted supported axis splitNumber=2, hideOverlap, font=10 and rotation=30. Repeating all four MCP calls and final native screenshot; not PASS until verified.
+
+
+## STRESS2-DATA-009 - Financial sequence transforms absent
+
+- Area: Cases 031/033/035; Category: Data shaping (b); Severity: Medium (P2).
+- Reproduction: Resolve a fresh waterfall with boundary subtotals, start/delta/end bridge or recursive Heikin-Ashi spec.
+- Actual: Unsupported waterfall/heikinAshi operation. Five regression fixtures failed before implementation; cache/stress2-sequence-before.log.
+- Expected: Fixed bounded algorithms, proper signs/crossings, cumulative boundary labels and source-row identities; no executable renderItem/callback.
+- Fix: Added sequence-transforms.js; schema/field validation, constant start validation, overflow/lineage limits and null-gap handling. Documented seed/window differences for Heikin-Ashi.
+- Regression: tests/stress2-sequence-shaping.test.js (5); combined targeted suite 68/68, native exit 0.
+- Status: Implemented; initial live workflow still running against prior installed core, then package update/retry/Desktop verification required.
+
+STRESS2-DATA-008: Verified in native Desktop for 015/016/021/023/024. All first 24 cases now PASS with individual screenshots. Case 020 small-slice label overlap corrected with supported minShowLabelAngle/minAngle and hideOverlap, then actual four-tool rerun + native snapshot verified. STRESS2-DATA-009 initial actual MCP unsupported-op errors confirmed on 031/033/035; all four-tool retries now succeed. Native renderer 4.17 verification pending.
+
+
+## STRESS2-RENDER-010 - Correct waterfall totals disappear after null stack channels
+
+- Area: Cases 031/033; Category: Rendering; Severity: High (P1).
+- Steps: Build a waterfall with invisible base, increase, decrease and totals stacked with strategy all; provide null for inactive channels.
+- Actual: Total values exist but their bars are missing. ECharts SSR stackResultDimension for a real country subtotal is NaN; zero blue subtotal marks in SVG. Native Desktop shows the same defect.
+- Expected: Visible cumulative/endpoint totals from zero, including sign crossings.
+- Evidence: ignored 031-missing-subtotals.png; inspect-waterfall.cjs output; waterfall-stack-before.log red SSR regression.
+- Root cause: ECharts 6 stack accumulation stops across null intermediate series channels.
+- Fix: Emit zero-height inactive stack segments. No changes to input data, sums, source identities or true missing observations.
+- Regression: MCP expressiveness.test.ts actual SSR fill/visible totals test, plus core numeric sequence regressions.
+- Status: Code changed; package/SSR/native verification in progress. Not PASS yet.
+
+
+## STRESS2-COMPAT-011 - New templates can target an older registered renderer
+
+- Area: Core PBIR insertion/runtime compatibility; Category: Architecture/rendering; Severity: High (P1).
+- Reproduction: Keep an existing registered renderer predating new operations, then commit a template using newer transforms/measure roles.
+- Expected: Refuse with an explicit required renderer version/import instruction before writing an unreadable visual. Existing supported visuals should remain usable.
+- Actual: Insertion checks registration existence, not feature/version compatibility; a spec understood by the current core can be accepted into a report whose older renderer cannot resolve it. QA has needed explicit resource upgrades for these new operations.
+- Root cause: No per-spec minimum renderer requirement check for existing registrations.
+- Status: Open. Plan a conservative capability/version gate and tests; do not silently overwrite existing resources, native objects or model files.
+
+
+## STRESS2-SSR-012 - Native rasterizer panics during expanded shipped-template regression
+
+- Area: MCP PNG previews; Category: Rendering/empty-state; Severity: High (P1).
+- Steps: Run the full MCP suite after promoting A3 templates with shared populated/empty fixtures.
+- Actual: resvg Rust panic at geom.rs:27, Option::unwrap() on None; worker does not finish.
+- Expected: Deterministic PNG or a precise bounded error; empty/missing data must not crash native rasterization.
+- Evidence: test-results/stress2/mcp-full-first36.log (ignored); verbose case isolation in progress.
+- Status: Investigating. No successful full-suite claim for this iteration.
+
+
+STRESS2-RENDER-010: VERIFIED in native Desktop 4.18 for 031/033 with complete screenshots; related 032/034 rendered correctly. STRESS2-DATA-009 verified for all three sequence cases.
+
+STRESS2-COMPAT-011: Added pure feature/version floors and refusal before report writes; core insertion tests 12/12. MCP validate_visuals reports only incompatible Vilsem visuals; targeted MCP contract passed. New hierarchy features require 4.19.
+
+STRESS2-SSR-012: Isolated to case 029 populated out-of-domain line at y=-5255.1 with fixed ratio domain 0..1. Stable resvg 2.6.2 aborts on this stroked path; empty SVG succeeds. Added isolated native raster worker with timeout/buffer bounds and structured failure, verified a subsequent request succeeds (targeted tests 2/2 with normal 30s test budget). Authored adaptive combo domain; live exact-spec recheck pending.
+
+## STRESS2-DATA-013 - Secondary hierarchy colour and bounded enclosure layouts absent
+
+- Area: Cases 040/043/044; Category: Data shaping (b); Severity: Medium (P2).
+- Reproduction: Author a two-measure treemap or derive icicle/circle-packing coordinates from bound hierarchy levels.
+- Actual: Hierarchy supported only one additive value and nested children, with no secondary colour or fixed layout output.
+- Expected: Independent additive area/colour values; deterministic bounded layouts with source identities, without renderItem or caller callbacks.
+- Fix: Optional hierarchy color, layout partition/pack with trusted D3 3.1.2; leaf-only sums, 2000 node/20000 lineage bounds, negative/overflow refusal.
+- Regression: tests/stress2-hierarchy-color.test.js 4/4, including no double count, deterministic circle containment/sibling non-overlap and empty states.
+- Status: Core tests passed; fresh MCP and native 4.19 verification pending.
+
+
+## STRESS2-UX-014 - Hierarchy defaults obscure labels and return navigation
+
+- Area: Fresh cases 040/041/042/043/047; Category: Formatting/UX (a), partition data labels (b); Severity: Medium (P2).
+- Steps: Render the fresh real-data hierarchy cases at 900x600.
+- Actual: Treemap default white borders/header make white upper labels unreadable; unnamed root creates a blank breadcrumb. Long radial product labels extend beyond sunburst bounds. Icicle emits zero-valued marks at unrelated depths, producing spurious labels. Wide org rectangles overlap adjacent nodes.
+- Expected: Readable headers and named return navigation, bounded long text, labels only at the node's depth, separated org nodes.
+- Fix in progress: Explicit dark treemap borders/root name, shorter radial label width and radius, null at unoccupied partition depths, compact org node symbols. No measures/model geometry changes.
+- Regression: Partition null-depth assertion passes in 4/4 hierarchy tests; exact MCP retries and native verification pending.
+- Evidence: ignored 041-before-breadcrumb-native.png / 042-before-label-clipping-native.png, initial A4 SSR captures.
+- Status: Investigating/retesting; no A4 PASS yet. Two viewport-shifted snapshots initially named 037/038 were manually rejected and moved to the correct private evidence names before promotion.
+
+
+## STRESS2-FMT-015 - Native template tooltips ignore formatting and visibility
+
+- Area: Power BI host tooltips, especially two-measure treemap 040; Category: Formatting (a); Severity: Medium (P2).
+- Steps: Hover a native template with value [revenue,profit] and a formatter, or disable tooltipEnabled.
+- Actual: Host dataItems use String(array), exposing unlabelled raw decimals. Host hover handlers are registered even when tooltip configuration disables display.
+- Expected: Native host formatting matches trusted template formatter, nulls remain distinct from zero, per-component fields are declaratively addressable, disabled means no host hover tooltip.
+- Fix: Bounded value.0..5/c.0..5 formatter DSL, nativeTemplateTooltipItems, host visibility gate. Native identities/context-menu routing preserved.
+- Regression: tests/stress2-native-tooltip.test.js 3 tests; combined formatter suite 54/54. Actual host harness tests added, running.
+- Status: Native renderer 4.20 building; actual 040 MCP retry and native hover check pending.
+
+
+## STRESS2-INT-016 - Selection resets treemap/sunburst drill navigation
+
+- Area: Case 041 / native hierarchy interaction; Category: Interaction; Severity: High (P1).
+- Reproduction: Focus the 041 treemap in Desktop, then click Bikes to drill.
+- Actual: Selection/hover occurs, but the visual returns to its original category view; two actual clicks verified no lasting drill.
+- Expected: Drill remains active while the same selection is styled; breadcrumb returns to root; filtered-away nodes reset safely.
+- Root cause: applyChartSelection replaces the entire ECharts option with notMerge=true, rebuilding the hierarchy view root.
+- Fix: Capture native hierarchy navigation actions by stable series/node IDs; silently replay only IDs still present after selection style replacement, clear on binding change or virtual-root return.
+- Regression: Actual host harness tests cover treemap and sunburst select/clear/filter reset plus breadcrumb root.
+- Status: Code/test verification and native renderer 4.21 build pending; 041 not PASS.
+
+STRESS2-FMT-015 build evidence: initial 4.20 packaging failed TS2307 for the new core/templates import. Added the same legacy TypeScript subpath mapping used for core/spec/resolve and dax/rows. No 4.20 package was created or imported. Full app/core suite 880/880 passed before the navigation change; final native build still required.
+
+STRESS2-COMPAT-011 live VERIFIED: actual commit_visual refused tuple formatter against registered 4.19.1, requires >=4.20; no visual folder written, resources untouched. Evidence: ignored 040-expected-old-runtime-refusal.json. Importing 4.21 and retrying before any PASS claim.
+
+STRESS2-INT-016 native VERIFIED in 4.21: treemap Bikes drill persists and named Products breadcrumb returns; sunburst Bikes drill persists, blank-centre deselect preserves drill, grey parent ring returns to full hierarchy. STRESS2-FMT-015 native VERIFIED: 040 host tooltip labels Revenue/Profit and shows 11,287,182.69 / 4,368,346.65, identities retained. Full app/core 883/883 passed.
+
+
+## STRESS2-INT-017 - Tree branch collapse is reset by host selection styling
+
+- Area: Cases 045-048 / native ECharts tree; Category: Interaction; Severity: High (P1).
+- Steps: Click the Bikes branch in 045 twice after focusing the visual.
+- Actual: Branch remains expanded after every click; host tooltip confirms the correct node was hit.
+- Expected: Branch collapse/expand survives selection and deselection, resets only on binding change or removal of that node. Structural root controls must not select an unrelated data row.
+- Root cause: Whole-option replacement resets tree isExpand state, same family as 016 but tree uses toggle actions rather than root-navigation actions.
+- Plan: Track collapsed flags by stable node ID, apply them to runtime data copies, retain/prune across filtering; recursively style hierarchy descendants and refuse index fallback for unbound structural nodes.
+- Status: Investigating; 045-048 not PASS.
+
+
+STRESS2-INT-017 source fix: stable tree IDs, persisted collapsed flags, recursive hierarchy styling and structural-node fallback refusal. Host interaction suite 51/51 passed; native 4.22 build/retest pending.
+
+STRESS2-UX-014 additional reproduction: native 046 radial-tree Bike Stands and Hydration Packs labels cross the bottom boundary at 900x600. Added top/bottom margins; actual validate/explain/preview/commit retry succeeded. Native reload and verification pending.
+
+## STRESS2-DATA-018 - Multi-stage flow and fixed network layouts absent
+
+- Area: upcoming cases 050/051/054/058/060; Category: Data shaping (b); Severity: Medium.
+- Expected: Aggregate adjacent categorical stages with conserved intermediate weights, stable ordering, fixed line/bipartite coordinates and source identities; facet numeric radar vectors.
+- Actual: Existing links handles only two levels; no bounded fixed graph coordinate shaping or facet numeric vector.
+- Fix in progress: Trusted flows transform (2..6 stages), bounded nodes/links/lineage and overflow refusal; facet values/rowIndexes. Native ChordChart registration.
+- Regression: tests/stress2-flow-shaping.test.js; automated/live checks pending.
+- Status: Investigating; no case 049+ PASS claim.
+
+
+## STRESS2-FMT-019 - Scalar repeat token and network layout gaps
+
+- Area: fresh 052/054/055/057/059/060; Category: Formatting/token (a), query grain (b); Severity: Medium.
+- Actual MCP evidence: 059/060 validate_spec refused bare $item used for country radar indicator names. 054 preview rendered stretched vertical graph symbols; 055 rank retained model filter context and selected 130 products, causing clipped force clusters; 052 small-sector labels overlap.
+- Expected: Bounded scalar repetition; uniform fixed graph scaling, globally ranked product selection, contained/readable graph labels.
+- Fix in progress: Scoped bare $item token with regression; preserveAspect for collinear graphs; ALL(Product Lookup) global ranking; bounded force configuration and larger chord ring/hideOverlap.
+- Status: Investigating; exact-spec retries and native verification required.
+
+STRESS2-INT-017 native VERIFIED in 4.22: 045 Bikes collapses, stays collapsed after blank-area clear, expands again, and clears styling correctly. Actual selection on 045 cross-highlights 046; clearing restores 046. Real ECharts 6 + host tests 52/52. STRESS2-UX-014 radial 046 clipping VERIFIED corrected at 900x600: full Bike Stands/Hydration Packs labels now inside boundary; individual native captures inspected. Cases 045/046 promoted, now 46/120 PASS.
+
+STRESS2-INT-017 additional native checks: vertical org-style tree 047 and dendrogram 048 both collapse, retain state across clear, expand again and cross-highlight neighbouring hierarchy visuals. Native full screenshots 047/048 inspected; no manager/employee fields exist in model, so 047 explicitly uses product taxonomy as the structural fixture, not fabricated employee records. Now 48/120 PASS. A5 049-060 all four exact-spec MCP operations passed with Desktop port 51667, process-workspace-port-file; native check pending.
+
+
+## STRESS2-INT-020 - Flow selection styles nodes but leaves unrelated ribbons bright
+
+- Area: native Sankey 049/050, graph/chord links; Category: Interaction; Severity: Medium.
+- Steps: Click Bikes in native 049; inspect Accessories/Clothing nodes versus their ribbons and neighbouring 050.
+- Actual: Node opacity changes but link arrays are never styled by applyChartSelection. Unrelated ribbons retain full authored opacity.
+- Expected: Dim unrelated source-identified links, preserve the authored base opacity and restore exact pristine styles on clear.
+- Evidence: 049-selection-links-before.png (ignored); red regression stress2-edge-selection-red.log (1 failure).
+- Fix in progress: Clone/style links or edges with source row identities, multiply authored opacity by 0.25 only for unrelated edges.
+- Regression: tests/power-bi-selection-runtime.test.ts flow-edge-style case. Native repackage/retest pending.
+- Status: Investigating; A5 not PASS yet.
+
+
+## STRESS2-FMT-021 - Radar template tooltip reports only the final indicator
+
+- Area: 059/060 fresh radar templates; Category: Formatting; Severity: Medium.
+- Actual: Generic {value} formatter selects last tuple value, so the popup omits the other country/category values. Without a formatter the old native helper joins unlabelled values.
+- Expected: Default radar tooltip labels every indicator with its corresponding value and preserves polygon selection identities. Explicit authored formatter remains authoritative.
+- Fix in progress: Remove misleading generic formatter in radar examples; native host passes matching radarIndex indicators to trusted tooltip helper. Cap at 50 named values with explicit omitted count, preserve null versus zero. Flow edges now also carry human source-to-target labels.
+- Regression: native tooltip pure test plus actual renderer host wiring test. Native 4.23 build/verification pending.
+- Status: Investigating; not a native PASS claim.
+
+STRESS2-INT-020 native VERIFIED in 4.23: selecting Bikes dims unrelated Sankey nodes AND ribbons; blank-area clear restores authored 0.3 edge opacity. 049/050 accepted with complete native screenshots; 50/120 PASS. No full-sweep claim.
+
+
+## STRESS2-FMT-022 - Matrix value context and fixed-graph aspect
+
+- Area: 057/058 native; Category: Formatting (a); Severity: Low/Medium.
+- Actual: Matrix generic tuple tooltip exposes coordinate indexes; gradient lacks numeric endpoints. Bipartite fixed view slightly stretches circle symbols because x/y scales differ.
+- Expected: Labelled revenue, readable numeric colour scale, uniform graph scaling.
+- Fix: Authored matrix formatter with value.2, calculable/formatted colour scale; bipartite preserveAspect true using existing core passthrough.
+- Evidence: Pre-fix native 057/058 captures inspected. Actual four-tool retry and native reload pending.
+- Status: Investigating; 057/058 not promoted.
+
+
+## STRESS2-DATA-023 - Radar small multiples auto-scale every panel independently
+
+- Area: 060; Category: Data shaping/layout (b); Severity: Medium.
+- Actual: Independent native radar axes make a single-country polygon fill its own scale, obscuring cross-country magnitude comparison.
+- Expected: Matching category axes share domains across all visible country panels and remain aligned to the data vectors.
+- Fix: Facet indicators with shared per-category min/max, including zero; all-zero axes 0..1; 20000 aligned-cell allocation guard. Template uses the same indicator array for every panel.
+- Regression: shared domains/order/empty/zero and allocation guard tests in stress2-flow-shaping.test.js.
+- Status: Investigating; native 4.24 build and exact 060 workflow/native recheck pending.
+
+STRESS2-FMT-021 native VERIFIED on 059 in 4.23: tooltip shows all six named target-country values, including US 8,043,279.71 and Canada 1,812,372.72, not only the final tuple value. Native evidence 059-native-named-tooltip23.png (ignored). 059 accepted; 057/058/060 remain retest, total 57/120 PASS.
+
+
+## STRESS2-FMT-024 - Repeat over normalized point data rejects documented record fields
+
+- Area: 065 (and 067 candidate); Category: Template token (a); Severity: Medium.
+- Actual actual-MCP failure: token "$item.name" references an unknown repeat item field "name" when repeating $calc.xy.data from points.
+- Expected: Repeating bounded normalized point records allows name/value/rowIndexes, including safe tuple indexes, without executable callbacks.
+- Suspected root cause: repeatShapes whitelist omits data even though points returns documented named/source-identified objects.
+- Status: Investigating; native/MCP fix and regression pending.
+
+
+## STRESS2-DATA-025 - Wiggle streamgraph shaping missing
+
+- Area: 068; Category: Data shaping (b); Severity: Medium.
+- Actual validate_spec: transform "stream": exactly one supported operation is required. No bounded wiggle offset exists; a symmetric ThemeRiver is not the requested weighted-wiggle baseline.
+- Expected: Bounded trusted stack layout, stable aligned panels, conserved values and row identities; no caller callbacks.
+- Plan: Fixed trusted wiggle algorithm, explicit input/expansion/overflow limits, documented output and regression tests.
+- Status: Open; not implemented or native tested.
+
+## STRESS2-DATA-026 - Grouped interval shaping missing
+
+- Area: 071; Category: Data shaping (b); Severity: Medium.
+- Actual validate_spec: transform "tasks": exactly one supported operation is required. No grouped stock-to-order interval/category output.
+- Expected: Group/order labels, finite start/duration bounds, explicit row limit, correct source identities and invalid-date refusal.
+- Plan: Bounded declarative intervals transform using actual hidden StockDate/OrderDate fields, not fabricated project dates.
+- Status: Open; not implemented or native tested.
+
+
+## STRESS2-FMT-027 - New scatter/timeline label and domain problems
+
+- Area: actual previews 062/064/072; Category: Formatting (a), bounded sampling (b); Severity: Medium.
+- Actual: Median reference label extends beyond right edge; dense pair-plot tick text overlaps; timeline uses default zero timestamp (1970), and the earliest 24 records collapse onto one date. Point shaping also produces extra null records after all fields are limited.
+- Fix in progress: Inside named median labels; sparse/hideOverlap pair-plot ticks; dataMin/dataMax date domain; deterministic 24-row uniform sample across returned window with original identities, point length from source vectors.
+- Regression: stress2-repeat-data.test.js sampling/endpoints/empty/single-row/limited-fields cases. Exact tool retries and native acceptance pending.
+- Status: Investigating, not PASS.
+
+STRESS2-FMT-022 expanded reproduction: native heat-strip 038 tooltip visibly shows 103 / 0 / 7,855.64 (coordinate indexes plus revenue). Upcoming 4.25 native default heatmap tooltips now use bound dimension/measure labels and UTC date values; explicit formatters still win. Existing template source-index mapping was traced and already maps raw matrix indexes correctly, so no speculative identity rewrite was made. Regression adds duplicate primary-category full-row tooltip/click coverage. Native retest pending.
+
+STRESS2-DATA-023 native VERIFIED in 4.24: shared axes reveal country magnitudes instead of independent full-size polygons; all labels/marks fit at 900x600. Canada native host tooltip correctly shows Bikes 1,584,296.74, Accessories 129,437.36, Clothing 55,511.72. 060 exact retry and native screenshot accepted. All first 60 cases now PASS; no full 120 claim. STRESS2-FMT-022 057/058 authored fixes native verified: numeric colour legend, formatted Revenue 1,233,557.12 popup, uniform graph symbols; generic heatmap tooltip fix for older cases remains upcoming 4.25.
+
+STRESS2 4.25 implementation checkpoint (not native acceptance): 024 record-repeat whitelist and prototype validation; 025 trusted normalized D3 wiggle/silhouette stream layout; 026 balanced bounded interval overview with UTC labels, milestones and omission summary; 027 deterministic original-index point sampling. Full app/core 908/908 passed, 80 files. Native TypeScript check and package build passed. Packaging still reports optional feature recommendations, not certification. QA 4.25 installed only after normal Desktop close and all 19 model hash checks. Actual MCP retries and native checks remain required.
+
+## STRESS2-DATA-028 - Live model date serialization rejected by interval shaping
+
+- Area: 071 Gantt; Category: data shaping (b); Severity: Medium.
+- Reproduction: actual desktop port 61449, validate/explain pass, preview fails at row 0 with intervals requires ISO dates/zoned timestamps or finite epoch milliseconds.
+- Root cause: ADOMD emits timezone-free Tabular DateTime with seven fractional digits; strict interval parser accepted only zoned strings with up to three digits.
+- Fix in source: interpret model wall-clock strings in UTC independent of host timezone, truncate sub-millisecond digits, reject invalid clock/offset fields. Floor 4.26 for intervals. Tests seven temporal cases pass before floor change; new rerun underway.
+- Status: Investigating; exact live retry/native verification pending.
+
+## STRESS2-DATA-029 - Missing conversion, calendar bands and EWMA operations
+
+- Area: 073,077,080; Category: data shaping (b); Severity: Medium.
+- Exact actual failures: transform stages: exactly one supported operation is required; transform weekends: exactly one supported operation is required; transform average: unknown window op ewma.
+- Expected: bounded stage-relative conversion with zero-prior handling; UTC calendar-day markArea ranges; ordered partitioned EWMA with explicit alpha and missing-data semantics.
+- Fix in source: trusted conversion/dateBands operations and window ewma; tests underway, renderer build/live retry still pending.
+- Status: Investigating.
+
+## STRESS2-FMT-030 - Funnel comparison domains and facet heading overlap
+
+- Area: actual previews074/083/084; Category: Formatting (a); Severity: Medium.
+- Actual: Mirrored funnels independently auto-scale each year, obscuring magnitude comparison; facet text at grid top overlaps top-axis values, and the shared maximum produces a dense endpoint label.
+- Expected: Both funnels share a measure-derived maximum and explicit year headings; panel headings sit above the plot and axes remain readable.
+- Fix: Authored shared max(prior,current) transform, year headings, explicit stable six-country plot positions with separate facet heading positions, sparse y ticks and suppressed duplicate maximum endpoint.
+- Status: Retest pending; actual tool retry/native verification required.
+
+## STRESS2-DATA-031 - Distribution shaping and grouped statistic records missing
+
+- Area: fresh089-096 actual MCP run; Category: data shaping (b); Severity: Medium.
+- Actual: histogram, boxplot, density, jitter and ecdf transforms are explicitly refused as unsupported. Strip/mean094 fails validate_spec with repeat must resolve to an array because stat exposes a per-row vector but no grouped records.
+- Expected: bounded deterministic numeric binning, quartiles/whiskers/outliers, density/point-layout series, empirical distribution and source-identified grouped statistic records without caller code.
+- Status: Open; not implemented. Violin/ridgeline geometry must still establish whether native declarative series suffice; no PASS or imperative classification inferred from missing shaping alone.
+
+## STRESS2-ARCH-032 - Marimekko and mosaic require imperative custom-series rendering
+
+- Area: independently authored087/088; Category: architecture (c); Severity: Medium.
+- Actual: validate_spec, explain_visual, preview_visual, commit_visual all precisely refuse custom series requires imperative renderItem; executable callbacks are not supported by the declarative format. Target containers absent before and after all eight calls.
+- Expected: preserve refusal under current declarative-only contract; do not add arbitrary executable callbacks.
+- Status: Open by scope. Proposed sandbox/display-list design and security implications recorded in MCP docs/expressiveness-gaps.md; failed specs retained outside working template catalog.
+
+STRESS2-DATA-031 source checkpoint: histogram auto/count/widthParam, observed Tukey boxplot/outliers, ECDF ties and source-identified stat records implemented. Existing statistic calculation now normalizes intermediates and compensates sums, with explicit unrepresentable-result refusal. Distribution/layout/template tests70/70 passed; no native4.28 build, installation or live retry yet. Density/jitter still unimplemented.
+
+## STRESS2-FMT-033 - Control chart lower reference disappears on domain boundary
+
+- Area: native079; Category: Rendering/clipping (a); Severity: Medium.
+- Reproduction: create real daily-revenue chart with visual-scoped global daily mean/sigma; set y minimum exactly to mean-minus3sigma.
+- Actual: only Mean and+3sigma are visible. Minus3sigma is on the minimum boundary and its line/label is not shown. Data maximum also touches the upper boundary. Native before-domain-padding screenshot retained.
+- Expected: all three reference lines/labels and extreme observations visibly fit inside the plot.
+- Fix in progress: measure/data-derived padding around both bounds. Exact live retry and native check pending; add shipped-example regression for all reference values inside bounds.
+- Status: Investigating,079 not PASS.
+
+## STRESS2-DATA-034 - Forest fixture used observed range instead of requested CI
+
+- Area: authored081; Category: Data/authoring; Severity: Medium.
+- Actual: The initial chart truthfully labelled observed min/max, but that does not satisfy requested estimate-plus-confidence-interval semantics. Not accepted as PASS.
+- Expected: Monthly mean with an explicitly defined95% confidence interval and real model evaluation.
+- Fix in progress: query-only Student-t half width using sample monthly standard deviation, nonblank month count and T.INV.2T(0.05,N-1); blank interval forN<2. No model writes. Caption discloses independent-month assumption. Microsoft DAX T.INV.2T documentation checked.
+- Status: Exact four-tool retry/native acceptance pending.
+
+## STRESS2-DATA-035 - Strict ranked list cannot omit the Other bucket
+
+- Area: native086; Category: Data shaping (b); Severity: Medium.
+- Actual: Top12 ranked-list template displays13 rows because top always appends Other. Initial native chart/real data inspected; not accepted as PASS.
+- Fix: top.other:false explicitly omits the aggregate tail; defaults/string labels unchanged. Regression in stress2-layout-shaping.test.js passes. Renderer floor28, native retry pending.
+- Status: Investigating.
+
+## STRESS2-FMT-036 - KPI zero-change colour and current-row/no-prior formatting
+
+- Area:085; Category: Formatting/token (a), date semantics; Severity: Medium.
+- ActualSSR fixtures: +10% green,-10% red,0% red. The zero state needs neutral colour. Finite-last accessors also cannot express an explicit latest-row null independently of earlier values.
+- Fix in source: neutral zero band, neutral amount text, model-evaluated previous-calendar-month change via query-only scoped DAX; lastRowValue/lastRowLabel positional accessors and bounded formatterEmptyText fallback. Null/NaN is not shown as zero/NaN. New templates declare format3, minimum renderer28; older formats remain readable.
+- Regression: stress2-kpi-accessors.test.js;63 targeted KPI/layout/template tests pass. Actual new KPI live/colour/native tests pending.
+- Status: Investigating,085 not PASS.
+
+Native4.28 verification: STRESS2-FMT-033 and STRESS2-DATA-034 verified by full Desktop screenshots079/081. STRESS2-DATA-035 strict12 native086 verified; STRESS2-FMT-036 positive native085 and all four signed/null SSR fixtures verified. STRESS2-DATA-031 statistical histogram/box/ECDF + density/swarm all89-96 verified natively at900x600, clean screenshots retained; fixed-size collision guarantee only. Expanded MCP fixture suite100/100 passed under existing npm test30s configuration. A9 actual probes reveal missing bounded qq/hexbin/density2d, parameterized top, grouped share, rebase, cohort/pivot/correlation/pareto transforms. All category(b), implementation next;102 transform name collision is an authoring error to correct, not a core deficiency.
+
+STRESS2-DATA-037 (b): A9 actual MCP probes097-108 identified bounded statistical/relational gaps; source4.29 adds qq, hexbin, density2d, groupShare/subtotals, conditional, rebase, cohort, pivot, correlation, pareto and top.countParam. Thirteen initial new tests plus existing suite948/948 passed. UTC cohort conversion defect caught then fixed by test.115 actual missing tile transform now adds explicit bounded named tiles;21/21 targeted tests passed. Native4.29 live retries pending, not verified.
+STRESS2-FMT-038 (a): unregistered series/geo options could otherwise produce a blank chart in ECharts; guard now refuses absent map assets and unshipped series both before/after token resolution. Tests cover maps, wordCloud, GL, custom and dynamic token type. Final4.29 embedded JSON resource (not standalone JS files) explicitly checked for all features before opening Desktop.
+
+STRESS2-FMT-039: Native097/098/105 axis names default to end and escape chart edge; authoring fix centres names with padding, exact retry pending. Native099 sparse fixed-size scatter symbols leave density-grid gaps; core retains rawXY data and adds categorical cells/columns/rows for true tiled heatmap (floor30). Native101 insideRight percentages on tiny bars overlap y labels; right labels plus padded domain prepared. Native102 prior bars share the growth colour and conditional legend is ambiguous; prior blue, current neutral legend and explicit sign caption prepared.
+STRESS2-DATA-040: Native105 host2000-row reduction shows only period0, unlike preview10000. Not accepted. Fixture now uses explicitly disclosed real CustomerKey11000-11049 query-only activity/first-purchase guards, intended to fit full histories below both limits; live and native verification pending. No inferred full-population retention claim.
+STRESS2-DATA-041: Initial116 unshipped wordCloud is being revisited as bounded graph-label packing (b), not automatically left(c). Conservative Unicode rectangles, nonnegative revenue-weighted terms, fixed geometry/resource limits and18 targeted tests pass; live/native pending.
+
+STRESS2-INT-042 (P1): applyChartSelection overwrote item opacity with1/.25, revealing invisible helper bars/word symbols and leaving explicit word labels fully opaque. Two regressions reproduced both failures (55pass/2fail), then minimal style multiplication plus label dimming passed57/57. Pristine clear/formatter preservation unchanged. Renderer4.31 build/live verification pending; words now require4.31. Rendering111/120 accepted,9 exact(c) refusals; do not confuse render acceptance with exhaustive interaction certification.
+Public clean-checkout first full run failed because nested ui/renderer dependencies had not been installed (5suites+1relatedruntime test); installing both explicitly and rerunning, not hiding failures.
+
+Final stress2 verification: STRESS2-FMT-039, DATA-040 and DATA-041 verified in native screenshots097-110,115,116,118 after exact four-tool retries. Cohort is explicitly the bounded50-customer sample,91rows/12periods. STRESS2-INT-042 VERIFIED: renderer4.31 native word labels dim, invisible helper symbols stay invisible; target Filter changes USA7,938,999.42 to3,240,355.21 and empty-area clear restores7,938,999.42.57/57 selection regressions and full956/956 pass. No Service/native-slicer claim.
+
+## STRESS3-INT-001 - stale selections suppress incoming highlights
+
+- Area/category: all ECharts compositions and templates; Interaction.
+- Severity: High (P1).
+- Description: after filtering away a prior selected/bookmarked row, a positive incoming highlight can still be dimmed because selection IDs are present but none match the current categorical view.
+- Reproduce: retain a host selection for Bikes; filter the dataView to Clothing; supply a non-null Clothing highlight. The obsolete selection set incorrectly wins.
+- Input: SDK-built categorical fixture; one remaining row, stale selected identity, highlights=[12436].
+- Expected: show the incoming highlighted row at author opacity; an explicit all-null highlights channel must still dim it.
+- Actual: highlighted row opacity0.25 rather than1. A similar dim surviving bar was observed after the live native-slicer sequence; exact live cause remains to be confirmed.
+- Evidence: cache/round3-stale-highlight-before.log (2 failed); docs/qa/interactions/round3-native-slicer-filter.png.
+- Root cause: visual.ts applyChartSelection branches on selected.length instead of whether any current identity matches.
+- Status: Investigating (source fix awaiting rebuilt native verification).
+- Fix: combine incoming highlights with visible selection identities; preserve host bookmark IDs and all-null highlight semantics.
+- Regression: tests/power-bi-selection-runtime.test.ts, SDK composition/template filtering-removes-selection cases. First simpler stale-selection test already passed, then adding the positive-highlight transition reproduced the actual source bug; do not claim the first test failed.
+
+## STRESS3-BUILD-002 - obsolete Windows signing property blocks installer
+
+- Area/category: Electron installer; Build.
+- Severity: High (P1).
+- Reproduce: upgrade electron-builder to26.18.0 and package using old win.sign:null.
+- Expected: build the existing unsigned installer.
+- Actual: configuration.win fails schema validation before packaging.
+- Evidence: cache/round3-electron45-installer-build.log.
+- Root cause: current WindowsConfiguration uses signExecutable/signtoolOptions rather than the removed sign property.
+- Fix: remove win.sign and explicitly set signExecutable:false, retaining the existing signAndEditExecutable:false setting.
+- Status: Verified for unsigned packaging and packaged Home/project chooser launch; clean-profile installer installation remains untested.
+- Regression: actual installer build, cache/round3-electron45-installer-build2.log.
+
+
+## STRESS3-META-003 - TMDL formatting loses literal quotes
+
+- Area/category: local schema; Data/formatting. Severity: Medium (P2).
+- Reproduce: read TMDL formatString properties containing quoted currency/suffix literals, or a fully wrapped value with doubled inner quotes.
+- Expected: preserve literals; decode only valid complete TMDL quoted text values.
+- Actual: boundary quote trimming corrupts literal suffixes/currency and fails to decode doubled quoting.
+- Root cause: connect/metadata.cjs removed boundary quotes without recognizing complete TMDL text grammar.
+- Fix: decode valid fully wrapped text and doubled quotes; preserve other literal quoting unchanged.
+- Status: Verified by parser regression; not a live Desktop formatting claim.
+- Evidence: cache/round3-tmdl-format-before.log (three failures); cache/round3-tmdl-format-after.log (43 passing).
+- Regression: packages/core/src/connect/report.test.ts format-string literal cases.
+
+## STRESS3-QA-004 - Off-page snapshots omit plotted data
+
+- Area/category: QA evidence capture; Test infrastructure. Severity: Medium (P2).
+- Reproduce: snapshot/v2 Stress2-A1 while Desktop displays Stress3 Interactions before activating Stress2-A1.
+- Expected: reject title/legend-only captures as rendering evidence.
+- Actual: two captures omitted marks. Activating the actual page rendered real data and a fresh capture contained the time series.
+- Status: Verified evidence limitation; no renderer defect established.
+- Fix: require page activation, settled marks and visual inspection before accepting regenerated native screenshots.
+- Evidence: cache/round3-native-region-probe2.png (unaccepted); cache/round3-native-region-active.png (marks after activation).
+- Regression: native evidence acceptance procedure, not an arbitrary-delay test.
+
+
+## STRESS3-QA-005 - Desktop saves an option its own bookmark reader rejects
+
+- Area/category: native QA fixture; Power BI compatibility. Severity: Medium (P2).
+- Reproduce: create native Bookmark 6 for stress3_custom_bar; save PBIP and reopen in Desktop2.159.1231.0.
+- Expected: saved report reopens normally.
+- Actual: Desktop rejects options.preserveNewVisualVisibility in bookmark schema2.1.0 before opening.
+- Evidence: native error dialog observed; cache/round3-bookmark-desktop-invalid-original.json retains exact saved fixture.
+- Fix: close normally; remove only that unsupported option from the newly created QA bookmark. No product MCP bookmark editing, no existing/user bookmark edits.
+- Status: Verified corrected reopen in Desktop. Original report/model untouched.
+- Regression: native reopen acceptance; this is not a Vilsem renderer source fix.
+
+
+## STRESS3-FMT-006 - Unformatted axes expose binary floating-point tails
+
+- Area/category: template numeric axes; Formatting. Severity: Medium (P2).
+- Reproduce: render shipped bullet/dual-axis light thumbnails using synthetic fixtures with computed non-integer bounds.
+- Expected: readable tick labels such as14.4; raw values and explicit author/model formats remain unchanged.
+- Actual:14.399999999999999 and13.200000000000001 on unformatted boundary ticks.
+- Evidence: cache/round3-thumbnail-review/sheet-01.png; cache/round3-axis-fallback-before.log (one regression fails).
+- Root cause: no shared fallback formatter when bound fields have no format metadata; explicit bound values reach native tick strings.
+- Fix: apply bounded General formatting only to value axes lacking an author formatter; model formats still take precedence. No unit inference or data rounding.
+- Status: Investigating; targeted tests and new native/SSR build pending.
+- Regression: tests/model-formatting.test.js, binary-tail/decimal/custom-format/category/immutability assertions.
+
+
+## STRESS3-QA-007 - Synthetic thumbnails hide marks or use stale fields
+
+- Area/category: shipped template thumbnail fixtures; QA data. Severity: Medium (P2).
+- Reproduce: render initial regenerated120 thumbnails; inspect horizon/sparklines/normalized-area/cumulative-flow, numeric strip, calendar, historical Gantt, KPI and words.
+- Expected: fixtures satisfy each slot contract, populate contiguous line segments and in-range dates; KPI/word rows use canonical values and categories.
+- Actual: sparse alternating country/month fixtures create isolated hidden-symbol points; strip raw dimension is text; calendar dates are outside2022; Gantt lacks fourth dimension. KPI/word overrides leave stale _vals/_cats that take precedence.
+- Fix: deterministic dense facet matrices, numeric strip/date-range/interval fixtures, coherent canonical KPI/word arrays and realistic ratio fixture units. No client/model data used.
+- Status: Verified targeted fixture assertions; thumbnail regeneration and full MCP retry pending.
+- Regression: vilsem-mcp/tests/expressiveness.test.ts drawable fixture checks.
+
+## STRESS3-THEME-008 - Structural shading retains dark defaults
+
+- Area/category: shipped treemap, radar, sunburst, matrix, tile and neutral band/track templates; Theme. Severity: Medium (P2).
+- Reproduce: light thumbnail review sheets05/06; treemap dark borders fill gaps and radar has a dark polygon background.
+- Expected: report-aware structural shading and separators; intentional signed data colours retained.
+- Actual: hard-coded dark structural fills remain despite transparent outer canvas.
+- Fix: theme background separators, report grid track/breadcrumb colours, low-opacity theme foreground qualitative bands and report grid radar shading.
+- Status: Targeted light/dark regressions pass; new thumbnails/native verification pending.
+- Regression: vilsem-mcp/tests/expressiveness.test.ts report-aware structural fill cases.
+
+
+## STRESS3-THEME-009 - Report foreground becomes illegible inside dark marks
+
+- Area/category: shipped stacked/range bars; Theme/readability. Severity: Medium (P2).
+- Reproduce: native light QA range-delta014; report foreground is dark, profit bar uses second navy report colour.
+- Expected: readable in-mark text while outer text inherits report foreground.
+- Actual: black delta text on navy; real native screenshot retained as before evidence.
+- Fix: new declarative $theme.paletteText.<index> chooses black/white by sRGB contrast for opaque palette fills; stock008/009/014 use matching series indices, including helper series. Unknown/translucent paints explicitly retain foreground rather than claiming guaranteed contrast.
+- Status: Core104 targeted tests PASS; final native build, live retry and MCP template regression pending.
+- Evidence: docs/qa/stress3/theme-native/stress2_014_range-delta.png before new token; tests/report-theme.test.js.
+- Regression: theme palette contrast values and real template light/dark tests; no caller executable code added.
+
+
+## STRESS3-FMT-010 - Bound heatmap tooltips drop model format and locale
+
+- Area/category: native heatmap bound fields; Formatting. Severity: Medium (P2).
+- Reproduce: hover a heatmap cell whose bound measure is0.2345 with model format0.00%; also try tiny unformatted0.000012345.
+- Expected: native tooltip23.45% (or23,45% for de-DE), tiny value retained; date formatting honored.
+- Actual: generic fallback returns0.23 and0; renderer passed field names/values without model format metadata.
+- Evidence: cache/round3-bound-tooltip-before.log (one failing regression with exact diff).
+- Fix: pass source/scoped formats and host locale into bound-field tooltip data; reuse shared createModelFormatter. Preserve existing tuple/category identities and legacy untagged helper contracts.
+- Status:98 targeted checks pass; host-wiring regression and rebuilt native verification pending.
+- Regression: tests/stress2-native-tooltip.test.js and tests/power-bi-selection-runtime.test.ts heatmap formatted-host cases.
+
+
+## STRESS3-THEME-011 - Short hex/RGB and host-neutral colours lose theme semantics
+
+- Area/category: report theme adapter; Theme. Severity: Medium (P2).
+- Reproduce: resolve supported theme backgrounds#000 or rgb(0,0,0); provide host.foregroundNeutralTertiary or high-contrast palette.
+- Expected: dark defaults for dark opaque colours; host structural neutral for gridlines, visible foreground strokes in high contrast.
+- Actual: only six-digit hex was classified as dark; host structural-neutral colour was dropped and gridlines used fixed fallback grey.
+- Fix: reuse opaque sRGB contrast classification; carry host neutral colour, use foreground in high contrast.
+- Status:88 targeted theme/host checks PASS; native refresh pending. Arbitrary native report font inheritance remains unverified and is stated in MCP README.
+- Regression: tests/report-theme.test.js supported background syntax and structural host cases.
+
+## STRESS3-THEME-012 - Auto contrast uses invisible word symbols as backdrop
+
+- Area/category: word packing; Theme/regression. Severity: Medium (P2).
+- Reproduce: new light thumbnail for116 after contained-label contrast changes.
+- Expected: readable report-foreground text on page background, invisible helper symbols.
+- Actual: ECharts chooses light fill and coloured outline from the helper path even though that symbol has opacity0.
+- Evidence: vilsem-mcp/test-results/stress3/round3-word-contrast-before.log reproduces fill#eee instead of#252423.
+- Fix: explicitly declare report foreground and no outline for this template; this is a page-backed label, not an opaque mark-backed label.
+- Status: Verified in light/dark SVG tests and regenerated thumbnails; native116 gallery inspection also passed. Helper symbols remain invisible and page-backed labels use report foreground.
+- Regression: vilsem-mcp/tests/expressiveness.test.ts word-label foreground and helper opacity assertions.
+
+
+## STRESS3-FMT-013 - Generic model formatting changes label semantics and misses presentation paths
+
+- Area/category: new model-format adapter; Formatting/regression. Severity: High (P1).
+- Source audit: PointMarks labels are category names; PieMarks labels can be share/name/value; TreemapMarks rich labels preserve category and signed raw values; GaugeMarks uses detail/arc separately. Slope series correspond to categories, not measures. Paired tuples can put the measure first.
+- Expected: preserve those contracts while applying model units to the appropriate numeric field/axis/detail. Bubble size must not become a revenue label; a pie share must not become currency; gauge overflow detail must retain the real value.
+- Actual risk: generic formatter replaces trusted mixed/category functions with one numeric formatter based on series index/last tuple coordinate. Gauge detail and donut aggregate title are not covered.
+- Status: Verified by focused automated regression tests; native renderer34 family-by-family verification remains in progress.
+- Fix: preserve trusted category/share/affix formatter semantics; format gauge details/real values, donut aggregates, independent tuple axes and safe derived/facet unit provenance. Aggregated host tooltips retain contributors and display aggregate values.
+- Verification: cache/round3-provenance-host-tests2.log100/100; cache/round3-group-a-full-tests9.log1047/1047. Native34 package PASS. Tests preserve raw numeric data and reject currency inheritance for count/percentOfTotal.
+- Evidence/regression: tests/model-format-parity.test.js; cache/round3-composition-format-parity-before.log.
+- Dependencies: shared core adapter used by native renderer and MCP; trusted primitive formatter functions also used by app. Preserve their default behaviour when no model formatter is passed.
+
+
+## STRESS3-PREVIEW-014 - Font shorthand is not preserved by the PNG rasterizer
+
+- Area/category: MCP SSR PNG; Rendering/typography. Severity: High (P1).
+- Reproduction: render shipped085 KPI at900x600 with the dark theme; compare the SVG callout (50px) with the PNG (approximately default12px). Native Desktop has the expected large callout.
+- Expected: SVG font size, weight, style and family survive rasterization.
+- Actual: font shorthand in ECharts SVG is ignored by the installed resvg-js adapter.
+- Evidence: templates/thumbnails/dark/stress2_085_kpi-sparkline.png before retry; generated SVG contains font: normal bold50px (with whitespace) but PNG has tiny155. Upstream https://github.com/thx/resvg-js/issues/404 independently describes shorthand support.
+- Status: Verified (automated and PNG inspection). Bounded SVG font-shorthand normalization preserves size/weight/style/family;4 raster pixel/bounds regressions pass. All120light/120dark thumbnails regenerated;085 now has the intended large155 callout. Full MCP candidate187/187 passed before the final General-format dependency refresh.
+- Scope: MCP raster adapter; do not alter native chart geometry or authored typography.
+
+
+## STRESS3-THEME-015 - Treemap engine default remains white on bright mapped nodes
+
+- Area/category: template treemap labels; Contrast. Severity: Medium (P2).
+- Reproduction: native34 light gallery040, Road Bikes node filled cyan, plain label is white. Removing a page-foreground override alone does not remove the engine-specific white default.
+- Expected: readable default plain label based on the actual post-mapping fill; preserve explicit colours and authored rich labels.
+- Evidence: docs/qa/stress3/theme-native/stress2_040_treemap-secondary-colour.png before candidate retry.
+- Fix under test: trusted plain-label formatter chooses black/white rich style from the ECharts-supplied point colour; avoids duplicating hierarchy interpolation. Explicit series/node/level colours, rich markup and formatter strings retained. Unknown/translucent paint has no contrast guarantee.
+- Status: Testing. Shared-core hierarchical colour-mapping SVG and MCP preview regressions pass, including opaque rgba paint and padded top-left layout. Final native retry remains pending; earlier PNG is retained as before evidence.
+
+
+## STRESS3-FMT-016
+Visual / Area: Scatter/bubble mixed measure formats
+Category: Data / Formatting
+Severity: Medium
+Description: A primary General measure suppressed formatted secondary tuple metadata.
+Steps to reproduce: Bind unformatted Revenue plus Margin formatted 0.00% to scatter; inspect the second native/preview tooltip field.
+Input/Data: Revenue1200, Margin0.2345.
+Expected result: Revenue1200; Margin23.45%; category label remains Bikes when enabled.
+Actual result before fix: Secondary tuple model format was absent.
+Evidence: tests/model-format-parity.test.js first regression; round3-mixed-general-format-tests.log115/115.
+Suspected root cause: shared/applyModelFormats.js early return on primary format.
+Status: Verified (automated); exact native scenario not manually tested.
+Fix: Retain bounded General primary formatter while building secondary tuple format metadata.
+Regression test: formats a secondary tuple even when the primary measure uses General.
+
+
+## STRESS3-FMT-017 - Full model-formatted bar label escapes right edge
+
+- Area/category: horizontal bar composition; Clipping / Formatting. Severity: Medium (P2).
+- Reproduce: model Revenue23,642,495.0952 formatted$#,0, horizontal bar,900x600 or300px wide.
+- Expected: full currency label fits without changing raw values or the axis domain; narrow containers may use explicit ellipsis with full tooltip.
+- Actual: compact-number gutter60px cannot fit$23,642,495; label extends beyond the canvas.
+- Evidence: isolated packaged MCP real-data-preview.png; real ECharts text geometry tests reproduce failures at900px/300px.
+- Suspected root cause: composition gutter assumes compact labels; model formatting runs afterward.
+- Fix: shared model-format adapter measures final plain bar labels using the native/SSR text engine and reserves gutter space; budgets very narrow containers with explicit truncation. Authored template layout is preserved.
+- Status: Verified by automated geometry/ellipsis regressions and final packaged real-data SSR preview inspection. Public1055/1055 and MCP189/189 PASS; final native scenario remains unverified. Before/after evidence: docs/qa/stress3/bar-model-format-{before,after}.png.
+- Regression: tests/model-format-parity.test.js full-currency bounds at900/300; raw data/domain assertions.
+
+
+STRESS3-THEME-015 native retry follow-up: leaf contrast and top-left placement now work, but upper parent headers inherit the rich leaf formatter without its styles and display internal vilsemContrast markup. Saved native failure under docs/qa/stress3/treemap-rich-header-before. Added real ECharts upperLabel regression; reproduced1failure, then118 targeted checks PASS after retaining the original/plain upper-header formatter separately. Final native rebuild/retry required.
+
+STRESS3-FMT-017 native acceptance: restored Light QA report, new owned Model currency labels page, actual Revenue by Category. Full$23,642,495 fits inside the visual; other values and value axis intact. Saved bar-model-format-native.png with renderer hash. Verified in native Desktop at this candidate; treemap-only header refinement later does not change this bar path.
+
+STRESS3-THEME-015 verification: final light+dark native Desktop SDK captures inspected; parent headers are plain Bikes/Products, leaf colours/placement readable. Actual upperLabel inheritance regression reproduced and118targeted +1055full +189MCP PASS. Status: Verified for these native/SSR paths. Prior failures retained under treemap-rich-header-before.

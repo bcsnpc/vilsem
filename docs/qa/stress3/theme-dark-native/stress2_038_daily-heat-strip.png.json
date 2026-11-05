@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Dark.Report",
+  "pageName": "stress3_theme_01",
+  "visualName": "stress2_038_daily-heat-strip",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "f0510631492391c51ba4f8919c98fcdd20660c7367fda8d12fc084dfeb11075d",
+  "visualSha256": "7efc041c3d35552fa25889069c06bd1a52122cf8f3f9d79a5652fb10c1f3e972",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "425ec51e15d0680c1864339ddbe79ca61f3a066dff4300e65d45e900a1fbd078",
+  "status": "Captured; visual inspection pending"
+}

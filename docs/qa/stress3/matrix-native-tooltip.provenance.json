@@ -1,0 +1,11 @@
+{
+  "source": "Native Power BI window capture retained for requested QA artifact",
+  "sourceSha256": "68c470e9a38881ff5dc39bd51cd2791aee6de47dbfa48214bbf34bfcf6dcb3c3",
+  "crop": [
+    0,
+    160,
+    711,
+    384
+  ],
+  "purpose": "Exclude account/title/ribbon; retain real model/calibration labels and observed native tooltip. Not a bridge-only tooltip claim."
+}

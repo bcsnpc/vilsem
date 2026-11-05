@@ -1,11 +1,14 @@
 import { prepareVisualRows, rowsFromCategorical, normaliseRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
+import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
 import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
 import { lollipop as templateExample } from '@vilsem/core/templates/examples'
 import { describe, it, expect, vi } from 'vitest'
 import fs from 'node:fs'
 import vm from 'node:vm'
 import ts from 'typescript'
+import { createCategoricalDataViewBuilder } from 'powerbi-visuals-utils-testutils/lib/dataViewBuilder/dataViewBuilder.js'
 import {createRequire} from 'node:module'
 import { composeOption } from '../vilsem-renderer/src/compositions'
 import { escapeHtml } from '@vilsem/core/primitives/escapeHtml'
@@ -28,8 +31,10 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
   vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, cancelAnimationFrame() {}, require: (name: string) => {
     if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
+    if (name === '@vilsem/core/theme/report') return { resolveReportTheme, reportThemeFromHost, applyReportTheme }
+    if (name === '@vilsem/core/formatting') return { createModelFormatter, scopedMeasureFormat, applyModelFormats }
     if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems }
-    if (name === 'echarts/core') return { use() {}, init: () => chart }
+    if (name === 'echarts/core') return { use() {}, init: () => chart, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
     if (name.endsWith('/chrome.js')) return { getCardChromeStyle: () => ({}) }
@@ -46,12 +51,141 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
   const tooltip = { enabled: () => true, show: vi.fn(), hide: vi.fn(), move: vi.fn() }
   const host = { tooltipService: tooltip, createSelectionManager: () => selection, createSelectionIdBuilder: () => { let index=0;const builder={withCategory: (_: any,i:number)=>{index=i;return builder},createSelectionId:()=>ids[index]};return builder } }
   const visual = new exports.Visual({ element: node(), host })
-  const dv = { categorical: { categories: [{ values: categories }], values: [{ source: { roles: { content: true } }, values: [12436, 13929, 57809] }, { source: { roles: { secondary: true } }, values: [269, 429, 1130] }] } }
+  // SDK-built categorical views include metadata, opaque row identities and
+  // grouped value columns, matching the host shape rather than a loose mock.
+  const dv = createCategoricalDataViewBuilder()
+    .withCategory({ source: { displayName: 'Category', queryName: 'Products.Category', roles: { category: true }, type: { text: true } }, values: categories, identityFrom: { fields: [], identities: ids } })
+    .withValues({ columns: [
+      { source: { displayName: 'Revenue', queryName: 'Measures.Revenue', roles: { content: true }, isMeasure: true, type: { numeric: true } }, values: categories.map((_, i) => [12436, 13929, 57809][i] ?? i + 1) },
+      { source: { displayName: 'Returns', queryName: 'Measures.Returns', roles: { secondary: true }, isMeasure: true, type: { numeric: true } }, values: categories.map((_, i) => [269, 429, 1130][i] ?? i + 1) },
+    ] }).build()!
   visual.renderPrimitiveChart(dv, { type, canvasTheme: 'dark', config: { cardStyle: 'plain', animationEnabled: false, ...configOverrides } })
-  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, restoreSelection: ids => restoreSelection?.(ids) }
+  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, dataView: dv, restoreSelection: ids => restoreSelection?.(ids) }
 }
 
+describe.each(['composition', 'template'])('SDK categorical host contracts: %s', layer => {
+  const spec = () => layer === 'composition' ? {type:'column',config:{animationEnabled:false,cardStyle:'plain'}} : {
+    type:'custom',config:{cardStyle:'plain'},template:{meta:{id:'sdk-host-contract'},slots:{category:{kind:'dimension'},amount:{kind:'measure'},returns:{kind:'measure'}},template:{animation:false,xAxis:{type:'category',data:'$slot.category.categories'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.amount.values'}]}}
+  }
+  function setup(){const h=harness();h.visual.renderPrimitiveChart(h.dataView,spec());return h}
+  it('routes single/Ctrl/empty-area clicks to SDK row identities',async()=>{
+    const h=setup()
+    h.events.click({dataIndex:0,seriesIndex:0,event:{event:{ctrlKey:false,metaKey:false}}});await Promise.resolve()
+    // Default sorting puts Accessories (source row 2) first; identities must
+    // follow the source row, not the displayed index.
+    expect(h.selection.select).toHaveBeenLastCalledWith(h.ids[2],false)
+    h.events.click({dataIndex:1,seriesIndex:0,event:{event:{ctrlKey:true}}});await Promise.resolve()
+    expect(h.selection.select).toHaveBeenLastCalledWith(h.ids[1],true)
+    h.zrEvents.click({target:null});await Promise.resolve()
+    expect(h.selection.clear).toHaveBeenCalledOnce()
+  })
+  it('dims incoming highlights, restores bookmark state, and clears a filtered-empty view',()=>{
+    const h=setup(),column=h.dataView.categorical!.values![0]
+    column.highlights=[0,null,5]
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    const opacities=()=>h.chart.setOption.mock.calls.at(-1)[0].series[0].data.map(p=>p.itemStyle?.opacity??1)
+    expect(opacities()).toEqual([1,.25,1])
+    delete column.highlights
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    h.restoreSelection([h.ids[1]])
+    expect(opacities()).toEqual([.25,1,.25])
+    h.restoreSelection([])
+    expect(opacities()).toEqual([1,1,1])
+    h.dataView.categorical!.categories!.forEach(c=>{c.values=[];c.identity=[]})
+    h.dataView.categorical!.values!.forEach(c=>{c.values=[]})
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    expect(h.visual.root.innerHTML).toContain('No data matches the current filters')
+    expect(h.visual.currentSelectionIds).toEqual([])
+  })
+  it('sends a native tooltip, context identity and keyboard selection to the host',async()=>{
+    const h=setup(),event={clientX:40,clientY:60,preventDefault:vi.fn()}
+    const point={dataIndex:1,seriesIndex:0,name:'Bikes',value:13929,event:{event}}
+    h.events.mouseover(point)
+    expect(h.tooltip.show).toHaveBeenLastCalledWith(expect.objectContaining({identities:[h.ids[1]],dataItems:expect.arrayContaining([expect.objectContaining({value:expect.any(String)})])}))
+    h.events.contextmenu(point)
+    expect(h.selection.showContextMenu).toHaveBeenLastCalledWith(h.ids[1],{x:40,y:60})
+    h.rootEvents.keydown({key:'ArrowRight',preventDefault(){}})
+    h.rootEvents.keydown({key:' ',ctrlKey:false,metaKey:false,preventDefault(){}});await Promise.resolve()
+    expect(h.selection.select).toHaveBeenLastCalledWith(h.ids[1],false)
+  })
+  it('re-renders a resize update from its supplied data without asking the host for data',()=>{
+    const h=setup(),fetchMoreData=vi.fn(),refreshHostData=vi.fn()
+    Object.assign(h.host,{fetchMoreData,refreshHostData})
+    h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify(spec())}}
+    const before=JSON.stringify(h.dataView)
+    h.visual.update({type:4,viewport:{width:180,height:600},dataViews:[h.dataView]})
+    expect(h.visual.lastOption.series[0].data).toHaveLength(3)
+    expect(fetchMoreData).not.toHaveBeenCalled();expect(refreshHostData).not.toHaveBeenCalled()
+    expect(JSON.stringify(h.dataView)).toBe(before)
+  })
+  it('does not dim every remaining row when filtering removes the bookmarked selection',()=>{
+    const h=setup()
+    h.selection.getSelectionIds=()=>[h.ids[1]]
+    h.dataView.categorical!.categories![0].values=['Clothing']
+    h.dataView.categorical!.categories![0].identity=[h.ids[0]]
+    h.dataView.categorical!.values!.forEach(c=>{c.values=[c.values[0]]})
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    const data=h.chart.setOption.mock.calls.at(-1)[0].series[0].data
+    expect(data[0]?.itemStyle?.opacity??1).toBe(1)
+    // Genuine all-null incoming highlights must still dim, rather than being
+    // mistaken for an absent highlight channel.
+    h.dataView.categorical!.values![0].highlights=[null]
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    expect(h.chart.setOption.mock.calls.at(-1)[0].series[0].data[0].itemStyle.opacity).toBe(.25)
+    h.dataView.categorical!.values![0].highlights=[12436]
+    h.visual.renderPrimitiveChart(h.dataView,spec())
+    expect(h.chart.setOption.mock.calls.at(-1)[0].series[0].data[0].itemStyle?.opacity??1).toBe(1)
+  })
+})
+
 describe('Power BI production primitive selection routing', () => {
+  it('shows an authored canvas override as distinct from a stored report-theme toggle',()=>{
+    const h=harness()
+    const value=()=>h.visual.getFormattingModel().cards[0].groups[0].slices[0].control.properties.value
+    expect(value()).toBe(false) // harness deliberately authors canvasTheme:dark
+    h.visual.renderPrimitiveChart(h.dataView,{type:'bar',config:{cardStyle:'plain'}})
+    expect(value()).toBe(true)
+    h.dataView.metadata.objects={appearance:{useReportTheme:true}}
+    h.visual.renderPrimitiveChart(h.dataView,{type:'bar',canvasTheme:'dark',config:{cardStyle:'plain'}})
+    expect(value()).toBe(true)
+    expect(h.visual.lastOption.backgroundColor).toBe('transparent')
+  })
+  it('uses the host viewer locale for labels, axes and native tooltips',()=>{
+    const h=harness();h.host.locale='en-IN'
+    const dv={categorical:{categories:[{values:['A']}],values:[{source:{displayName:'Revenue',format:'$#,0.00'},values:[24914586.8193]}]}}
+    h.visual.renderPrimitiveChart(dv,{type:'column',config:{cardStyle:'plain'}})
+    const option=h.chart.setOption.mock.calls.at(-1)[0]
+    expect(option.series[0].label.formatter({value:24914586.8193})).toBe('$2,49,14,586.82')
+    expect(option.yAxis.axisLabel.formatter(24914586.8193)).toBe('$2,49,14,586.82')
+    h.events.mouseover({dataIndex:0,value:24914586.8193,event:{event:{clientX:1,clientY:1}}})
+    expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems.at(-1).value).toBe('$2,49,14,586.82')
+  })
+  it('uses the model percentage format for chart labels, value axis and native tooltip',()=>{
+    const h=harness()
+    const dv={categorical:{categories:[{values:['A','B']}],values:[{source:{displayName:'Margin',format:'0.00%'},values:[.2345,.12]}]}}
+    h.visual.renderPrimitiveChart(dv,{type:'column',config:{cardStyle:'plain'}})
+    const option=h.chart.setOption.mock.calls.at(-1)[0]
+    expect(option.series[0].label.formatter({value:.2345})).toBe('23.45%')
+    expect(option.yAxis.axisLabel.formatter(.2345)).toBe('23.45%')
+    h.events.mouseover({dataIndex:0,value:.2345,event:{event:{clientX:1,clientY:1}}})
+    expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual([{displayName:'Category',value:'A'},{displayName:'Margin',value:'23.45%'}])
+  })
+  it('uses report palette and applies each declared Appearance property without mutating the stored spec', () => {
+    const h = harness()
+    h.host.colorPalette = { foreground: { value: '#202020' }, background: { value: '#ffffff' }, getColor: () => ({ value: '#224466' }) }
+    const dv = { metadata: { objects: { appearance: { useReportTheme: true, backgroundColor: { solid: { color: '#123456' } }, transparency: 25 } } }, categorical: { categories: [{ values: ['A'] }], values: [{ values: [12] }] } }
+    const spec = { type: 'bar', canvasTheme: 'dark', config: { cardStyle: 'plain' } }
+    h.visual.renderPrimitiveChart(dv, spec)
+    const option = h.chart.setOption.mock.calls.at(-1)[0]
+    expect(option.textStyle.color).toBe('#202020')
+    expect(option.backgroundColor).toBe('rgba(18,52,86,0.75)')
+    expect(option.series[0].itemStyle.color).toBe('#224466')
+    expect(spec.canvasTheme).toBe('dark')
+    const model = h.visual.getFormattingModel()
+    const slices = model.cards[0].groups[0].slices
+    expect(slices.map(s=>s.control.properties.descriptor.propertyName)).toEqual(['useReportTheme','backgroundColor','transparency'])
+    expect(slices.map(s=>s.control.properties.value)).toEqual([true,{value:'#123456'},25])
+  })
   it.each(['line','area','grouped_bar','stacked_bar'])('%s uses bound measure names and refreshes them after rebinding', type => {
     const h=harness(type)
     const dv={categorical:{categories:[{values:['North','South']}],values:[{source:{displayName:'Quantity Sold'},values:[12,20]},{source:{displayName:'Quantity Returned'},values:[1,3]}]}}
@@ -308,7 +442,8 @@ describe('native Power BI interaction contracts', () => {
     const h=harness()
     const event={clientX:40,clientY:60,preventDefault:vi.fn()}
     h.events.mouseover({name:'Bikes',dataIndex:1,event:{event}})
-    expect(h.tooltip.show).toHaveBeenCalledWith(expect.objectContaining({coordinates:[40,60],identities:[h.ids[1]],dataItems:expect.any(Array)}))
+    expect(h.tooltip.show).toHaveBeenCalledWith(expect.objectContaining({coordinates:[40,60],identities:[h.ids[1]],dataItems:expect.anything()}))
+    expect(Array.isArray(h.tooltip.show.mock.calls.at(-1)[0].dataItems)).toBe(true)
     h.events.contextmenu({name:'Bikes',dataIndex:1,event:{event}})
     expect(h.selection.showContextMenu).toHaveBeenCalledWith(h.ids[1],{x:40,y:60})
     expect(event.preventDefault).toHaveBeenCalled()
@@ -480,6 +615,35 @@ describe('declarative transformed visual identity routing',()=>{
   expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual([{displayName:'US: Bikes',value:'3'},{displayName:'US: Clothing',value:'2'}])
   expect(h.tooltip.show.mock.calls.at(-1)[0].identities).toHaveLength(2)
  })
+ it('formats radar aggregate indicators without substituting a contributing row',()=>{
+  const h=harness()
+  const template={meta:{id:'radar-formatted-aggregate'},slots:{country:{kind:'dimension'},category:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{facet:{by:'country',category:'category',value:'amount'},as:'f'}],template:{radar:{indicator:'$calc.f.indicators'},series:[{type:'radar',data:{repeat:'$calc.f.panels',template:{name:'$item.name',value:'$item.values',rowIndexes:'$item.rowIndexes'}}}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['US','US','US']},{values:['Bikes','Bikes','Clothing']}],values:[{source:{displayName:'Margin',format:'0.00%'},values:[.1,.1345,.5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const data=h.visual.lastOption.series[0].data[0]
+  h.events.mouseover({seriesIndex:0,dataIndex:0,name:data.name,value:data.value,data})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual(expect.arrayContaining([{displayName:'US: Bikes',value:'23.45%'},{displayName:'US: Clothing',value:'50.00%'}]))
+  expect(h.tooltip.show.mock.calls.at(-1)[0].identities).toHaveLength(3)
+ })
+ it('formats repeated facet aggregates and retains all contributor identities',()=>{
+  const h=harness()
+  const template={meta:{id:'facet-formatted-aggregate'},slots:{country:{kind:'dimension'},category:{kind:'dimension'},amount:{kind:'measure'}},transforms:[{facet:{by:'country',category:'category',value:'amount'},as:'f'}],template:{xAxis:{type:'category'},yAxis:{type:'value'},series:{repeat:'$calc.f.panels',template:{type:'bar',data:'$item.data'}}}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['US','US']},{values:['Bikes','Bikes']}],values:[{source:{displayName:'Revenue',format:'$#,0.00'},values:[100,200]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const data=h.visual.lastOption.series[0].data[0]
+  h.events.mouseover({seriesIndex:0,dataIndex:0,name:data.name,value:data.value,data})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toEqual([{displayName:'Group',value:'Bikes'},{displayName:'Revenue',value:'$300.00'}])
+  expect(h.tooltip.show.mock.calls.at(-1)[0].identities).toHaveLength(2)
+ })
+ it('carries heatmap model formats and viewer locale into native host tooltips',()=>{
+  const h=harness();(h.host as any).locale='de-DE'
+  const template={meta:{id:'heatmap-formatted-host'},slots:{month:{kind:'dimension'},country:{kind:'dimension'},margin:{kind:'measure'}},template:{xAxis:{type:'category',data:'$slot.month.categories'},yAxis:{type:'category',data:'$slot.country.categories'},series:[{type:'heatmap',data:'$slot.margin.matrix'}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:[{source:{displayName:'Month'},values:['Jan','Jan','Feb']},{source:{displayName:'Country'},values:['US','Canada','US']}],values:[{source:{displayName:'Margin',format:'0.00%'},values:[.2,.2345,.5]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
+  const dataIndex=h.visual.lastOption.series[0].data.findIndex(d=>(Array.isArray(d)?d:d.value)[2]===.2345)
+  expect(dataIndex).toBeGreaterThanOrEqual(0)
+  const data=h.visual.lastOption.series[0].data[dataIndex]
+  expect(h.visual.lastOption.series[0].label.formatter({value:Array.isArray(data)?data:data.value})).toBe('23,45%')
+  h.events.mouseover({seriesIndex:0,dataIndex,value:data,data})
+  expect(h.tooltip.show.mock.calls.at(-1)[0].dataItems).toContainEqual({displayName:'Margin',value:'23,45%'})
+ })
  it('dims unrelated flow links while preserving authored edge opacity and restores the pristine graph',()=>{
   const h=harness()
   const template={meta:{id:'flow-edge-style'},slots:{a:{kind:'dimension'},b:{kind:'dimension'},v:{kind:'measure'}},transforms:[{flows:{levels:['a','b'],value:'v'},as:'f'}],template:{series:[{type:'sankey',data:'$calc.f.nodes',links:'$calc.f.links',lineStyle:{opacity:0.4}}]}}
@@ -519,11 +683,11 @@ describe('declarative transformed visual identity routing',()=>{
 })
 
 
-it('preserves a declarative background on a white host page while legacy charts stay transparent',()=>{
+it('preserves an explicitly authored background on a white host page while default charts stay transparent',()=>{
  const h=harness()
- const template={meta:{id:'background-test'},slots:{v:{kind:'measure'}},template:{backgroundColor:'$theme.background',xAxis:{type:'category'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.v.values'}]}}
+ const template={meta:{id:'background-test'},slots:{v:{kind:'measure'}},template:{backgroundColor:'#07111f',xAxis:{type:'category'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.v.values'}]}}
  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A']}],values:[{values:[7]}]}},{type:'custom',template,config:{cardStyle:'plain'}})
- expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).not.toBe('transparent')
+ expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).toBe('#07111f')
  h.visual.renderPrimitiveChart({categorical:{categories:[{values:['A']}],values:[{values:[7]}]}},{type:'bar',config:{cardStyle:'plain'}})
  expect(h.chart.setOption.mock.calls.at(-1)[0].backgroundColor).toBe('transparent')
 })

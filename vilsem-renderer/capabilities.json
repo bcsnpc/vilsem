@@ -207,13 +207,40 @@
   ],
   "objects": {
     "semantica": {
-      "displayName": "Semantica",
+      "displayName": "Vilsem specification",
       "properties": {
         "primitiveSpec": {
           "displayName": "Primitive composition spec",
-          "description": "JSON-encoded spec describing the visual type (bar/line/donut/etc.) + config (colorScheme, smooth, stacked, etc.). Set by the Semantica publish flow; consumed by the renderer to compose the chart via the same primitives runtime as the web app.",
+          "description": "JSON-encoded visual specification set by the vilsem publish flow and rendered through the shared primitives runtime.",
           "type": {
             "text": true
+          }
+        }
+      }
+    },
+    "appearance": {
+      "displayName": "Appearance",
+      "properties": {
+        "useReportTheme": {
+          "displayName": "Use report theme",
+          "type": {
+            "bool": true
+          }
+        },
+        "backgroundColor": {
+          "displayName": "Background colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "transparency": {
+          "displayName": "Background transparency (%)",
+          "type": {
+            "numeric": true
           }
         }
       }

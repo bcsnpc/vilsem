@@ -1,0 +1,12 @@
+{
+  "method": "Computer Use window capture, tooltip-only crop",
+  "crop": [
+    118,
+    198,
+    502,
+    295
+  ],
+  "fixture": "query-only0.2345 calibration; not a business ratio",
+  "observed": "NativeMeasure(Audit Matrix Percent Fixture)23.45%",
+  "renderer": "4.34.0.0, before treemap-only header refinement"
+}

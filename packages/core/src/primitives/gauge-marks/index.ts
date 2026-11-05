@@ -120,7 +120,7 @@ export const GaugeMarks: Primitive<GaugeMarksProps> = (props, ctx) => {
           color: t.textMuted,
           fontSize: 9,
           distance: -(arcWidth + 22),
-          formatter: (v: number) => (v === min || v === max) ? fmtLabel(v) : '',
+          formatter: Object.assign((v: number, modelFormatter?: any) => (v === min || v === max) ? (typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(v) : fmtLabel(v)) : '', { vilsemFormatter: true }),
         } : { show: false },
         detail: {
           show: true,
@@ -130,7 +130,7 @@ export const GaugeMarks: Primitive<GaugeMarksProps> = (props, ctx) => {
           ...(valueFontFamily ? { fontFamily: valueFontFamily } : {}),
           color: valueColor || fillColor,
           offsetCenter: [0, '15%'],
-          formatter: () => fmtVal(val ?? displayVal, prefix, suffix),
+          formatter: Object.assign((_value: any, modelFormatter?: any) => typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(val ?? displayVal) : fmtVal(val ?? displayVal, prefix, suffix), { vilsemFormatter: true }),
         },
         title: { show: false },
         data: [{ value: displayVal, name: val != null ? String(val) : '' }],

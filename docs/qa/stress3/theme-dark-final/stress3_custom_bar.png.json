@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_treemap_contrast",
+  "visualName": "stress3_custom_bar",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "768a49b84d5425f1ea4d7365985fca1b56a470d6ab407cc61a3ef9a62a077486",
+  "visualSha256": "60cfb2b294894080d3e17eab243fcb48acd80851669f2143cfcbce43ee8795b6",
+  "region": {
+    "x": 0,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1422,
+  "height": 948,
+  "sha256": "867aa8ba4aa2014ff97d300d4eca1d7b0c53129c4780429a81e096e509526267",
+  "status": "Verified by native Desktop SDK capture inspection: readable plain headers/labels, no internal markup, bounded contents; dark fixture uses temporary owned report theme when applicable."
+}

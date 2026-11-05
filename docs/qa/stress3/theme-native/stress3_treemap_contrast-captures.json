@@ -1,0 +1,38 @@
+[
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_treemap_contrast",
+    "visualName": "stress2_040_treemap-secondary-colour",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "768a49b84d5425f1ea4d7365985fca1b56a470d6ab407cc61a3ef9a62a077486",
+    "visualSha256": "5a7ae5f397129fde1324193e5da8003b5d1939b1007da3aee5d48b81c311ae86",
+    "region": {
+      "x": 0,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1422,
+    "height": 948,
+    "sha256": "7d6c0858df017c51a5e3166823678d97c7d5449b1f3dc335b1d751a348c2e4f5",
+    "status": "Verified by native capture inspection; interaction not inferred"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_treemap_contrast",
+    "visualName": "stress2_041_treemap-drill",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "768a49b84d5425f1ea4d7365985fca1b56a470d6ab407cc61a3ef9a62a077486",
+    "visualSha256": "df434e493ba63d488830038a497c017e615ea47f7ed262aeb8c3d730b63b8446",
+    "region": {
+      "x": 900,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1422,
+    "height": 948,
+    "sha256": "b10c375215fd46c05b5b0da5d1f872752134ce84372ed5ee3311cf9be70c4ec9",
+    "status": "Verified by native capture inspection; interaction not inferred"
+  }
+]

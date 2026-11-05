@@ -39,7 +39,7 @@ describe('bounded distribution shaping',()=>{
  it('exposes one statistic record per group while preserving aligned row vectors',()=>{
   const out=run('stat',{field:'numeric',op:'mean',partitionBy:'group',records:true},[row('A',2),row('B',4),row('A',6),row('B',null)])
   expect(out.values).toEqual([4,4,4,4]);expect(out.data).toEqual([{name:'A',value:4,rowIndexes:[0,2]},{name:'B',value:4,rowIndexes:[1]}])
-  expect(requiredRendererVersion({template:template('stat',{field:'numeric',op:'mean',records:true})})).toBe('4.28.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:template('stat',{field:'numeric',op:'mean',records:true})})).toBe('4.28.0.0')
  })
  it('computes huge finite means, quantiles and deviations without overflowing intermediate sums or differences',()=>{
   expect(stableStatistic([1e308,1e308],'mean')).toBe(1e308)

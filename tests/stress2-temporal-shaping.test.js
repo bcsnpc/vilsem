@@ -34,7 +34,7 @@ describe('bounded trusted streamgraph shaping',()=>{
   expect(()=>resolve(stream,[row('d1','A',1e308),row('d1','B',1e308)])).toThrow(/column total exceeds finite/)
   expect(()=>resolve(stream,Array.from({length:37},(_,i)=>row('d1',`g${i}`,1)))).toThrow(/36 layers/)
   expect(()=>resolve(stream,Array.from({length:1000},(_,i)=>row(`d${i}`,`g${i%36}`,1)))).toThrow(/20000 aligned cells/)
-  expect(requiredRendererVersion({template:stream})).toBe('4.25.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:stream})).toBe('4.25.0.0')
  })
 })
 const intervals={meta:{id:'intervals'},slots:{owner:{kind:'dimension'},task:{kind:'dimension'},start:{kind:'time'},end:{kind:'time'},amount:{kind:'measure'}},transforms:[{intervals:{group:'owner',category:'task',start:'start',end:'end',limit:3},as:'s'}],template:{shaped:'$calc.s'}}
@@ -50,7 +50,7 @@ describe('bounded grouped interval shaping',()=>{
   expect(out.min).toBe(Date.parse('2020-01-01T00:00:00Z'))
   expect(out.max).toBe(Date.parse('2020-01-03T00:00:00Z'))
   expect(out.duration[0].label).toContain('(2 days)')
-  expect(requiredRendererVersion({template:intervals})).toBe('4.26.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:intervals})).toBe('4.26.0.0')
  })
  it('preserves zero-duration milestones and handles missing dates and empty input explicitly',()=>{
   const out=resolve(intervals,[span('US','instant','1970-01-01','1970-01-01'),span('US','missing',null,null)])

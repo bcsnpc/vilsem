@@ -1,0 +1,74 @@
+[
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_10",
+    "visualName": "stress2_037_calendar-margin",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "5b96e5c8c590a0164c5ebb18361a2829846c3b480e90ae0ad03b705664c1466f",
+    "region": {
+      "x": 0,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "0504e63dbf11214d5cc293aa2346db4cf4d444d12fc4b19c911886edea18f351",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_10",
+    "visualName": "stress2_038_daily-heat-strip",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "8a9c8f40cfd5b683de3835c39a1161eee793381b7cabbdb66126e6ef8a39b1ec",
+    "region": {
+      "x": 900,
+      "y": 0,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "e3548f8f4bc33f6cfcafb250ab3d44754d16881f3c3b2e9635b12f2963bd532f",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_10",
+    "visualName": "stress2_039_country-lasagna",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "1502ef5e767f061be5f708d8f12016ee4d215789f76a3b256eb6ac8b6d29848a",
+    "region": {
+      "x": 0,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "6769b7d4eb2e046d9a6a1d8896bf82bb36a03101989dc24a20dca8f78ef5c807",
+    "status": "Verified: settled real-data native rendering inspected in Desktop; theme/geometry check only, not exhaustive interaction acceptance"
+  },
+  {
+    "reportName": "Stress3 Theme Light.Report",
+    "pageName": "stress3_theme_10",
+    "visualName": "stress2_040_treemap-secondary-colour",
+    "method": "report.snapshot.capture/v2",
+    "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+    "visualSha256": "57a69f96a774bea6e031cf23a8ebbaa8c1e46bc25c27c1f627ebd49c05193aee",
+    "region": {
+      "x": 900,
+      "y": 600,
+      "width": 900,
+      "height": 600
+    },
+    "width": 1495,
+    "height": 997,
+    "sha256": "d359217361f740e886192484b3bcfda800f2ca096cf2e229f72486baf572ece6",
+    "status": "Rendering inspected; default plain-label contrast bug STRESS3-THEME-015 awaiting candidate retry"
+  }
+]

@@ -81,12 +81,15 @@ export const TreemapMarks: Primitive<TreemapMarksProps> = (props, ctx) => {
 
   // Rich-text formatter — emits {name|...} and {value|...} segments so the
   // ECharts label.rich block can apply different colors/sizes per segment.
-  const labelFormatter = (params: any): string => {
+  const labelFormatter = Object.assign((params: any, modelFormatter?: any): string => {
     const lines: string[] = []
     if (showLabels) lines.push(`{name|${params.name || ''}}`)
-    if (showValues) lines.push(`{value|${fmtVal(params.data?._rawValue ?? params.value, prefix, suffix)}}`)
+    if (showValues) {
+      const value=params.data?._rawValue ?? params.value
+      lines.push(`{value|${typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(value) : fmtVal(value, prefix, suffix)}}`)
+    }
     return lines.join('\n')
-  }
+  }, { vilsemFormatter: true })
 
   return {
     option: {
@@ -96,11 +99,11 @@ export const TreemapMarks: Primitive<TreemapMarksProps> = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params: any) => {
+        formatter: Object.assign((params: any, modelFormatter?: any) => {
           const name = params.name || ''
           const v = params.data?._rawValue ?? params.value
-          return `${escapeHtml(name)}<br/>${escapeHtml(fmtVal(v, prefix, suffix))}`
-        },
+          return `${escapeHtml(name)}<br/>${escapeHtml(typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(v) : fmtVal(v, prefix, suffix))}`
+        }, { vilsemFormatter: true }),
       },
       series: [{
         type: 'treemap',

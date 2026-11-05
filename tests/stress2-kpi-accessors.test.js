@@ -19,8 +19,8 @@ describe('current-period KPI tokens and explicit missing values',()=>{
  })
  it('requires the new reader for format3 and the new positional/fallback features',()=>{
   expect(validateTemplate(template).errors).toEqual([])
-  expect(requiredRendererVersion({template})).toBe('4.28.0.0')
-  expect(()=>assertRendererVersion({template},{},'4.27.0.0')).toThrow(/4.28.0.0/)
+  expect(requiredRendererVersion({canvasTheme:'dark',template})).toBe('4.28.0.0')
+  expect(()=>assertRendererVersion({canvasTheme:'dark',template},{},'4.27.0.0')).toThrow(/4.28.0.0/)
   expect(validateTemplate({...template,meta:{...template.meta,formatVersion:99}}).errors.join()).toContain('Unsupported template formatVersion')
  })
 })

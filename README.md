@@ -1,5 +1,7 @@
 # vilsem
 
+Round 3 is in progress: [current correctness tests, native acceptance gates and release limitations](docs/qa/stress3/group-a-status.md).
+
 Engineering audit: see the [verified fixes and remaining work](docs/qa/fix-status.md), [audit report](docs/qa/full-audit-report.md),
 [current architecture](docs/architecture.md), and [tested regression status](docs/qa/regression-status.md).
 The reproduced project-save overwrite and shared visual defects have verified local fixes. Remaining failures and acceptance gaps are documented; this is not a production-readiness certification.

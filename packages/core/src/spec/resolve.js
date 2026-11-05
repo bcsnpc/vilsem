@@ -1,14 +1,15 @@
 import { composeOption } from '../../dist/compositions.js'
-import { getThemeTokens } from '../../dist/theme.js'
+import { resolveReportTheme, applyReportTheme } from '../shared/reportTheme.js'
 import { instantiateVisual, buildThemeContext, validateTemplate } from '../templates/instantiate.js'
 import { prepareVisualRows } from '../dax/row-normalize.js'
 import { compileScopedMeasures } from '../dax/scopedMeasures.js'
+import { applyModelFormats } from '../shared/applyModelFormats.js'
 
 // This boundary is deliberately declarative. It never accepts executable code.
-export function resolveVisualSpec(spec, rows = []) {
+export function resolveVisualSpec(spec, rows = [], context = {}) {
   if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw Error('spec must be an object')
   if (spec.measures !== undefined) compileScopedMeasures(spec.measures)
-  const mode = spec.canvasTheme === 'light' ? 'light' : 'dark'
+  const theme = resolveReportTheme(spec, context)
   rows = prepareVisualRows(rows,spec.type,spec.config,spec.template)
   if (spec.template) {
     const template = spec.template
@@ -27,8 +28,9 @@ export function resolveVisualSpec(spec, rows = []) {
     }
     check(template.template)
     if (errors.length) throw Error(errors.join('\n'))
-    return instantiateVisual({ template, rows, params: spec.params || {}, theme: buildThemeContext(getThemeTokens(mode)) }).option
+    const resolved=instantiateVisual({ template, rows, params: spec.params || {}, theme: buildThemeContext(theme.tokens, undefined, theme.fontFamily, theme.palette) })
+    return applyModelFormats(applyReportTheme(resolved.option, theme), spec, context.measures, {locale:context.locale,seriesSources:resolved.seriesSources})
   }
   if (typeof spec.type !== 'string') throw Error('spec.type or spec.template is required')
-  return composeOption(spec.type, rows, spec.config || {}, getThemeTokens(mode)) || { series: [] }
+  return applyModelFormats(applyReportTheme(composeOption(spec.type, rows, { ...spec.config, colorScheme: spec.config?.colorScheme || theme.palette[0] }, theme.tokens) || { series: [] }, theme, { palette: !spec.config?.colorScheme && !spec.config?.sectionColors }), spec, context.measures, {locale:context.locale,rows,width:context.width,measureText:context.measureText})
 }

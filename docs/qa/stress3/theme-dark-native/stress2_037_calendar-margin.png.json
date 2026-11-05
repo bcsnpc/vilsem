@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Dark.Report",
+  "pageName": "stress3_theme_01",
+  "visualName": "stress2_037_calendar-margin",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "f0510631492391c51ba4f8919c98fcdd20660c7367fda8d12fc084dfeb11075d",
+  "visualSha256": "e01f1a214627988df30ade842a1581a4f62520ab25e427b10f7b389e172d069e",
+  "region": {
+    "x": 900,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "c8884e09e959ad752ef7ee41e9b6ed8c2b52219da6f3712b0f696e2b6d941bec",
+  "status": "Captured; visual inspection pending"
+}

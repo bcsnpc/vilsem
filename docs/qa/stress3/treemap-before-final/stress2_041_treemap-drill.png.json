@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_11",
+  "visualName": "stress2_041_treemap-drill",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "1dcfe022829e00bf1226f69dac7b6d4d27db7600b47227a0879d75425c77b8a3",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "39286d1d99a526dd2a5eccffe1905a91320b62036d14c7aed47041c76a503e6b",
+  "status": "Rendering inspected; default plain-label contrast bug STRESS3-THEME-015 awaiting candidate retry"
+}

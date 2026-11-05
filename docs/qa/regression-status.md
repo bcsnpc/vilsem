@@ -1,3 +1,17 @@
+## Stress round 3 Group A - 2026-11-04 (in progress)
+
+Clean public app/core: **1,055/1,055 PASS**. Final MCP candidate: **189/189 PASS** (401.97s). Native renderer4.34 packages successfully. UI/standalone/Fabric and latest installer builds PASS. Separately installed core/MCP auto-connect without VILSEM_APP_PATH (port64913, process-workspace-port-file,13tables/39measures); real-data validate/explain/preview passes. Found and fixed clipped full-currency bar labels during this acceptance; before/after evidence retained.
+
+All120 shipped templates regenerated in light/dark previews and reviewed at gallery scale. Audits: root15moderate; native16moderate/4low; UI0; MCP0; **zero high/critical**. Native111 gallery captures exist, but the final treemap binary and stale-highlight transition still need a live retry. Desktop is minimized; user restore requested. No core/MCP0.5 release has been tagged or pushed. Group B/C have not started. See [precise Group A gates and limitations](stress3/group-a-status.md) and [native interaction status](interactions/round3-status.md).
+
+---
+
+## Stress round 2 - 2026-11-03
+
+111/120 rendering PASS; nine exact category-(c) refusals. Private and clean public app/core suites:956/956 each. MCP:167/167. Native renderer4.31 selection/helper-opacity fix and Desktop filter/clear numerical change verified. All19 model definitions match baseline; original PBIP untouched. MCP audit0; app workspace45 unresolved. Core core-v0.4.0 and MCP v0.4.0 published; published-core MCP167/167 and isolated live install PASS, public Git-tag install/stdIO/catalog/scratch validation/fixture PNG PASS. Detailed evidence, limitations and all120 results: [stress2 status](stress2/status.md).
+
+---
+
 ## Latest: MCP expressiveness cycle - 2026-11-02
 
 - Ten new templates authored independently; nine pass validate_spec, explain_visual, real-data preview and commit_visual on the new Expressiveness page. Marimekko is the sole category-(c) refusal; its sandboxed-extension design is documented, not implemented.

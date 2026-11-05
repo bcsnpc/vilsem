@@ -21,11 +21,18 @@ try {
  $install=(Get-AppxPackage '*PowerBI*' | Select-Object -First 1).InstallLocation
  if(-not $install){$install='C:/Program Files/Microsoft Power BI Desktop'}
  [Reflection.Assembly]::LoadFrom((Join-Path $install 'bin/Microsoft.PowerBI.AdomdClient.dll')) | Out-Null
- $portValue=[int]$inputData.port
- if($portValue -lt 1 -or $portValue -gt 65535){throw 'Invalid local port.'}
  $conn=New-Object Microsoft.AnalysisServices.AdomdClient.AdomdConnection
  $builder=New-Object System.Data.Common.DbConnectionStringBuilder
- $builder['Data Source']="localhost:$portValue";$builder['Integrated Security']='SSPI'
+ if($inputData.endpoint){
+  $endpoint=[string]$inputData.endpoint
+  if($endpoint -notmatch '^[a-zA-Z0-9_.-]+(\\[a-zA-Z0-9_.-]+)?(:\d{1,5})?$'){throw 'Invalid Windows-integrated SSAS endpoint.'}
+  $builder['Data Source']=$endpoint
+ } else {
+  $portValue=[int]$inputData.port
+  if($portValue -lt 1 -or $portValue -gt 65535){throw 'Invalid local port.'}
+  $builder['Data Source']="localhost:$portValue"
+ }
+ $builder['Integrated Security']='SSPI'
  if($inputData.catalog){$builder['Initial Catalog']=[string]$inputData.catalog}
  $conn.ConnectionString=$builder.ConnectionString;$conn.Open()
  function Schema-Rows([string]$name){

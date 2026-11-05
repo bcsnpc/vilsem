@@ -1,6 +1,6 @@
 # Stress round 2 results
 
-Task 1 query-only measures: live Desktop verified. Task 2: 111/120 PASS. Each PASS has an inspected Desktop screenshot; tool-only success remains awaiting verification.
+Task 1 query-only measures: live Desktop verified. Task 2: **111 verified in Power BI Desktop**, 9 refused/unsupported. The 111 PASS rows each record an inspected native screenshot (all 111 referenced files rechecked present during Round 3). **Tool-verified-only PASS items: none.** The previous ambiguous sentence about awaiting verification is removed; this is a provenance clarification, not a new claim that Round 3 theme regeneration or interaction acceptance is complete.
 
 | # | Visual | Status | Evidence / reason |
 | --- | --- | --- | --- |

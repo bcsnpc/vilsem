@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -13,6 +13,8 @@
     "!src/**/*.test.js"
   ],
   "exports": {
+    "./theme/report": "./src/shared/reportTheme.js",
+    "./formatting": "./src/shared/formatting.js",
     "./dax": "./src/dax/index.js",
     "./dax/rows": "./src/dax/row-normalize.js",
     "./dax/preview": "./src/dax/previewDax.js",
@@ -73,6 +75,15 @@
   },
   "typesVersions": {
     "*": {
+      "theme/report": [
+        "src/shared/reportTheme.js"
+      ],
+      "formatters": [
+        "src/shared/formatters.js"
+      ],
+      "formatting": [
+        "src/shared/formatting.js"
+      ],
       "compositions": [
         "dist/compositions.d.ts"
       ],

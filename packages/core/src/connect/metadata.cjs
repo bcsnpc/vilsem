@@ -14,6 +14,14 @@ function indentLen(line) {
   return i;
 }
 
+// TMDL quotes the entire text property only when needed, and doubles quotes
+// inside that wrapper. Quotes belonging to an unwrapped format literal (e.g.
+// 0.0,,"M") must remain part of the format string.
+function decodeTextProperty(value) {
+  const text=value.trim();
+  return /^"(?:[^"]|"")*"$/.test(text) ? text.slice(1,-1).replace(/""/g,'"') : text;
+}
+
 /**
  * Collect a measure's multi-line expression, formatString, and description.
  * Based on the _collect_expression pattern from the reference TMDL parser.
@@ -49,8 +57,8 @@ function collectMeasureBlock(lines, startIdx, headerIndent, inlineExpr) {
       expressionDone = true; // everything after first property is metadata, not DAX
       const fmtMatch  = stripped.match(/^formatString:\s*(.+)/);
       const descMatch = stripped.match(/^description:\s*(.+)/);
-      if (fmtMatch)  formatString = fmtMatch[1].trim().replace(/^"|"$/g, '').replace(/"$/, '');
-      if (descMatch) description  = descMatch[1].trim().replace(/^"|"$/g, '');
+      if (fmtMatch)  formatString = decodeTextProperty(fmtMatch[1]);
+      if (descMatch) description  = decodeTextProperty(descMatch[1]);
       idx++;
       continue;
     }

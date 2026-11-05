@@ -89,13 +89,15 @@ export const PointMarks: Primitive<PointMarksProps> = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params: any) => {
+        formatter: Object.assign((params: any, modelFormatter?: any) => {
           const [x, y] = params.value as number[]
           const name = params.name || ''
-          const xStr = `${xLabel || 'X'}: ${fmtAxisNumber(x)}`
-          const yStr = `${yLabel || 'Y'}: ${fmtAxisNumber(y)}`
+          const xFormat=modelFormatter?.vilsemTupleFormatters?.[0]
+          const yFormat=modelFormatter?.vilsemTupleFormatters?.[1]
+          const xStr = `${xLabel || 'X'}: ${typeof xFormat==='function'?xFormat(x):fmtAxisNumber(x)}`
+          const yStr = `${yLabel || 'Y'}: ${typeof yFormat==='function'?yFormat(y):fmtAxisNumber(y)}`
           return name ? `${escapeHtml(name)}<br/>${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}` : `${escapeHtml(xStr)}<br/>${escapeHtml(yStr)}`
-        },
+        }, { vilsemFormatter: true }),
       },
       series: [{
         type: 'scatter',
@@ -104,7 +106,7 @@ export const PointMarks: Primitive<PointMarksProps> = (props, ctx) => {
         itemStyle: { color: p.start, opacity: fillOpacity },
         label: showLabels ? {
           show: true,
-          formatter: (params: any) => params.name || '',
+          formatter: Object.assign((params: any) => params.name || '', { vilsemFormatter: true }),
           position: 'top',
           color: t.textMuted,
           fontSize: 9,

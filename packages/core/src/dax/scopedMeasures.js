@@ -1,4 +1,5 @@
 // DAX is parsed and bound by Analysis Services, never evaluated as JavaScript.
+import { createModelFormatter } from '../shared/modelFormatting.js'
 // This lexer preserves strings/comments and source positions for safe dependency
 // expansion. Engine validation is still required before preview/commit.
 const forbidden = new Set(['__proto__', 'prototype', 'constructor'])
@@ -55,12 +56,15 @@ export function compileScopedMeasures(measures = {}, {schema, homeTable} = {}) {
   for(const table of schema?.tables || []) tables.set(key(table.name),table)
   for(const table of schema?.tables || [])for(const column of table.columns || [])columns.add(key(column.name))
   for(const measure of schema?.measures || [])modelMeasures.set(key(measure.name),measure)
-  for(const [name,expression] of entries) {
+  for(const [name,declaration] of entries) {
+    const expression=typeof declaration==='string'?declaration:declaration?.expression
+    const format=typeof declaration==='object'&&declaration!==null?declaration.format:undefined
+    if(format!==undefined)createModelFormatter(format)
     if(!name.trim() || name.length>128 || forbidden.has(key(name)) || /[\r\n\0]/.test(name))throw Error(`Invalid visual-scoped measure name: ${name}`)
     if(locals.has(key(name)))throw Error(`Duplicate visual-scoped measure name: ${name}`)
     if(modelMeasures.has(key(name)))throw Error(`Visual-scoped measure cannot shadow a model measure: ${name}`)
     if(columns.has(key(name)))throw Error(`Visual-scoped measure name collides with a model column: ${name}; use a unique alias to preserve inline dependency semantics`)
-    locals.set(key(name),{name,expression,tokens:lexDax(expression),dependencies:[],replacements:[]})
+    locals.set(key(name),{name,expression,format,tokens:lexDax(expression),dependencies:[],replacements:[]})
   }
   if(entries.length && schema && !tables.has(key(homeTable)))throw Error(`Unknown measure home table: ${homeTable}`)
   for(const local of locals.values()) {
@@ -103,8 +107,9 @@ export function compileScopedMeasures(measures = {}, {schema, homeTable} = {}) {
   }
   for(const local of locals.values())expand(local.name)
   return {
-    definitions:ordered.map(local=>({name:local.name,expression:local.expression,expanded:expanded.get(key(local.name))})),
+    definitions:ordered.map(local=>({name:local.name,expression:local.expression,expanded:expanded.get(key(local.name)),...(local.format!==undefined?{format:local.format}:{})})),
     define:entries.length?`DEFINE\n${ordered.map(local=>`  MEASURE ${quoteTable(homeTable || '__vilsem__')}${quoteName(local.name)} = ${local.expression}\n`).join('')}`:'',
     expression(name){return expanded.get(key(name))},
+    format(name){return locals.get(key(name))?.format},
   }
 }

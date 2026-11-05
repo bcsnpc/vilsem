@@ -166,15 +166,15 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
     bottom: showLegend && isBottomLegend ? '20%' : 0,
   }
 
-  const labelFormatter = (params: any): string => {
+  const labelFormatter = Object.assign((params: any, modelFormatter?: any): string => {
     if (labelStyle === 'percent') {
       const pct = total > 0 ? (params.value / total) * 100 : 0
       return `${pct.toFixed(0)}%`
     }
-    if (labelStyle === 'value') return fmtVal(params.value, prefix, suffix)
+    if (labelStyle === 'value') return typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(params.value) : fmtVal(params.value, prefix, suffix)
     const name = String(params.name || '')
     return name.length > 10 ? name.slice(0, 9) + '…' : name
-  }
+  }, { vilsemFormatter: true })
 
   return {
     option: {
@@ -186,10 +186,10 @@ export const PieMarks: Primitive<PieMarksProps> = (props, ctx) => {
         backgroundColor: t.echartsTooltipBg,
         borderColor: t.echartsTooltipBorder,
         textStyle: { color: t.echartsTooltipText, fontSize: 12 },
-        formatter: (params: any) => {
+        formatter: Object.assign((params: any, modelFormatter?: any) => {
           const pct = total > 0 ? (params.value / total) * 100 : 0
-          return `${escapeHtml(params.name)}<br/>${escapeHtml(fmtVal(params.value, prefix, suffix))} (${pct.toFixed(1)}%)`
-        },
+          return `${escapeHtml(params.name)}<br/>${escapeHtml(typeof modelFormatter==='function' && !prefix && !suffix ? modelFormatter(params.value) : fmtVal(params.value, prefix, suffix))} (${pct.toFixed(1)}%)`
+        }, { vilsemFormatter: true }),
       },
       // Always emit the legend block with explicit `show` flag — ECharts setOption
       // merges by default, so toggling `legend: undefined` would leave the old legend

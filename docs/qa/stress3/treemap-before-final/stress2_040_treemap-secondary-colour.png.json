@@ -1,0 +1,18 @@
+{
+  "reportName": "Stress3 Theme Light.Report",
+  "pageName": "stress3_theme_10",
+  "visualName": "stress2_040_treemap-secondary-colour",
+  "method": "report.snapshot.capture/v2",
+  "rendererSha256": "c07f3c4d7276ea5ba51304f9ad0defd61cc4f460c514124c5f6134477d547a3e",
+  "visualSha256": "57a69f96a774bea6e031cf23a8ebbaa8c1e46bc25c27c1f627ebd49c05193aee",
+  "region": {
+    "x": 900,
+    "y": 600,
+    "width": 900,
+    "height": 600
+  },
+  "width": 1495,
+  "height": 997,
+  "sha256": "d359217361f740e886192484b3bcfda800f2ca096cf2e229f72486baf572ece6",
+  "status": "Rendering inspected; default plain-label contrast bug STRESS3-THEME-015 awaiting candidate retry"
+}

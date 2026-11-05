@@ -11,7 +11,7 @@ describe('bounded normalized data record repetition',()=>{
   expect(out.series[0]).toEqual({type:'scatter',name:'US',data:[{name:'US',value:[10,2],rowIndexes:[0]}]})
   expect(out.series[1].data[0]).toMatchObject({name:'Canada',value:[20,3],rowIndexes:[1]})
   expect(instantiateVisual({template:base,rows:[]}).option.series).toEqual([])
-  expect(requiredRendererVersion({template:base})).toBe('4.25.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template:base})).toBe('4.25.0.0')
  })
  it('supports nested numeric tuples and rejects unknown/prototype paths',()=>{
   const template={...base,template:{series:{repeat:'$calc.xy.data',template:{name:'$item.name',data:[{value:[0,'$item.value.0'],rowIndexes:'$item.rowIndexes'},{value:[1,'$item.value.1'],rowIndexes:'$item.rowIndexes'}]}}}}
@@ -29,7 +29,7 @@ describe('bounded normalized data record repetition',()=>{
   expect(out.map(d=>d.value)).toEqual([[0,0],[3,6],[6,12],[9,18]])
   expect(instantiateVisual({template,rows:[]}).option.data).toEqual([])
   expect(instantiateVisual({template,rows:input.slice(0,1)}).option.data[0].rowIndexes).toEqual([0])
-  expect(requiredRendererVersion({template})).toBe('4.25.0.0')
+  expect(requiredRendererVersion({canvasTheme:'dark',template})).toBe('4.25.0.0')
   expect(validateTemplate({...template,transforms:[{points:{fields:['x'],sample:0},as:'xy'}]}).errors.join()).toMatch(/sample count/)
  })
  it('does not manufacture phantom null points after all source fields were limited',()=>{
