@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-11-05T06:01:06.479Z",
+  "cwd": "D:\\vilsem-mcp-public-050",
+  "localCandidateCoreOverride": false,
+  "appPathEnvironmentPresent": false,
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.5.0"
+  },
+  "tools": [
+    "connect_model",
+    "get_schema",
+    "run_dax",
+    "list_templates",
+    "validate_spec",
+    "explain_visual",
+    "preview_visual",
+    "list_pages",
+    "commit_visual",
+    "validate_visuals"
+  ],
+  "connection": {
+    "connectionId": "191275fe-6c7a-4585-9a80-4bed1f9eae99",
+    "kind": "desktop",
+    "schemaOnly": false,
+    "discovery": "process-workspace-port-file",
+    "port": 57149
+  },
+  "tables": 13,
+  "measures": 39,
+  "explained": true,
+  "preview": {
+    "rowCount": 3,
+    "measureFormats": [
+      {
+        "table": "Measure Table",
+        "name": "Total Revenue",
+        "formatString": "\\$#,0;(\\$#,0);\\$#,0"
+      }
+    ],
+    "themeSource": "explicit preview theme",
+    "pngBytes": 12369
+  },
+  "specFormatResource": true,
+  "noReportWrites": true,
+  "status": "PASS",
+  "note": "Fresh package using real public core0.5 dependency URL, no override; before GroupB changes"
+}

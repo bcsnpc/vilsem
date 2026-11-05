@@ -1,6 +1,6 @@
 # Round 3 Group A acceptance
 
-Status: release candidate verified with the explicit limits below; core/MCP0.5 release publication in progress. Group B/C have not started.
+Status: **core-v0.5.0 and MCPv0.5.0 published**, with the explicit verification limits below. Group B is starting; Group C has not started.
 
 ## Results
 
@@ -37,3 +37,9 @@ Audits: root15moderate, renderer tools16moderate/4low, UI0, MCP0; zero high/crit
 ## Release gate
 
 Publish the tested core artifact first, change MCP to its real public0.5 URL, verify public install/hash/protocol, then publish MCP. Record commits/tags/results below. Remaining native limitations must stay in release notes/README. This does not certify production readiness or complete Groups B/C.
+
+## Published releases ? 2026-11-05
+
+- Public core/application source: `6cac830`, pushed to `bcsnpc/vilsem/main`; tag/release [core-v0.5.0](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.5.0). Public asset SHA256 matches the tested tarball above.
+- MCP: `a6e5f4a`, pushed to `bcsnpc/vilsem-mcp/main`; tag/release [v0.5.0](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.5.0). Dependency now uses the real core0.5 release URL; lock SRI matches the tested archive.
+- Separate fresh install `D:/vilsem-mcp-public-050` used no dependency override and no app path; handshake0.5, Desktop connection,13tables/39measures, validate/explain/3-row real preview and resource read PASS. Install audit0. Records retained privately in that directory. GroupA source full suites1055/189 and all model hashes remain as above. Historical and mouse-only limitations remain open; publication does not erase them.

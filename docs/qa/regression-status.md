@@ -1,8 +1,8 @@
-## Stress round 3 Group A - 2026-11-04 (in progress)
+## Stress round 3 ? Group A published; Group B starting
 
-Clean public app/core: **1,055/1,055 PASS**. Final MCP candidate: **189/189 PASS** (401.97s). Native renderer4.34 packages successfully. UI/standalone/Fabric and latest installer builds PASS. Separately installed core/MCP auto-connect without VILSEM_APP_PATH (port64913, process-workspace-port-file,13tables/39measures); real-data validate/explain/preview passes. Found and fixed clipped full-currency bar labels during this acceptance; before/after evidence retained.
+Core **core-v0.5.0** (`6cac830`) and MCP **v0.5.0** (`a6e5f4a`) are published and pushed to public main. Clean public app/core1,055/1,055 and MCP189/189 PASS. Fresh public-dependency standalone install/live Desktop workflow PASS without app path or local override. Native light/dark treemap headers/contrast, full currency labels and23.45% host tooltip verified. All21model files remain unchanged. Audits: root0high/critical15moderate; renderer0high/critical16moderate4low; UI0; MCP0.
 
-All120 shipped templates regenerated in light/dark previews and reviewed at gallery scale. Audits: root15moderate; native16moderate/4low; UI0; MCP0; **zero high/critical**. Native111 gallery captures exist, but the final treemap binary and stale-highlight transition still need a live retry. Desktop is minimized; user restore requested. No core/MCP0.5 release has been tagged or pushed. Group B/C have not started. See [precise Group A gates and limitations](stress3/group-a-status.md) and [native interaction status](interactions/round3-status.md).
+Physical Ctrl-click and final native stale-selection/slicer retry still need manual verification because Computer Use lost its native pipe; source regressions cover the paths. Historical screenshots are not all regenerated. These limitations remain explicit in releases/README. [Group A evidence and limits](stress3/group-a-status.md). Group B context/feedback/editing is beginning; Group C remains pending.
 
 ---
 
