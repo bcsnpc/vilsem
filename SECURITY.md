@@ -125,3 +125,10 @@ possible spec contains no embedded information would be incorrect. Native
 report permissions, labels and refresh are owned by Power BI; the MCP does
 not create or modify their policy. Report connection strings are parsed for
 targets only: embedded passwords and impersonation properties are not used.
+
+
+## Round3 GroupB audit checkpoint (2026-11-05)
+
+The clean public source tree reports0high/0critical,6moderate findings; native renderer tooling0high/0critical,13moderate+4low; UI0 and MCP0. These are registry results at this checkpoint, not a permanent absence-of-vulnerability guarantee. Existing dependency exposure/mitigations above still apply. The JSON Patch implementation is fast-json-patch3.1.1 with operation validation and prototype modifications prohibited; tool guards additionally refuse renderer identity/version paths, whole-document replacement and implicit rebinding. Edits operate on a clone, preview before writing, preserve unrelated/manual objects, and check original bytes/etag with an MCP-writer lock. Desktop does not honor that lock, so external-save races cannot be claimed impossible; avoid concurrent Desktop saves and use reviewed etags.
+
+No expression-series interpreter is shipped in0.6. Executable renderItem, arbitrary JavaScript, DOM and network callbacks remain outside the authored format. GroupC requires a separate grammar/threat-model/security-test review before enabling any new execution surface.

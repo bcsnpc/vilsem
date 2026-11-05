@@ -302,7 +302,7 @@ export function makeFormatter(tpl,emptyText='') {
       const indexed = /^(value|c)\.([0-5])$/.exec(rawKey)
       const key = indexed ? 'value' : rawKey === 'c' ? 'value' : rawKey === 'b' ? 'name' : rawKey === 'a' ? 'seriesName'
         : (rawKey === 'd' || rawKey === 'percent') ? 'percent' : rawKey
-      if (key === 'label') return p?.data?.label ?? p?.name ?? ''
+      if (key === 'label') {const label=p?.data?.label;return label!=null&&['string','number','boolean'].includes(typeof label)?String(label):p?.name ?? ''}
       if (key === 'name') return p?.name ?? ''
       if (key === 'seriesName') return p?.seriesName ?? ''
       if (key === 'percent') return p?.percent != null ? String(p.percent) : '' // pie slice share-of-total
@@ -352,7 +352,9 @@ export function nativeTemplateTooltipItems(params, formatter, tupleLabels, bound
     }
     return {displayName:String(field.name),value}
   })
-  return [{displayName:String(params?.data?.label ?? params?.name ?? params?.seriesName ?? 'Value'),value:Array.isArray(raw)?raw.map(show).join(' / '):show(raw)}]
+  const label=params?.data?.label
+  const name=label!=null&&['string','number','boolean'].includes(typeof label)?label:params?.name ?? params?.seriesName ?? 'Value'
+  return [{displayName:String(name),value:Array.isArray(raw)?raw.map(show).join(' / '):show(raw)}]
 }
 
 // ── deep walk: replace whole-token strings + convert formatterTemplate keys ──

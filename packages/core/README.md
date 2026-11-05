@@ -16,7 +16,7 @@ Structured `buildVisualDax` bindings qualify and escape model identifiers. `prep
 
 ## Standalone model connections
 
-Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.5.0/vilsem-core-0.5.0.tgz`.
+Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.6.0/vilsem-core-0.6.0.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -78,3 +78,12 @@ requires the new version. No model definitions are written.
 
 Mixed-unit scatter/bubble coordinates retain independent model formats even when
 the primary measure uses General. Category labels keep their configured meaning.
+
+
+## Versioned editing and common formatting (0.6)
+
+`@vilsem/core/connect/context` exposes read-only schema enrichment and summary/full shaping. It returns measure expressions, formats/folders/descriptions, column types/keys/hidden flags, exact DAX cardinality/BLANK share/ranges, bounded samples and relationship metadata without exporting partition/data-source definitions. Internal row identities and unavailable provider fields are explicit. Composite-key field parameters use a tested projection fallback rather than model changes.
+
+`@vilsem/core/spec/diagnostics` resolves the renderer grammar into structured errors with JSON pointers, expected/allowed shapes and fixes. `@vilsem/core/spec/migrate` provides pure, forward-only migrations from0.1 to0.6, including round2 string scoped measures into structured definitions. New PBIR writes retain binding provenance and specVersion; unknown future versions fail explicitly rather than rendering a substitute chart.
+
+`@vilsem/core/formatting/pane` defines69common properties and applies authored spec.formatting with separate host overrides. The shared contract covers title, text, palette, labels, legend, independent axes, lines, theme/background and border. Manual properties win individually; resetting them must be explicit. The native package is renderer4.35 with the existing GUID/property unchanged. DOM adapters expose only their implemented Appearance/Title/Border subset. Expression geometry, motion and shared user-template storage remain Round3 GroupC work.

@@ -1,8 +1,8 @@
-## Stress round 3 ? Group A published; Group B starting
+## Stress round 3 - Group A published; Group B implementation and testing
 
 Core **core-v0.5.0** (`6cac830`) and MCP **v0.5.0** (`a6e5f4a`) are published and pushed to public main. Clean public app/core1,055/1,055 and MCP189/189 PASS. Fresh public-dependency standalone install/live Desktop workflow PASS without app path or local override. Native light/dark treemap headers/contrast, full currency labels and23.45% host tooltip verified. All21model files remain unchanged. Audits: root0high/critical15moderate; renderer0high/critical16moderate4low; UI0; MCP0.
 
-Physical Ctrl-click and final native stale-selection/slicer retry still need manual verification because Computer Use lost its native pipe; source regressions cover the paths. Historical screenshots are not all regenerated. These limitations remain explicit in releases/README. [Group A evidence and limits](stress3/group-a-status.md). Group B context/feedback/editing is beginning; Group C remains pending.
+Physical Ctrl-click and final native stale-selection/slicer retry still need manual verification because Computer Use lost its native pipe; source regressions cover the paths. Historical screenshots are not all regenerated. These limitations remain explicit in releases/README. [Group A evidence and limits](stress3/group-a-status.md). Group B source gates pass: app/core1168/1168, MCP225/225, renderer/Electron builds,69property formatting contract. Real-data Sankey editing and immutable model hashes verified; native UI acceptance remains partial (blank capture/missing helper).0.6release preparation is underway; Group C remains pending.
 
 ---
 

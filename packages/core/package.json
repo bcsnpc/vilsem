@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -65,7 +65,11 @@
     "./connect/metadata": "./src/connect/metadata.cjs",
     "./connect/localRuntime": "./src/connect/localRuntime.cjs",
     "./connect/client": "./src/connect/client.cjs",
-    "./connect/xmla": "./src/connect/xmla.cjs"
+    "./connect/xmla": "./src/connect/xmla.cjs",
+    "./connect/context": "./src/connect/schemaContext.js",
+    "./spec/diagnostics": "./src/spec/diagnostics.js",
+    "./spec/migrate": "./src/spec/migrate.js",
+    "./formatting/pane": "./src/shared/paneFormatting.js"
   },
   "scripts": {
     "build": "node scripts/build.mjs"
@@ -95,6 +99,15 @@
       ],
       "templates": [
         "src/templates/instantiate.js"
+      ],
+      "spec/migrate": [
+        "src/spec/migrate.js"
+      ],
+      "spec/diagnostics": [
+        "src/spec/diagnostics.js"
+      ],
+      "formatting/pane": [
+        "src/shared/paneFormatting.js"
       ]
     }
   },

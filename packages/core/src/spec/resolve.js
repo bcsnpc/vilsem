@@ -4,11 +4,19 @@ import { instantiateVisual, buildThemeContext, validateTemplate } from '../templ
 import { prepareVisualRows } from '../dax/row-normalize.js'
 import { compileScopedMeasures } from '../dax/scopedMeasures.js'
 import { applyModelFormats } from '../shared/applyModelFormats.js'
+import {migrate,scopedMeasuresOf} from './migrate.js'
+import {effectivePaneObjects,applyPaneFormatting,paneValidationErrors} from '../shared/paneFormatting.js'
 
 // This boundary is deliberately declarative. It never accepts executable code.
 export function resolveVisualSpec(spec, rows = [], context = {}) {
   if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw Error('spec must be an object')
-  if (spec.measures !== undefined) compileScopedMeasures(spec.measures)
+  spec=migrate(spec)
+  const formattingErrors=paneValidationErrors(spec.formatting)
+  if(formattingErrors.length)throw Error(formattingErrors.map(e=>`${e.path}: ${e.message}`).join('\n'))
+  const pane=effectivePaneObjects(spec,context.formatPaneOverrides)
+  context={...context,useReportTheme:pane.appearance?.useReportTheme ?? context.useReportTheme}
+  const finish=option=>applyPaneFormatting(option,pane,context)
+  if (spec.measures !== undefined) compileScopedMeasures(scopedMeasuresOf(spec))
   const theme = resolveReportTheme(spec, context)
   rows = prepareVisualRows(rows,spec.type,spec.config,spec.template)
   if (spec.template) {
@@ -29,8 +37,8 @@ export function resolveVisualSpec(spec, rows = [], context = {}) {
     check(template.template)
     if (errors.length) throw Error(errors.join('\n'))
     const resolved=instantiateVisual({ template, rows, params: spec.params || {}, theme: buildThemeContext(theme.tokens, undefined, theme.fontFamily, theme.palette) })
-    return applyModelFormats(applyReportTheme(resolved.option, theme), spec, context.measures, {locale:context.locale,seriesSources:resolved.seriesSources})
+    return finish(applyModelFormats(applyReportTheme(resolved.option, theme), spec, context.measures, {locale:context.locale,seriesSources:resolved.seriesSources}))
   }
   if (typeof spec.type !== 'string') throw Error('spec.type or spec.template is required')
-  return applyModelFormats(applyReportTheme(composeOption(spec.type, rows, { ...spec.config, colorScheme: spec.config?.colorScheme || theme.palette[0] }, theme.tokens) || { series: [] }, theme, { palette: !spec.config?.colorScheme && !spec.config?.sectionColors }), spec, context.measures, {locale:context.locale,rows,width:context.width,measureText:context.measureText})
+  return finish(applyModelFormats(applyReportTheme(composeOption(spec.type, rows, { ...spec.config, colorScheme: spec.config?.colorScheme || theme.palette[0] }, theme.tokens) || { series: [] }, theme, { palette: !spec.config?.colorScheme && !spec.config?.sectionColors }), spec, context.measures, {locale:context.locale,rows,width:context.width,measureText:context.measureText}))
 }

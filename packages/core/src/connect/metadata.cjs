@@ -4,7 +4,7 @@ let relationshipsCache=[];
 function extractTableName(tmdl) {
   const match = tmdl.match(/^table\s+(.+)/m);
   if (!match) return 'Unknown';
-  return match[1].trim().replace(/^'|'$/g, '');
+  return match[1].trim().replace(/^'|'$/g, '').replace(/''/g,"'");
 }
 
 /** Returns the number of leading whitespace characters (spaces or tabs). */
@@ -32,8 +32,10 @@ function decodeTextProperty(value) {
 function collectMeasureBlock(lines, startIdx, headerIndent, inlineExpr) {
   let formatString = null;
   let description  = null;
+  let displayFolder = null;
+  let isHidden = false;
   const exprLines  = [];
-  let expressionDone = (inlineExpr !== null && inlineExpr.trim() !== '');
+  let expressionDone = false;
   let idx = startIdx;
 
   while (idx < lines.length) {
@@ -53,12 +55,15 @@ function collectMeasureBlock(lines, startIdx, headerIndent, inlineExpr) {
 
     // Property line (formatString:, description:, lineageTag:, annotation, …)
     // Pattern: identifier followed immediately by colon
-    if (/^[A-Za-z_][A-Za-z0-9_]*\s*:/.test(stripped) || stripped.startsWith('annotation ')) {
+    if (/^[A-Za-z_][A-Za-z0-9_]*\s*:/.test(stripped) || stripped.startsWith('annotation ') || /^(isHidden|formatStringDefinition)\b/.test(stripped)) {
       expressionDone = true; // everything after first property is metadata, not DAX
       const fmtMatch  = stripped.match(/^formatString:\s*(.+)/);
       const descMatch = stripped.match(/^description:\s*(.+)/);
       if (fmtMatch)  formatString = decodeTextProperty(fmtMatch[1]);
       if (descMatch) description  = decodeTextProperty(descMatch[1]);
+      const folderMatch = stripped.match(/^displayFolder:\s*(.*)/);
+      if (folderMatch) displayFolder = decodeTextProperty(folderMatch[1]);
+      if (/^isHidden(?:\s*:\s*true)?$/i.test(stripped)) isHidden = true;
       idx++;
       continue;
     }
@@ -74,11 +79,10 @@ function collectMeasureBlock(lines, startIdx, headerIndent, inlineExpr) {
   // Trim trailing empty lines from expression
   while (exprLines.length > 0 && exprLines[exprLines.length - 1] === '') exprLines.pop();
 
-  const expr = inlineExpr && inlineExpr.trim()
-    ? inlineExpr.trim()
-    : (exprLines.length > 0 ? exprLines.join('\n') : null);
+  const allExpr = [...(inlineExpr && inlineExpr.trim() ? [inlineExpr.trim()] : []), ...exprLines];
+  const expr = allExpr.length ? allExpr.join('\n') : null;
 
-  return { expr, formatString, description, nextIdx: idx };
+  return { expr, formatString, description, displayFolder, isHidden, nextIdx: idx };
 }
 
 /**
@@ -100,37 +104,40 @@ function parseTmdlPart(tmdl) {
     if (!stripped) { idx++; continue; }
 
     // ── Measure ──────────────────────────────────────────────────────────────
-    const measureMatch = stripped.match(/^measure\s+'?([^'=\r\n]+?)'?\s*=\s*(.*)$/);
+    const measureMatch = stripped.match(/^measure\s+('(?:[^']|'')*'|[^=\r\n]+?)\s*=\s*(.*)$/);
     if (measureMatch) {
-      const name       = measureMatch[1].trim();
+      const name       = measureMatch[1].trim().replace(/^'|'$/g,'').replace(/''/g,"'");
       const inlineExpr = measureMatch[2]; // may be empty string
-      if (!name || name.startsWith('__')) { idx++; continue; }
+      if (!name) { idx++; continue; }
 
-      const { expr, formatString, description, nextIdx } =
+      const { expr, formatString, description, displayFolder, isHidden, nextIdx } =
         collectMeasureBlock(lines, idx + 1, indent, inlineExpr);
 
-      measures.push({ name, table: tableName, expression: expr, formatString, description });
+      measures.push({ name, table: tableName, expression: expr, formatString, description, displayFolder, isHidden });
       idx = nextIdx;
       continue;
     }
 
     // ── Column (data columns only — no inline "= expr") ───────────────────
-    const colMatch = stripped.match(/^column\s+'?([^'\r\n]+?)'?\s*$/);
+    const colMatch = stripped.match(/^column\s+('(?:[^']|'')*'|[^=\r\n]+?)(?:\s*=\s*.*)?$/);
     if (colMatch) {
-      const name = colMatch[1].trim();
-      if (!name || name.startsWith('RowNumber') || name.startsWith('__')) { idx++; continue; }
+      const name = colMatch[1].trim().replace(/^'|'$/g,'').replace(/''/g,"'");
+      if (!name) { idx++; continue; }
 
       let dataType = '';
+      let isHidden = false, isKey = false;
       let j = idx + 1;
       while (j < lines.length) {
         const cl = lines[j];
         if (!cl.trim()) { j++; continue; }
         if (indentLen(cl) <= indent) break;
         const dtMatch = cl.trim().match(/^dataType:\s*(\S+)/);
-        if (dtMatch) { dataType = dtMatch[1].trim(); break; }
+        if (dtMatch) dataType = dtMatch[1].trim();
+        if (/^isHidden(?:\s*:\s*true)?$/i.test(cl.trim())) isHidden = true;
+        if (/^isKey(?:\s*:\s*true)?$/i.test(cl.trim())) isKey = true;
         j++;
       }
-      columns.push({ name, dataType });
+      columns.push({ name, dataType, isHidden, isKey });
       idx = j;
       continue;
     }
@@ -163,6 +170,7 @@ function parseRelationshipsPart(tmdl) {
       let fromTable = null, fromColumn = null;
       let toTable   = null, toColumn   = null;
       let cardinality  = null;
+      let fromCardinality = 'many', toCardinality = 'one';
       let crossFilter  = null;
       let isActive     = true;
 
@@ -190,6 +198,8 @@ function parseRelationshipsPart(tmdl) {
           toColumn = ep.column;
         }
         if (cardMatch)   cardinality = cardMatch[1].trim();
+        if (/^fromCardinality:/.test(cs)) fromCardinality = cs.split(':')[1].trim();
+        if (/^toCardinality:/.test(cs)) toCardinality = cs.split(':')[1].trim();
         if (cfMatch)     crossFilter = cfMatch[1].trim();
         if (activeMatch) isActive    = activeMatch[1].toLowerCase() === 'true';
         j++;
@@ -198,7 +208,7 @@ function parseRelationshipsPart(tmdl) {
       if (fromTable && fromColumn && toTable && toColumn) {
         relationships.push({
           name, fromTable, fromColumn, toTable, toColumn,
-          cardinality, crossFilter, isActive,
+          cardinality:cardinality || `${fromCardinality}_to_${toCardinality}`, fromCardinality, toCardinality, crossFilter:crossFilter || 'oneDirection', direction:crossFilter || 'oneDirection', isActive,
           key: `${fromTable}[${fromColumn}] → ${toTable}[${toColumn}]`,
         });
       }
@@ -214,10 +224,10 @@ function parseRelationshipsPart(tmdl) {
 
 function parseRelEndpoint(endpoint) {
   // "TableName.ColumnName" or "'Table Name'.ColumnName"
-  const lastDot = endpoint.lastIndexOf('.');
-  if (lastDot === -1) return { table: null, column: null };
-  const table  = endpoint.slice(0, lastDot).trim().replace(/^'|'$/g, '');
-  const column = endpoint.slice(lastDot + 1).trim().replace(/^'|'$/g, '');
+  const match = endpoint.match(/^('(?:[^']|'')*'|[^.]+)\s*\.\s*('(?:[^']|'')*'|.+)$/);
+  if (!match) return { table: null, column: null };
+  const table = match[1].trim().replace(/^'|'$/g,'').replace(/''/g,"'");
+  const column = match[2].trim().replace(/^'|'$/g,'').replace(/''/g,"'");
   return { table, column };
 }
 
@@ -241,7 +251,7 @@ function parseTmslModelBim(modelBim) {
     if (!tableName) continue
 
     for (const m of (table.measures || [])) {
-      if (!m.name || m.name.startsWith('__')) continue
+      if (!m.name) continue
       // TMSL expressions can be a string or an array of strings (multiline DAX)
       const expr = Array.isArray(m.expression)
         ? m.expression.join('\n')
@@ -252,12 +262,13 @@ function parseTmslModelBim(modelBim) {
         expression:   expr,
         formatString: m.formatString || null,
         description:  m.description  || null,
+        displayFolder:m.displayFolder || null,
         isHidden:     m.isHidden     || false,
       })
     }
 
     const columns = (table.columns || [])
-      .filter(c => c.name && !c.name.startsWith('RowNumber') && !c.name.startsWith('__'))
+      .filter(c => c.name)
       .map(c => ({
         name:         c.name,
         dataType:     c.dataType     || 'unknown',
@@ -266,7 +277,7 @@ function parseTmslModelBim(modelBim) {
         isKey:        c.isKey        || false,
       }))
 
-    if (columns.length > 0) tableMap.set(tableName, columns)
+    tableMap.set(tableName, columns)
   }
 
   // ── Relationships ────────────────────────────────────────────────────────────
@@ -280,6 +291,7 @@ function parseTmslModelBim(modelBim) {
       toColumn:     rel.toColumn,
       cardinality:  `${rel.fromCardinality || 'many'}_to_${rel.toCardinality || 'one'}`,
       crossFilter:  rel.crossFilteringBehavior || 'oneDirection',
+      direction:    rel.crossFilteringBehavior || 'oneDirection',
       isActive:     rel.isActive !== false,
       key:          `${rel.fromTable}[${rel.fromColumn}] → ${rel.toTable}[${rel.toColumn}]`,
     })
@@ -416,7 +428,7 @@ async function discoverViaItemDefinition(workspaceId, datasetId, token) {
     if (!part.path?.startsWith('definition/tables/')) continue;
     const { tableName, measures: tMeasures, columns } = parseTmdlPart(tmdl);
     for (const m of tMeasures) measures.push(m);
-    if (columns.length > 0) {
+    if (tableName) {
       if (!tableMap.has(tableName)) tableMap.set(tableName, []);
       tableMap.get(tableName).push(...columns);
     }

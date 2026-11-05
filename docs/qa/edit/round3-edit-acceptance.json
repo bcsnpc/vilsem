@@ -1,0 +1,12 @@
+{
+  "source": "Fresh MCP stdio client, owned AdventureWorks QA report",
+  "listedVisuals": 116,
+  "visual": "stress2_049_sankey-two-levels",
+  "schemaModelWrites": false,
+  "styleUpdateQueryUnchanged": true,
+  "targetExistingManualObjects": 0,
+  "manualPaneRetention": "Automated PBIR/host tests passed; no manual native gesture verified",
+  "beforeAfter": "Real-data SSR inspected, final critique0findings",
+  "native": "SDK reload(false) succeeds; page13 capture blank, current-page retry timed out. ComputerUse missing native pipe after recovery. NOT VERIFIED",
+  "modelFilesUnchanged": 21
+}

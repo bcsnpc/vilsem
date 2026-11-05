@@ -42,8 +42,16 @@ try {
  if($inputData.action -eq 'catalogs') { @{catalogs=(Schema-Rows 'DBSCHEMA_CATALOGS')} | ConvertTo-Json -Depth 12 -Compress }
  elseif($inputData.action -eq 'metadata') {
   $tables=Schema-Rows 'TMSCHEMA_TABLES';$columns=Schema-Rows 'TMSCHEMA_COLUMNS';$measures=Schema-Rows 'TMSCHEMA_MEASURES'
+  $relationshipRows=@();$relationshipWarning=$null
+  try {$relationshipRows=Schema-Rows 'TMSCHEMA_RELATIONSHIPS'} catch {$relationshipWarning='Relationship metadata is unavailable for this connection.'}
   # Return field metadata only; partition/data-source definitions stay in Desktop.
-  @{tables=@($tables | ForEach-Object { @{id=$_.ID;name=$_.Name;isHidden=$_.IsHidden} });columns=@($columns | ForEach-Object { @{tableId=$_.TableID;name=$(if($_.ExplicitName){$_.ExplicitName}else{$_.InferredName});dataType=$(if($_.ExplicitDataType -gt 1){$_.ExplicitDataType}else{$_.InferredDataType});isHidden=$_.IsHidden} });measures=@($measures | ForEach-Object { @{tableId=$_.TableID;name=$_.Name;formatString=$_.FormatString;isHidden=$_.IsHidden} })} | ConvertTo-Json -Depth 12 -Compress
+  @{
+   tables=@($tables | ForEach-Object { @{id=$_.ID;name=$_.Name;isHidden=$_.IsHidden} })
+   columns=@($columns | ForEach-Object { @{id=$_.ID;tableId=$_.TableID;name=$(if($_.ExplicitName){$_.ExplicitName}else{$_.InferredName});dataType=$(if($_.ExplicitDataType -gt 1){$_.ExplicitDataType}else{$_.InferredDataType});isHidden=$_.IsHidden;isKey=$_.IsKey;description=$_.Description;displayFolder=$_.DisplayFolder} })
+   measures=@($measures | ForEach-Object { @{tableId=$_.TableID;name=$_.Name;formatString=$_.FormatString;isHidden=$_.IsHidden;expression=$_.Expression;description=$_.Description;displayFolder=$_.DisplayFolder} })
+   relationships=@($relationshipRows | ForEach-Object { @{name=$_.Name;fromTableId=$_.FromTableID;fromColumnId=$_.FromColumnID;toTableId=$_.ToTableID;toColumnId=$_.ToColumnID;fromCardinality=$_.FromCardinality;toCardinality=$_.ToCardinality;crossFilteringBehavior=$_.CrossFilteringBehavior;isActive=$_.IsActive} })
+   relationshipWarning=$relationshipWarning
+  } | ConvertTo-Json -Depth 12 -Compress
  } elseif($inputData.action -eq 'query') {
   $query=$conn.CreateCommand();$query.CommandText=[string]$inputData.dax;$query.CommandTimeout=30
   $reader=$query.ExecuteReader();$rows=@();$limit=if($inputData.maxRows){[int]$inputData.maxRows}else{100000}

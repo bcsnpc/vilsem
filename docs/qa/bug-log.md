@@ -1940,3 +1940,65 @@ STRESS3-THEME-015 native retry follow-up: leaf contrast and top-left placement n
 STRESS3-FMT-017 native acceptance: restored Light QA report, new owned Model currency labels page, actual Revenue by Category. Full$23,642,495 fits inside the visual; other values and value axis intact. Saved bar-model-format-native.png with renderer hash. Verified in native Desktop at this candidate; treemap-only header refinement later does not change this bar path.
 
 STRESS3-THEME-015 verification: final light+dark native Desktop SDK captures inspected; parent headers are plain Bikes/Products, leaf colours/placement readable. Actual upperLabel inheritance regression reproduced and118targeted +1055full +189MCP PASS. Status: Verified for these native/SSR paths. Prior failures retained under treemap-rich-header-before.
+
+
+## STRESS3-CTX-001 - Composite-key field parameter profiling
+Visual / Area: Core connection metadata / get_schema
+Category: Data
+Severity: Medium
+Description: DISTINCTCOUNT rejected field-parameter display columns with GroupByColumns composite-key semantics.
+Steps: Desktop AdventureWorks QA model; connect_model desktop; get_schema full.
+Input/Data: Product Metric Selection and Customer Metric Selection display columns.
+Expected: Exact cardinality and BLANK share without changing the model.
+Actual: Profile errors for two columns; other columns remained available.
+Evidence: docs/qa/stress3/group-b-live-context.json; private MCP b-live-context logs.
+Root cause: packages/core/src/connect/schemaContext.js used DISTINCTCOUNT directly.
+Status: Verified (unit + live Desktop query).
+Fix: On this engine error only, retry COUNTROWS(DISTINCT(SELECTCOLUMNS(table,...))).
+Regression test: tests/schema-context.test.js composite-key case. Live retry83queryable columns,0profile errors;13internal identities skipped.
+
+## STRESS3-EDIT-001 - Unsupported future spec fell through to legacy rendering
+Visual / Area: Native renderer spec reader
+Category: Rendering / Persistence
+Severity: High
+Description: A spec migration failure returned null, allowing fallback to an unrelated legacy renderer.
+Steps: Set primitiveSpec to a future specVersion, then send update with bound data.
+Input/Data: specVersion99, type bar.
+Expected: Explicit unsupported-version diagnostic, no substitute chart.
+Actual: The failed read could trigger legacy fallback.
+Evidence: tests/power-bi-selection-runtime.test.ts unsupported-version case.
+Root cause: readPrimitiveSpec catch conflated absence with unreadable specifications.
+Status: Verified (automated host harness); final packaged native retry pending.
+Fix: Track read failure and show a specification error before any legacy fallback.
+Regression test: unsupported-version host test plus spec migration/diagnostics tests.
+
+
+## STRESS3-FMT-018 - Sankey labels became [object Object] after formatting
+Visual / Area: Shared template and pane formatting
+Category: Rendering / Formatting
+Severity: High
+Description: A datum label string containing a semantic node name was spread into an ECharts label-style object.
+Steps: Read existing Sankey49; patch label size and formatter plus spec.formatting.labels.format; preview real Desktop data.
+Input/Data: AdventureWorks category/subcategory revenue; formatter {label}: {value}.
+Expected: Bikes: $23.6M and readable subcategory names.
+Actual: [object Object]: $2... in the first edited preview.
+Evidence: MCP edit-live/after.png retained privately; final after-polish.png inspected.
+Root cause: paneFormatting.js and applyModelFormats.js treated every truthy datum.label as a style object.
+Status: Verified (unit + real-data SSR); packaged Desktop inspection unverified due blank capture/missing ComputerUse helper.
+Fix: Style only object labels, preserve semantic strings, and make formatter/tooltip label fallback reject object stringification. Preserve trusted formatter text when changing number formats.
+Regression test: tests/pane-formatting.test.ts Sankey semantic-label case.
+
+
+## STRESS3-COMPAT-002 - Legacy field-label metadata confused with scoped DAX
+Visual / Area: Spec migration / historical app reports
+Category: Persistence / Architecture
+Severity: High
+Description: The migration initially converted every string in spec.measures into an expression object, including old table primary/secondary display labels.
+Steps: Migrate a historical table spec with measures.primary=[Revenue], or app primitive envelope with measures.all.
+Expected: Preserve field labels and actual model Measure projections; migrate only query-scoped DAX definitions.
+Actual: A legacy string label could become an object and break string-based table-label rendering.
+Evidence: tests/spec-migrate.test.js historical-envelope regression.
+Root cause: Two historical uses of the measures property were conflated.
+Status: Verified (automated contracts); live historical native table check remains unverified.
+Fix: Recognize historical field-binding metadata, preserve its values, and use scopedMeasuresOf for query compilation and renderer feature floors. Unsupported wire versions now fail explicitly.
+Regression test: Historical table/primitive envelopes, legacy renderer floor and actual Measure projection; scoped primary expression still migrates.

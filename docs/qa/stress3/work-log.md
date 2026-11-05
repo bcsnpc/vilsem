@@ -62,3 +62,72 @@ STRESS3-FMT-017 closed at automated/SSR level: actual full-currency bar preview 
 GroupA final header correction: full public suite1055PASS with two workers after3default-concurrency5s timeouts; final MCP189PASS (345.06s). Native light040/041 captures show plain parent labels plus contrasting leaf labels. ComputerUse native pipe unavailable after retry/reset; official Desktop SDK confirms actual native rendering. A project-pointer dark-navigation attempt timed out; exact project bytes restored. Current-page temporary dark theme/fixture plus report-only SDK reload(false) verified two treemaps, currency bar and23.45% heatmap; inspected all4PNGs. Restored theme/page/project bytes, removed only2newowned visual files/directories after containment validation, model21/21 unchanged. Mouse Ctrl-click/stale-selection-to-slicer retry remain explicit limits, not PASS. Final installer rebuilt; public/core+MCP releases next, then GroupB.
 
 2026-11-05 GroupA released: publiccore6cac830/tagcore-v0.5.0 andMCPa6e5f4a/tagv0.5.0 pushedtomain. Real public core dependency SRI identical to fully tested local candidate. Fresh separate public-dependency package installPASS (stdio/version/Desktop/schema/validate/explain/preview/resource), no app path/override, audit0. Known mouse-only and historical screenshot limits retained in README/release notes. GroupB begins with model context, structured validation/critique and non-destructive editing; GroupC remains later.
+
+
+2026-11-05 Group B implementation checkpoint (not a release): enriched read-only
+Desktop/TMDL/BIM metadata and schema profiling, SDK design_visual prompt, design
+guide (1,462 words) and workflow resources. Live process-workspace-port-file
+connection detected port57149;13tables/39measure expressions/10relationships;
+83queryable columns profiled without errors after a real composite-key
+field-parameter DISTINCTCOUNT failure was fixed using DISTINCT(SELECTCOLUMNS).
+13internal row identities explicitly skipped. No model writes.
+
+Added preview critique (SVG display-list text bounds, option checks and declared
+interaction capabilities), one-query variant comparison, structured validation
+(15deliberately broken fixtures), forward migrations from0.1, PBIR-backed
+list/read/diff/update with RFC6902 patches, dry run, etag/lock/write guards and
+manual-object preservation. Full MCP checkpoint223/223PASS before the later
+formatting additions. Initial app/core checkpoint1089PASS/2FAIL: baked shape and
+divider expectations lacked the new version metadata; expectations corrected,
+focused native suite subsequently passes. No silent failure dismissal.
+
+Common formatting contract now65properties with shared core application and
+native/SSR adapters. Secondary value-axis colours/formats remain independent;
+manual pane properties override authored spec.formatting siblings. DOM adapters
+currently show Appearance/Title/Border only; chart-only controls are hidden.
+Focused pane/host145PASS. Renderer35first candidate packages successfully;
+latest formatting/formatter marker changes still need final rebuild and full
+regression/native acceptance. Final scoped diagnostics buildPASS, focused
+feedback/edit suite69PASS. No0.6tag/push or GroupBcompletion claim yet.
+
+
+Fresh-session edit acceptance: MCP listed116existing Vilsem visuals and read
+round2Sankey49 from PBIR with live Desktop data and no prior chat. Dry run kept
+bytes unchanged; explicit update changed only primitiveSpec, preserving query
+and all existing object groups (this target had0manual groups). Inspecting PNG
+found semantic string labels converted into style objects ([object Object]);
+fixed shared pane/model-format adapters and formatter fallback, added regression.
+Retried native-bundle buildPASS. Updated Sankey labels now retain names and show
+formatted real values; widened label gutter/increased node spacing, inspected
+final900x600PNG, critique0findings. This is SSR inspection, not native acceptance.
+
+Updated ComputerUse skill26.1029read; list_apps still fails with native-pipe
+oserror2 after2sretry and sessionreset/reinitialization. No mouse input sent.
+Explicitly refreshed onlyowned QA report resources to35, all21model hashes match.
+SDK reload(false) succeeds, but page13native capture returns blank; retained as
+round3-sankey-inactive-page-blank.png. Restored exact pages.json backup; a subsequent
+current-page capture timed out. Neither is counted as a renderPASS. Physical
+manual-pane change/selectedpage/nativeSankey acceptance remain unverified.
+
+Clean public-source tree1162/1162tests PASS. New-source MCP checkpoint223/223PASS;
+final critique refinements still require final full package-dependency rerun.
+Public Electron build in progress. No0.6tag/push yet.
+
+
+GroupB final frozen-source gates: public app/core1168/1168PASS,96files;
+packed-core MCP75contract checks and225/225full tests PASS (187.50s), runtime
+import canaryPASS. Explicit automatic-axis controls/current-value display bring
+the common contract to69properties. Legacy field-label envelopes remain strings,
+are not compiled as scoped DAX and do not falsely require scoped-measure support.
+Resetting common formatting preserves unknown state objects. Page-context native
+aggregations are reported as aggregations, not dimensions/model measures.
+Final Electron/renderer/UI/Fabric/NSIS build exit0, unsigned/default-icon existing
+beta filename; no installer release overwritten. Root audits6moderate, renderer
+13moderate+4low, UI/MCP0; no high/critical. Core tar SHA256
+03ef208cfc745762342e3fc7703898c90db859198d38c977a2667eb4f98bf5a7;
+renderer35SHA256924cf08cddea25ecf0a4969cfa3484f7fbf5f860b87da9d13657d7bc5b77a56c.
+Production bundle inspected for actual wire-version guard, legacy metadata
+classifier and automatic-axis controls. Native UI still unverified; user asked
+whether the window is visible/blank/minimized while release checks continue.
+Earlier mixed-revision full-run failures retained; final acceptance uses matching
+frozen source/package.0.6publication/real-public dependency acceptance next.

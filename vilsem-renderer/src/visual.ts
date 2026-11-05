@@ -1,5 +1,7 @@
 import { prepareVisualRows, rowsFromCategorical } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import {migrate} from '@vilsem/core/spec/migrate'
+import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
 import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
@@ -309,10 +311,13 @@ export class Visual implements IVisual {
     return `${prefix}${body}${suffix}`
   }
 
+  private specReadError: string | null = null
+
   public update(options: VisualUpdateOptions): void {
     const dv = options?.dataViews?.[0]
     if (!dv) {
       const spec = this.readPrimitiveSpec({} as DataView)
+      if(this.specReadError){this.disposeChart();this.renderError(this.specReadError,'specification');return}
       if (spec && ['shape', 'divider'].includes(String(spec.type))) this.renderPrimitiveChart({} as DataView, spec)
       else { this.disposeChart(); this.renderEmpty() }
       return
@@ -327,6 +332,7 @@ export class Visual implements IVisual {
     // When absent (any pre-Phase-5 report), fall through to the legacy paths
     // below — full backward compatibility.
     const primitiveSpec = this.readPrimitiveSpec(dv)
+    if(this.specReadError){this.disposeChart();this.renderError(this.specReadError,'specification');return}
     if (primitiveSpec) {
       this.renderPrimitiveChart(dv, primitiveSpec)
       return
@@ -358,6 +364,7 @@ export class Visual implements IVisual {
   // Returns the parsed object, or null if not present (caller falls through
   // to the legacy render path, preserving backward compatibility).
   private readPrimitiveSpec(dv: DataView): Record<string, unknown> | null {
+    this.specReadError = null
     const objects = dv?.metadata?.objects as Record<string, Record<string, unknown>> | undefined
     const fromReport = objects?.semantica?.primitiveSpec
     // Prefer the report-set spec (new-project publish / inject). Otherwise fall
@@ -373,9 +380,11 @@ export class Visual implements IVisual {
     if (raw.indexOf("__SEMANTICA_BAKED") === 0) return null
     try {
       const parsed = JSON.parse(raw)
-      return (parsed && typeof parsed === "object") ? parsed : null
+      if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed))throw Error('Visual specification must be a JSON object')
+      return migrate(parsed)
     } catch (e) {
       console.error("[Semantica] primitiveSpec JSON parse failed:", (e as Error).message, "raw:", raw.slice(0, 200))
+      this.specReadError = `Cannot read this visual specification: ${(e as Error).message}`
       return null
     }
   }
@@ -409,18 +418,23 @@ export class Visual implements IVisual {
     // optional title header. config.cardStyle === 'plain' opts out for users
     // who want a bare chart (PBI's own visualHeader/border are already hidden
     // via vcObjects so 'plain' truly is bare).
-    const config        = { ...((spec as any).config ?? {}) } as Record<string, unknown>
+    const paneObjects = effectivePaneObjects(spec,dv?.metadata?.objects as any)
+    ;(this as any).formattingObjects = paneObjects
+    const config        = paneTitleConfig({ ...((spec as any).config ?? {}) },paneObjects) as Record<string, unknown>
+    ;(this as any).formattingConfig = config
+    ;(this as any).formattingOption = undefined
     // Match the positional measure mapping used by buildRowsFromDataView.
     // Bound display names are automatic defaults; explicit user labels win.
     if (!config.measureName) config.measureName = dv?.categorical?.values?.[0]?.source?.displayName
     if (!config.secondaryMeasureName) config.secondaryMeasureName = dv?.categorical?.values?.[1]?.source?.displayName
     const visualType    = String((spec as any).type ?? "bar")
+    ;(this as any).formattingDom = !(spec as any).template && ['waffle', 'bullet', 'progress', 'stat_card', 'metric_tile', 'funnel', 'waterfall', 'heatmap', 'ranked_list', 'chord', 'sankey', 'sunburst', 'narrative', 'insight', 'shape', 'divider'].includes(visualType)
     if (!["shape", "divider"].includes(visualType) &&
         dv?.categorical?.categories?.length && !dv.categorical.categories[0].values.length) {
       this.renderEmpty("No data matches the current filters")
       return
     }
-    const appearance = (dv?.metadata?.objects as any)?.appearance || {}
+    const appearance = paneObjects.appearance || {}
     ;(this as any).formattingAppearance = appearance
     ;(this as any).formattingCanvasTheme = spec.canvasTheme
     const measureMetadata = (dv?.categorical?.values || []).map(column => ({ name: column.source?.displayName || column.source?.queryName || '', formatString: column.source?.format }))
@@ -461,6 +475,8 @@ export class Visual implements IVisual {
       card.style.cssText = "position:absolute;inset:0;display:flex;flex-direction:column;box-sizing:border-box"
     }
     this.root.appendChild(card)
+    const border = paneObjects.border || {}
+    if(border.show){card.style.border=`${Math.max(1,Math.min(200,Number(border.width)||1))}px solid ${border.color?.solid?.color || '#cccccc'}`;card.style.borderRadius=`${Math.max(0,Math.min(100,Number(border.radius)||0))}px`}
     const background = appearance.backgroundColor?.solid?.color
     const requestedTransparency = Number(appearance.transparency ?? 100)
     const transparency = Number.isFinite(requestedTransparency) ? Math.min(100, Math.max(0, requestedTransparency)) : 100
@@ -482,7 +498,7 @@ export class Visual implements IVisual {
     }
 
     // Title header — only when title/label present and not plain.
-    if (!isPlain && hasTitle) {
+    if ((!isPlain || (this as any).formattingDom && paneObjects.title) && hasTitle) {
       const header = document.createElement("div")
       header.style.cssText = [
         "height:36px", "flex-shrink:0",
@@ -504,6 +520,7 @@ export class Visual implements IVisual {
       const titleStyle = chartTitleStyle({ ...config, titleFontFamily: titleFamily }, titleColor)
       Object.assign(titleSpan.style, titleStyle, {
         fontSize: `${titleSize}px`, fontWeight: String(titleStyle.fontWeight),
+        textAlign: String(config.titleAlign || 'left'),
         flex: String(titleStyle.flex), minWidth: "0",
       })
       titleSpan.textContent = titleText
@@ -629,6 +646,8 @@ export class Visual implements IVisual {
     // Per-visual tooltip config (show/hide + trigger) — same helper the web canvas
     // uses, so tooltip behaviour matches on canvas, web export and PBI.
     option = applyTooltipConfig(option, config as any)
+    option = applyPaneFormatting(option,paneObjects,{locale:this.host.locale,width:chartRoot.clientWidth,height:chartRoot.clientHeight,skipBorder:true,skipTitle:!isPlain&&hasTitle})
+    ;(this as any).formattingOption = option
     const bindingKey = JSON.stringify([(spec as any).template?.meta?.id || visualType,
       (dv?.categorical?.categories || []).map(c=>c.source?.queryName || c.source?.displayName),
       (dv?.categorical?.values || []).map(c=>c.source?.queryName || c.source?.displayName)])
@@ -2041,15 +2060,7 @@ export class Visual implements IVisual {
   }
 
   public getFormattingModel(): powerbi.visuals.FormattingModel {
-    const appearance = (this as any).formattingAppearance || {}
-    const descriptor = propertyName => ({ objectName: 'appearance', propertyName })
-    const slice = (name, displayName, type, value) => ({ uid: `appearance-${name}`, displayName,
-      control: { type, properties: { descriptor: descriptor(name), value } } })
-    return { cards: [{ uid: 'vilsem-appearance', displayName: 'Appearance', groups: [{ uid: 'vilsem-theme', displayName: 'Theme & background', slices: [
-      slice('useReportTheme', 'Use report theme', 'ToggleSwitch', appearance.useReportTheme ?? !['light','dark'].includes((this as any).formattingCanvasTheme)),
-      slice('backgroundColor', 'Background colour', 'ColorPicker', { value: appearance.backgroundColor?.solid?.color || '#ffffff' }),
-      slice('transparency', 'Transparency (%)', 'NumUpDown', appearance.transparency ?? 100),
-    ] }], revertToDefaultDescriptors: ['useReportTheme', 'backgroundColor', 'transparency'].map(descriptor) }] } as any
+    return {cards:paneFormattingCards((this as any).formattingObjects || {},{dom:(this as any).formattingDom,canvasTheme:(this as any).formattingCanvasTheme,option:(this as any).formattingOption,config:(this as any).formattingConfig})} as any
   }
 
   // ── Mode 1: KPI / HTML render ────────────────────────────────────────

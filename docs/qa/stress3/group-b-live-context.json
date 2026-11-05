@@ -1,0 +1,16 @@
+{
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.6.0"
+  },
+  "tables": 13,
+  "measures": 39,
+  "expressions": 39,
+  "relationships": 10,
+  "profiled": 83,
+  "profileErrors": [],
+  "skipped": 13,
+  "pageVisuals": 2,
+  "samplingAsOf": "2026-11-05T06:31:06.725Z",
+  "summaryOmitsFull": true
+}

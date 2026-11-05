@@ -1,5 +1,7 @@
 import { prepareVisualRows, rowsFromCategorical, normaliseRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import {migrate} from '@vilsem/core/spec/migrate'
+import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
 import { nativeTemplateTooltipItems } from '@vilsem/core/templates'
@@ -31,6 +33,8 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
   vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, cancelAnimationFrame() {}, require: (name: string) => {
     if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
+    if (name === '@vilsem/core/spec/migrate') return {migrate}
+    if (name === '@vilsem/core/formatting/pane') return {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig}
     if (name === '@vilsem/core/theme/report') return { resolveReportTheme, reportThemeFromHost, applyReportTheme }
     if (name === '@vilsem/core/formatting') return { createModelFormatter, scopedMeasureFormat, applyModelFormats }
     if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems }
@@ -290,7 +294,13 @@ describe('Power BI production primitive selection routing', () => {
     h.visual.bakedSpecRaw = () => JSON.stringify({ type, config: {} })
     h.visual.renderPrimitiveChart = vi.fn()
     h.visual.update({ dataViews: [] })
-    expect(h.visual.renderPrimitiveChart).toHaveBeenCalledWith({}, { type, config: {} })
+    expect(h.visual.renderPrimitiveChart).toHaveBeenCalledWith({}, { type, config: {},specVersion:'0.6' })
+  })
+  it('shows a precise unsupported-version error instead of silently rendering a different legacy chart',()=>{
+    const h=harness();h.visual.bakedSpecRaw=()=>JSON.stringify({specVersion:'99',type:'bar'})
+    h.visual.renderPrimitiveChart=vi.fn();h.visual.renderError=vi.fn()
+    h.visual.update({dataViews:[h.dataView]})
+    expect(h.visual.renderPrimitiveChart).not.toHaveBeenCalled();expect(h.visual.renderError).toHaveBeenCalledWith(expect.stringContaining('Unsupported specVersion'),'specification')
   })
   it('does not invent data for a chart without bindings', () => {
     const h = harness()

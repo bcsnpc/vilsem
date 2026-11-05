@@ -6,6 +6,7 @@ import Ajv from 'ajv'
 import { resolveVisualSpec } from '../spec/resolve.js'
 import { compileScopedMeasures } from '../dax/scopedMeasures.js'
 import { assertReportRenderer } from './rendererCompatibility.js'
+import {migrate,scopedMeasuresOf} from '../spec/migrate.js'
 
 export const RENDERER_GUID = 'semanticaRenderer4A7F2D9B8C3E1F5A6D4B2C8E9F1A3B7D'
 export const VISUAL_SCHEMA = 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json'
@@ -32,6 +33,8 @@ function segment(value, label) {
 }
 
 export function makeVisualContainer({ visualName, spec, bindings = {}, layout = {} }) {
+  spec=migrate(spec)
+  spec.bindings={dimensions:(bindings.dimensions||[]).map(f=>({table:f.table,column:f.column})),measures:(bindings.measures||[]).map(f=>({table:f.table,name:f.name,...(f.formatString?{formatString:f.formatString}:{})}))}
   resolveVisualSpec(spec)
   const position = { x: 0, y: 0, width: 800, height: 500, z: 0, tabOrder: 0, ...layout }
   for (const [key, value] of Object.entries(position)) {
@@ -41,7 +44,7 @@ export function makeVisualContainer({ visualName, spec, bindings = {}, layout = 
   const queryState = {}
   const dimensions = bindings.dimensions || []
   const measures = bindings.measures || []
-  const scoped = compileScopedMeasures(spec.measures || {}, {homeTable:measures[0]?.table})
+  const scoped = compileScopedMeasures(scopedMeasuresOf(spec), {homeTable:measures[0]?.table})
   if (!Array.isArray(dimensions) || dimensions.length > 6 || !Array.isArray(measures) || measures.length > 6) throw Error('Bindings support up to six category levels and six measures')
   const add = (field, index, measure) => {
     const property = measure ? field.name : field.column

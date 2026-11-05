@@ -2,6 +2,7 @@
 const auth=require('./auth.cjs');
 const {createMicrosoftLogin}=require('./microsoft.cjs');
 const metadata=require('./metadata.cjs');
+const {normalizeLocalMetadata}=require('./fieldContext.cjs');
 const {readReportConnection,offlineSchema,sessionMatches}=require('./report.cjs');
 /** Each connection owns its model IDs; no process-global dataset mutation. */
 function createConnector(options={}){
@@ -60,11 +61,12 @@ function createConnector(options={}){
   const body=response.data;if(body.error||body.results?.[0]?.error)throw Error('Power BI query failed: '+(body.error?.message||body.results?.[0]?.error?.message||'model query error'));
   return (body.results?.[0]?.tables?.[0]?.rows || []).slice(0,maxRows);
  }
- async function schema(connection){
+ async function schema(connection,{refresh=false}={}){
   if(connection.schemaOnly)return connection.metadata;
   if(connection.source.kind==='fabric')return metadata.discoverViaItemDefinition(connection.source.workspaceId,connection.source.datasetId,await credentials.getToken());
+  if(refresh && ['desktop','ssas'].includes(connection.source.kind))connection.metadata=await invoke({action:'metadata',...(connection.source.kind==='desktop'?{port:connection.source.port,catalog:connection.catalog}:{endpoint:connection.source.endpoint,catalog:connection.source.catalog})});
   const data=connection.metadata;
-  return {tables:data.tables.map(table=>({...table,columns:data.columns.filter(c=>c.tableId===table.id).map(c=>({...c,dataType:({1:'automatic',2:'string',6:'int64',8:'double',9:'dateTime',10:'decimal',11:'boolean',17:'binary',19:'unknown',20:'variant'})[c.dataType] || String(c.dataType)}))})),measures:data.measures.map(m=>({...m,table:data.tables.find(t=>t.id===m.tableId)?.name}))};
+  return normalizeLocalMetadata(data);
  }
  return {connect,query,schema};
 }

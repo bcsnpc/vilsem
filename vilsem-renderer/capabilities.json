@@ -238,7 +238,513 @@
           }
         },
         "transparency": {
-          "displayName": "Background transparency (%)",
+          "displayName": "Transparency (%)",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
+    "title": {
+      "displayName": "Title",
+      "properties": {
+        "show": {
+          "displayName": "Show title",
+          "type": {
+            "bool": true
+          }
+        },
+        "text": {
+          "displayName": "Title text",
+          "type": {
+            "text": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "bold": {
+          "displayName": "Bold",
+          "type": {
+            "bool": true
+          }
+        },
+        "alignment": {
+          "displayName": "Alignment (left/center/right)",
+          "type": {
+            "text": true
+          }
+        }
+      }
+    },
+    "typography": {
+      "displayName": "Chart text",
+      "properties": {
+        "fontFamily": {
+          "displayName": "Font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "seriesColors": {
+      "displayName": "Series colours",
+      "properties": {
+        "palette": {
+          "displayName": "Palette (comma-separated colours)",
+          "type": {
+            "text": true
+          }
+        }
+      }
+    },
+    "labels": {
+      "displayName": "Data labels",
+      "properties": {
+        "show": {
+          "displayName": "Show labels",
+          "type": {
+            "bool": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "position": {
+          "displayName": "Position (inside/top/right/left/bottom)",
+          "type": {
+            "text": true
+          }
+        },
+        "format": {
+          "displayName": "Number format",
+          "type": {
+            "text": true
+          }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "properties": {
+        "show": {
+          "displayName": "Show legend",
+          "type": {
+            "bool": true
+          }
+        },
+        "position": {
+          "displayName": "Position (top/bottom/left/right)",
+          "type": {
+            "text": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "categoryAxis": {
+      "displayName": "Category axis",
+      "properties": {
+        "show": {
+          "displayName": "Show axis",
+          "type": {
+            "bool": true
+          }
+        },
+        "title": {
+          "displayName": "Axis title",
+          "type": {
+            "text": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Label font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Label font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Label colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleColor": {
+          "displayName": "Title colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleSize": {
+          "displayName": "Title font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "gridlines": {
+          "displayName": "Show gridlines",
+          "type": {
+            "bool": true
+          }
+        },
+        "gridColor": {
+          "displayName": "Gridline colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "primaryAxis": {
+      "displayName": "Primary value axis",
+      "properties": {
+        "show": {
+          "displayName": "Show axis",
+          "type": {
+            "bool": true
+          }
+        },
+        "title": {
+          "displayName": "Axis title",
+          "type": {
+            "text": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Label font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Label font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Label colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleColor": {
+          "displayName": "Title colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleSize": {
+          "displayName": "Title font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "autoMin": {
+          "displayName": "Automatic minimum",
+          "type": {
+            "bool": true
+          }
+        },
+        "min": {
+          "displayName": "Minimum",
+          "type": {
+            "numeric": true
+          }
+        },
+        "autoMax": {
+          "displayName": "Automatic maximum",
+          "type": {
+            "bool": true
+          }
+        },
+        "max": {
+          "displayName": "Maximum",
+          "type": {
+            "numeric": true
+          }
+        },
+        "format": {
+          "displayName": "Number format",
+          "type": {
+            "text": true
+          }
+        },
+        "gridlines": {
+          "displayName": "Show gridlines",
+          "type": {
+            "bool": true
+          }
+        },
+        "gridColor": {
+          "displayName": "Gridline colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "secondaryAxis": {
+      "displayName": "Secondary value axis",
+      "properties": {
+        "show": {
+          "displayName": "Show axis",
+          "type": {
+            "bool": true
+          }
+        },
+        "title": {
+          "displayName": "Axis title",
+          "type": {
+            "text": true
+          }
+        },
+        "fontFamily": {
+          "displayName": "Label font family",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Label font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Label colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleColor": {
+          "displayName": "Title colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleSize": {
+          "displayName": "Title font size",
+          "type": {
+            "numeric": true
+          }
+        },
+        "autoMin": {
+          "displayName": "Automatic minimum",
+          "type": {
+            "bool": true
+          }
+        },
+        "min": {
+          "displayName": "Minimum",
+          "type": {
+            "numeric": true
+          }
+        },
+        "autoMax": {
+          "displayName": "Automatic maximum",
+          "type": {
+            "bool": true
+          }
+        },
+        "max": {
+          "displayName": "Maximum",
+          "type": {
+            "numeric": true
+          }
+        },
+        "format": {
+          "displayName": "Number format",
+          "type": {
+            "text": true
+          }
+        },
+        "gridlines": {
+          "displayName": "Show gridlines",
+          "type": {
+            "bool": true
+          }
+        },
+        "gridColor": {
+          "displayName": "Gridline colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "lines": {
+      "displayName": "Lines",
+      "properties": {
+        "width": {
+          "displayName": "Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "style": {
+          "displayName": "Style (solid/dashed/dotted)",
+          "type": {
+            "text": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "border": {
+      "displayName": "Border",
+      "properties": {
+        "show": {
+          "displayName": "Show border",
+          "type": {
+            "bool": true
+          }
+        },
+        "color": {
+          "displayName": "Colour",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "width": {
+          "displayName": "Width",
+          "type": {
+            "numeric": true
+          }
+        },
+        "radius": {
+          "displayName": "Corner radius",
           "type": {
             "numeric": true
           }

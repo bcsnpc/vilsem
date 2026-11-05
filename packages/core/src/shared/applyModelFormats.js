@@ -28,13 +28,13 @@ export function applyModelFormats(option, spec, measures = [], options = {}) {
   const seriesFormats=[]
   const axesOf=(key,index)=>Array.isArray(option[key])?option[key][index || 0]:option[key]
   const explicitAffixes=!spec.template && (spec.config?.prefix || spec.config?.suffix)
-  const wrap=(original,format,choose)=>p=>{
+  const wrap=(original,format,choose)=>Object.assign(p=>{
     const selected=choose?.(p) || format
     if(original?.vilsemFormatter)return original(p,selected)
     if(explicitAffixes && typeof original==='function')return original(p)
     const raw=p && typeof p==='object' ? p.value : p
     return selected(Array.isArray(raw)?raw[selected.vilsemValueIndex ?? raw.length-1]:raw)
-  }
+  },{vilsemOriginalFormatter:original})
   const series=(Array.isArray(option.series)?option.series:[]).map((s,i)=>{
     let index=Math.min(i,formatters.length-1),component,tupleUnits,axisUnits={},directBinding=true
     if(spec.template) {
@@ -83,7 +83,7 @@ export function applyModelFormats(option, spec, measures = [], options = {}) {
     const tooltip={...s.tooltip,valueFormatter:format}
     const original=s.tooltip?.formatter || option.tooltip?.formatter
     if(original?.vilsemFormatter)tooltip.formatter=p=>original(p,format)
-    const data=Array.isArray(s.data)?s.data.map(d=>d&&typeof d==='object'&&!Array.isArray(d)&&d.label?{...d,label:{...d.label,formatter:wrap(d.label.formatter || s.label?.formatter,format,choose)}}:d):s.data
+    const data=Array.isArray(s.data)?s.data.map(d=>d&&typeof d==='object'&&!Array.isArray(d)&&d.label&&typeof d.label==='object'&&!Array.isArray(d.label)?{...d,label:{...d.label,formatter:wrap(d.label.formatter || s.label?.formatter,format,choose)}}:d):s.data
     const detail=s.type==='gauge' && s.detail ? {...s.detail,formatter:wrap(s.detail.formatter,format)} : s.detail
     const axisLabel=s.type==='gauge' && s.axisLabel?.formatter?.vilsemFormatter ? {...s.axisLabel,formatter:wrap(s.axisLabel.formatter,format)} : s.axisLabel
     return {...s,label,tooltip,data,...(detail?{detail}:{}),...(axisLabel?{axisLabel}:{})}

@@ -1,0 +1,16 @@
+{
+  "method": "report.snapshot.capture/v2",
+  "pageName": "stress3_theme_13",
+  "visualName": "stress2_049_sankey-two-levels",
+  "region": {
+    "x": 0,
+    "y": 0,
+    "width": 900,
+    "height": 600
+  },
+  "dimensions": {
+    "width": 1422,
+    "height": 948
+  },
+  "sha256": "c06ea0a78879b6a7bbf37b772da2f24e71fa9efea31a965e042190482ad10336"
+}
