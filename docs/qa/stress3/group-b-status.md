@@ -1,8 +1,6 @@
 # Round3 GroupB - candidate verification
 
-GroupA0.5 is published. GroupB0.6 source is implemented; final package checks and
-publication are in progress. Native Desktop acceptance remains explicitly partial.
-GroupC has not started.
+GroupA0.5 and GroupB0.6 are published. Core [core-v0.6.0](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.6.0) (`67899a3`) and MCP [v0.6.0](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.6.0) (`df7e783`) are pushed to public main. Native Desktop acceptance remains explicitly partial. GroupC begins next.
 
 ## Implemented and tested
 
@@ -68,3 +66,16 @@ GroupC: bounded expression geometry and security/fuzz tests; former(c)stress
 visuals; motion/lifecycle/previews/performance; user-template memory; mockup/image
 statistics and comparison; final native acceptance and0.7release. Geographic map
 assets and3D remain outside the expression-language scope.
+
+
+## Public package acceptance
+
+Fresh D:/vilsem-mcp-public-060 install uses the actual public core release URL;
+no app path or local-core override. Published MCP asset hash matches the tested
+tar. SDK handshake0.6, Desktop auto-port57149, summary/full schema13tables,
+39expressions/10relationships, validation/explanation,3real-row preview,2variant
+comparison, prompt/resource, commit/read/dry-run/update all PASS. Inspected the
+three PNGs. Queries and a seeded18px manual pane object survive the14px author
+patch; this is a fixture/SSR check, not a physical native gesture. The owned QA
+page stress3_pkg060 was prepared by the harness outside MCP. Original model and
+native report objects remain untouched. See public-package-060-acceptance.json.

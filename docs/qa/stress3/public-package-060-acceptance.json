@@ -1,0 +1,36 @@
+{
+  "server": {
+    "name": "vilsem-mcp",
+    "version": "0.6.0"
+  },
+  "serverPath": "D:\\vilsem-mcp-public-060\\node_modules\\vilsem-mcp\\dist\\index.js",
+  "appPathConfigured": false,
+  "connection": {
+    "connectionId": "524aa028-2875-41c6-b197-3da0d63e9830",
+    "kind": "desktop",
+    "schemaOnly": false,
+    "discovery": "process-workspace-port-file",
+    "port": 57149
+  },
+  "tables": 13,
+  "measures": 39,
+  "expressions": 39,
+  "relationships": 10,
+  "summaryOmitsFull": true,
+  "previewRows": 3,
+  "variants": 2,
+  "promptMessages": 1,
+  "guideCharacters": 9895,
+  "committed": {
+    "pageName": "stress3_pkg060",
+    "visualName": "public060"
+  },
+  "dryRunUnchanged": true,
+  "queryUnchanged": true,
+  "seededManualOverrideUnchanged": true,
+  "nativeManualGestureVerified": false,
+  "nativeRenderVerified": false,
+  "explainDaxPresent": true,
+  "publishedMcpSha256": "5a584ff4e1430289f08a052c64d444abdcb19b867b3075a7b04bb37b8117989c",
+  "publishedCoreIntegrityMatchesTested": true
+}

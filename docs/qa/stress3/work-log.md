@@ -131,3 +131,14 @@ classifier and automatic-axis controls. Native UI still unverified; user asked
 whether the window is visible/blank/minimized while release checks continue.
 Earlier mixed-revision full-run failures retained; final acceptance uses matching
 frozen source/package.0.6publication/real-public dependency acceptance next.
+
+
+GroupB released: core67899a3/core-v0.6.0 and MCPdf7e783/v0.6.0 pushedtomain.
+Actual public-core dependency integrity equals the225-test candidate. Three
+public-dependency SDK/stdIO canaries PASS; fresh separate install/live acceptance
+PASS (schema/preview/variants/prompt/resource/commit/read/dryRun/update), no app
+path/override, audit0. Published MCP tar downloaded and SHA256matches
+5a584ff4e1430289f08a052c64d444abdcb19b867b3075a7b04bb37b8117989c.
+All3PNGs inspected. Manual fixture18px retained over14px author style; no physical
+native gesture is claimed. QA page created by harness, not MCP. Native acceptance
+remains explicitly partial; user window-state question pending. GroupC next.
