@@ -5,15 +5,16 @@ main merge is approved by these results alone.
 
 | Gate | Command / evidence | Result |
 |---|---|---|
-| Private app/core | core build, vitest run --maxWorkers=2; round3-c-frozen-core-tests.log | 1,332/1,332 PASS, 117 files |
-| Public app/core | vitest run --maxWorkers=2; round3-c-frozen-public-tests.log | 1,332/1,332 PASS, 117 files |
+| Private app/core | core build, vitest run --maxWorkers=2; round3-c-zoom-core-full-tests.log | 1,333/1,333 PASS, 117 files |
+| Public app/core | native build, vitest run --maxWorkers=2; round3-c-zoom-public-full-tests.log | 1,333/1,333 PASS, 117 files |
 | MCP direct command | vitest run --maxWorkers=2 without the package timeout | 292 PASS, 3 timeouts at 5 seconds; retained failure |
-| MCP canonical command | npm test (configured 30-second timeout, one worker) | 295/295 PASS, 12 files, 374.84 seconds |
+| MCP canonical command | npm test (configured 30-second timeout, one worker) | 295/295 PASS, 12 files; latest487.34seconds after zoom-format fix |
 | App targets | npm run build | Native/UI/Fabric/Electron/NSIS PASS |
 | Dependencies | Frozen-source npm audit in all four package roots | Root 6 moderate; native tooling 13 moderate + 4 low; UI/MCP 0; zero high/critical |
 | Model integrity | Owned renderer installation checks all baseline hashes before/after | 21/21 unchanged; original PBIP untouched |
 | Independent set semantics | DAX FILTER/COUNTROWS for all eight Venn memberships | PASS, total 293 |
 | Final KPI | Real-data validate/explain/preview/commit; final APNG frame inspected | PASS, formatted $24,914,587 |
+| Timeline axis inheritance | Seven format regression tests and real911-row zoom retry | PASS; settled PNG and APNG currency ticks inspected |
 | Standalone core | Fresh paired-tarball install outside repositories | PASS: Desktop57149,13tables/39measures,real positive revenue,expression compile,zero app imports |
 | Standalone MCP | Same isolated install, real SDK connection/schema/preview/resource/expression/commit | PASS, browser-clock APNG and six real country rows |
 | Native desktop | application.state.get and fresh Computer Use inventory retry | BLOCKED: unsaved edits; helper pipe unavailable (os error2); no reload/input |

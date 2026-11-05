@@ -16,7 +16,7 @@ contain bindings and declarative instructions, not model result snapshots.
 | Reweighted Sankey | PASS | Browser-clock APNG | Unverified |
 | KPI count-up and sparkline | PASS, final retry | Last browser APNG frame and settled PNG inspected: both show $24,914,587, model currency format and aggregate source IDs | Unverified |
 | Bar/pie/scatter morph | PASS | Browser-clock APNG | Unverified |
-| dataZoom autoplay | PASS | Browser-clock APNG; slider/date-axis spacing corrected | Unverified |
+| dataZoom autoplay | PASS, 911-row final retry | Browser-clock APNG; slider spacing corrected; inherited currency axes fixed and inspected in PNG/APNG | Unverified |
 | Staggered 50-category entry | PASS | Browser-clock APNG | Unverified |
 
 The browser uses a fresh sandboxed profile with outbound page/WebSocket traffic

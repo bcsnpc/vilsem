@@ -14,9 +14,10 @@ coordinated release assets exist. Do not confuse source sync with publication.
 | Template memory | OS/shared-folder library, save/list/read/delete, commit saveAs and collision SDK tests; hardened file boundary | Published-artifact standalone verification |
 | Reference images | Tableau, authored Figma-style mockup and licensed whiteboard photograph: live tool cycles and commits | Native acceptance; mockup outer-card styling remains partial |
 
-Frozen private and public app/core:1332/1332 in117 files each, maxWorkers2,
-cache/round3-c-frozen-core-tests.log and public cache/round3-c-frozen-public-tests.log.
-Frozen MCP:295/295 in12 files using the canonical npm test command.
+Frozen private and public app/core:1333/1333 in117 files each, maxWorkers2,
+cache/round3-c-zoom-core-full-tests.log and public cache/round3-c-zoom-public-full-tests.log.
+Frozen MCP:295/295 in12 files using the canonical npm test command,
+test-results/stress3/round3-c-zoom-mcp-full-tests.log (487.34seconds).
 An earlier direct invocation omitted the existing30second timeout and had
 three5second timeouts (292pass); the failed log is retained, not hidden.
 Full Electron/UI/Fabric/native/NSIS build passed after the last source edit.
@@ -63,6 +64,10 @@ This used a local core override, not a published0.7 dependency URL. Repeat with
 final artifacts and the real release URL before claiming release installation.
 The final KPI retry passed validate/explain/real-data preview/commit with stat
 records preserving aggregate source IDs and model number formatting.
+Final image review found and fixed MOTION-FORMAT-017: timeline options changing
+only dataZoom now inherit formatted base axes. Seven formatting tests, the full
+suites and a911-row live tool retry pass; settled PNG and browser APNG both show
+currency ticks. The refreshed tarballs passed another isolated live install.
 
 Frozen-source audits: root6moderate; UI0; renderer tooling
 13moderate+4low; MCP lock0; no high/critical. Complete build and21/21model hashes

@@ -27,3 +27,9 @@ it('keeps explicit unit-preserving scalar projections formatted without assignin
  const option=resolveVisualSpec(item,rows,context);expect(option.series[0].label.formatter({value:27})).toBe('$27.00')
  item.template.template.series[0].data=['$slot.revenue.deltaPct'];expect(resolveVisualSpec(item,rows,context).series[0].tooltip?.valueFormatter).toBeUndefined()
 })
+it('retains model axis formats when a timeline frame only changes dataZoom and inherits base series',()=>{
+ const item={type:'custom',template:{meta:{id:'zoom-units',formatVersion:4},slots:{time:{kind:'time'},revenue:{kind:'measure'}},template:{baseOption:{timeline:{data:['First','Second']},xAxis:{type:'category',data:'$slot.time.categories'},yAxis:{type:'value'},series:[{type:'line',data:'$slot.revenue.values'}]},options:[{dataZoom:[{start:0,end:50}]},{dataZoom:[{start:50,end:100}]}]}}}
+ const option=resolveVisualSpec(item,rows,context)
+ expect(option.baseOption.yAxis.axisLabel.formatter(12.5)).toBe('$12.50')
+ for(const frame of option.options)expect(frame.yAxis.axisLabel.formatter(12.5)).toBe('$12.50')
+})
