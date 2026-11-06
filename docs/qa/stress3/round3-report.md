@@ -1,6 +1,6 @@
 # Round3 engineering report
 
-Core/MCP0.5 and0.6 completed Groups A/B. Group C is being finalized as the0.7
+Core/MCP0.5 and0.6 completed Groups A/B. Group C is published as the0.7
 evaluation prerelease; publication results are recorded in the verification
 ledger. Failed or blocked acceptance below remains failed or blocked.
 
@@ -77,10 +77,17 @@ not a Desktop export test. See motion-reference-results.md for each result.
 ## Verification and limitations
 
 Private/public app-core each1353 tests PASS; full Electron/native/UI/Fabric/NSIS
-build PASS. Final MCP/public-artifact results and hashes are in the candidate
+build PASS. MCP299tests PASS with downloaded public core;144light/144dark
+thumbnails regenerated. Fresh public-URL install/live checks PASS without
+overrides or an app link. Artifact hashes and commits are in the candidate
 ledger.21 owned QA semantic-model files remain byte-identical; original PBIP
 and model are untouched. Audits have zero high/critical findings; remaining
 moderate/low toolchain findings are documented in SECURITY.md.
+
+Both tagged GitHub releases are marked prerelease: core-v0.7.0 (87458f3) and
+v0.7.0 (c9f887c). Downloaded hashes match. The documented Git-tag install also
+passes audit0, stdio handshake0.7,19tools/1prompt, validation and expression
+resource access without an app checkout link. Stable0.6 remains available.
 
 Native physical gestures and PDF/subscription acceptance are not completed:
 Computer Use cannot connect to its native pipe and bridge snapshots are

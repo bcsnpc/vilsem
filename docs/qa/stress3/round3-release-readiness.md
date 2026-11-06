@@ -1,6 +1,6 @@
 # Round3 release readiness
 
-Groups A and B are published as0.5 and0.6. Group C is being packaged as a0.7
+Groups A and B are published as0.5 and0.6. Group C is published as a0.7
 **evaluation prerelease**, preserving the stable0.6 release channel. A prerelease
 does not convert a failed or blocked check into PASS.
 
@@ -55,3 +55,12 @@ and3D remain documented limitations, not promises of this release.
 
 Keep the failed/blocked acceptance list in READMEs and release notes. The final
 report must say what shipped and what remains unverified.
+
+Publication completed: core-v0.7.0 at87458f3 and MCPv0.7.0 atc9f887c,
+both GitHub prereleases, with tested source fast-forwarded to public main.
+Downloaded asset hashes match. Fresh normal installs from the actual release
+URLs and from the documented MCP Git tag pass with audit0 and no app link or
+dependency override. The release-URL install also passes real Desktop model
+queries/preview/commit and installed final-frame pixel checks. Full MCP299tests
+pass against the downloaded core. Source/installer checks do not complete the
+failed/blocked native and FPS acceptance listed above.

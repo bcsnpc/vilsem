@@ -1,6 +1,6 @@
 ﻿# Round3 Group C: 0.7 evaluation prerelease
 
-Updated2026-11-06. Groups A/B are published as0.5/0.6. Group C is being
+Updated2026-11-06. Groups A/B are published as0.5/0.6. Group C is
 published as an evaluation prerelease; stable0.6 remains the previous release
 channel. Publication does not certify native behavior or the failed FPS target.
 See round3-release-readiness.md and round3-report.md for scope and limitations.
@@ -10,13 +10,13 @@ See round3-release-readiness.md and round3-report.md for scope and limitations.
 | Core correctness | Private/public1353/1353 tests each PASS;1000valid/1000invalid AST fuzz probes included | Native physical acceptance is separate |
 | Build | Renderer4.40 and complete UI/Fabric/Electron/NSIS build PASS | Installer remains unsigned/default-icon and is not a new installer release |
 | Expressions | All11 former(c) families pass real-data tools/SSR; native static marks inspected | Title/bounds/resize/filter gestures partial or unverified |
-| Motion | Ten real-data cycles; controlled-clock APNG;9focused motion/browser tests PASS | Native motion/export and5000point60fps remain unverified/FAIL |
+| Motion | Ten real-data cycles; controlled-clock APNG;299full MCP tests PASS with public core | Native motion/export and5000point60fps remain unverified/FAIL |
 | Hidden Sankey | Actual entry-clip regression fails before fix and matches settled static canvas exactly afterwards | Desktop PDF/subscription check unverified |
 | Formatting |71pane properties; independent axes; currency inheritance and named-value fixes tested | Final native currency-axis recheck pending |
 | Memory | OS/shared library; save/list/read/delete/saveAs with hardened file boundary | Shared-folder permissions belong to the user/admin |
 | References | Three real-data reference workflows complete; native static examples inspected | Mockup outer-card fidelity partial |
-| Thumbnails | Full light/dark catalog regeneration in progress with synthetic fixtures | Original before-state screenshots remain historical |
-| Distribution | Core0.7 then matching MCP0.7 prerelease publication in progress | Final real-URL install and published hashes recorded after upload |
+| Thumbnails |144light +144dark synthetic thumbnails regenerated without failures | Original before-state screenshots remain historical |
+| Distribution | Both0.7 GitHub prereleases published and public main branches updated; downloaded hashes match | Evaluation release, not production/certification completion |
 
 The original PBIP is untouched. All21 owned QA model-definition files remain
 SHA256-identical. Desktop20988/AS62071 was discovered through
@@ -47,5 +47,8 @@ in production. See docs/engineering/batch-motion.md.
 Arbitrary exact area-proportional Euler fitting, unshipped geo assets and3D
 remain explicit limits. Venn circles are schematic. Historical605 before-state
 and cross-target image records are not relabelled as current native evidence.
-The latest full MCP count, final distribution URLs/hashes and publication commits
-are recorded in candidate-verification.md after the frozen-source package run.
+MCP299/299 passed with the actual downloaded core. A fresh normal install from
+both public URLs has audit0 and passes live Desktop/schema/preview/commit,
+expression/resource and final-PNG/APNG/contact-sheet checks, without an app
+checkout link or dependency override. URLs/hashes/publication commits are
+recorded in candidate-verification.md.

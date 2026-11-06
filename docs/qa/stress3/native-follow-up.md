@@ -1,5 +1,12 @@
 # Desktop follow-up, 2026-11-05
 
+Updated2026-11-06: renderer4.40 fixes the actual retained temporary Sankey clip
+identified by a real-browser canvas regression. The completed hidden frame now
+matches the static graph exactly; permanent clips survive. Private/public core
+1353 tests each and9 focused MCP motion/browser checks pass. A clean report-only
+bridge reload accepted4.40 and21 model hashes remain identical. These results
+do not verify native paint, physical gestures or PDF/subscription exports.
+
 The owned `Stress3 Theme Light` PBIP was reopened through Microsoft's Desktop
 bridge after the user confirmed that the earlier window was closed. Desktop
 PID20988 exposes Analysis Services on port62071; discovery used

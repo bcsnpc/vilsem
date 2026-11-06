@@ -2,7 +2,7 @@
 
 This ledger preserves historical development checkpoints. Updated2026-11-06:
 private/public core1353/1353 each PASS after the real hidden-Sankey fix;
-renderer4.40 and the complete app build PASS. Core/MCP0.7 is being published as
+renderer4.40 and the complete app build PASS. Core/MCP0.7 is published as
 an evaluation prerelease with explicit failed/blocked acceptance, as described
 in round3-release-readiness.md. Final publication and package results are
 appended below; older counts and local-override hashes remain historical.
@@ -74,3 +74,43 @@ Final paired local candidate fingerprints (not published release assets):
 The installed MCP uses a local core override. This is not verification of a
 published0.7 dependency URL. Native physical interactions/export and5000-point
 motion performance remain open release gates; no0.7 release/main merge is claimed.
+
+## Final0.7 evaluation prerelease publication -2026-11-06
+
+The preceding local-override checkpoint is historical. The final distribution
+uses the actual public URLs, with no override or application checkout link.
+
+| Gate | Final result |
+|---|---|
+| Private/public app-core |1353/1353 each PASS; round3-e-final-core-all.log / final-public-all.log |
+| MCP with downloaded public core |299/299 PASS in562.60s; round3-e-public-core-full-tests.log |
+| Builds | Complete native/UI/Fabric/Electron/NSIS and independent public native PASS |
+| Native package |4.40; independent resource contents identical; permanent clips preserved |
+| Catalog thumbnails |144light +144dark regenerated from synthetic fixtures; zero failures |
+| Audits | Root6moderate; native13moderate+4low; UI/MCP0; high/critical0 |
+| Model integrity |21/21 unchanged after final live public-install acceptance |
+| Public core |87458f3 on public main; core-v0.7.0 GitHub prerelease |
+| Public MCP |c9f887c on main; v0.7.0 GitHub prerelease |
+| Downloaded assets | Core, native renderer and MCP SHA256 match tested archives |
+| Fresh public-URL install | Normal npm install audit0; no overrides or VILSEM_APP_PATH |
+| Live installed MCP | Desktop62071,process-workspace-port-file;13tables/39measures; validate/explain/real6row browser-APNG preview/resource/commit PASS |
+| Installed final-frame contract | Batch/final PNG equality, two states, APNG11189bytes/contact-sheet9484bytes PASS |
+| Documented Git-tag install | Normal npm install of git+https tag v0.7.0 PASS/audit0; stdio handshake0.7,19tools,1prompt, spec validation and expression resource PASS; no app link |
+
+The fresh real-data PNG was inspected: currency axes and six country revenue
+bars are readable. The owned report accepted a clean report-only reload of4.40;
+that is not proof of native paint or physical interactions.
+
+Published assets:
+
+* [Core0.7](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.7.0), SHA256
+  `62b8e18d590f7bd7abc5c8546c4a6be743a6992f56857a264c3863991564f8a9`.
+* Renderer4.40, SHA256 `cebeb4e055ada77d6a3f3c6c3a5289cf3ec03ed6d28937d5a7d936159bae0b6c`.
+* [MCP0.7](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.7.0), SHA256
+  `dec2d3aed1de0a8bef09d25cf89f002014e6c8a1d3e5dd215471a81965df5c0f`.
+
+Both releases are explicitly prereleases and do not replace stable0.6.
+Native physical interaction/export checks remain UNVERIFIED,5000point60fps
+remains FAIL and mockup card fidelity remains PARTIAL. These are retained in
+READMEs/release notes, not hidden by publication. Portable synthetic benchmark
+source is MCP scripts/benchmark-motion.mjs; it exits1 on the unmet target.
