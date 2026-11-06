@@ -4,7 +4,7 @@ import {migrate,CURRENT_SPEC_VERSION} from '@vilsem/core/spec/migrate'
 import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
-import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController } from '@vilsem/core/templates'
+import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController,finishChartFrame } from '@vilsem/core/templates'
 import { lollipop as templateExample } from '@vilsem/core/templates/examples'
 import { describe, it, expect, vi } from 'vitest'
 import fs from 'node:fs'
@@ -27,18 +27,19 @@ const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarg
 function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories'], configOverrides = {}) {
   const frames=new Map<number,Function>();let nextFrame=0
   const events: Record<string, Function> = {}, zrEvents: Record<string, Function> = {}
-  const chart = { getOption:()=>({timeline:[{currentIndex:1}]}), on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
+  const chart = { getOption:()=>({timeline:[{currentIndex:1}]}), on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(()=>events.finished?.()), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
   const rootEvents: Record<string, Function> = {}
   const node = () => ({ style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
   const exports: any = {}
-  vm.runInNewContext(js, { exports, document: { createElement: node }, console, clearInterval, clearTimeout, setTimeout, requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame}, cancelAnimationFrame(id){frames.delete(id)}, require: (name: string) => {
+  const documentState:any={createElement:node,hidden:false}
+  vm.runInNewContext(js, { exports, document: documentState, console, clearInterval, clearTimeout, setTimeout, requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame}, cancelAnimationFrame(id){frames.delete(id)}, require: (name: string) => {
     if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
     if (name === '@vilsem/core/spec/migrate') return {migrate}
     if (name === '@vilsem/core/formatting/pane') return {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig}
     if (name === '@vilsem/core/theme/report') return { resolveReportTheme, reportThemeFromHost, applyReportTheme }
     if (name === '@vilsem/core/formatting') return { createModelFormatter, scopedMeasureFormat, applyModelFormats }
-    if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController }
+    if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController,finishChartFrame }
     if (name === 'echarts/core') return { use() {}, init: () => chart, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
@@ -65,7 +66,7 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
       { source: { displayName: 'Returns', queryName: 'Measures.Returns', roles: { secondary: true }, isMeasure: true, type: { numeric: true } }, values: categories.map((_, i) => [269, 429, 1130][i] ?? i + 1) },
     ] }).build()!
   visual.renderPrimitiveChart(dv, { type, canvasTheme: 'dark', config: { cardStyle: 'plain', animationEnabled: false, ...configOverrides } })
-  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, dataView: dv, restoreSelection: ids => restoreSelection?.(ids),flushFrames(){for(const [id,fn]of [...frames]){frames.delete(id);fn()}} }
+  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, documentState, dataView: dv, restoreSelection: ids => restoreSelection?.(ids),flushFrames(){for(const [id,fn]of [...frames]){frames.delete(id);fn()}} }
 }
 
 describe('Power BI render lifecycle',()=>{
@@ -88,6 +89,31 @@ describe('Power BI render lifecycle',()=>{
   const h=setup(),update=options(h);h.visual.update(update)
   expect(h.lifecycle.renderingStarted).toHaveBeenCalledWith(update);expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled()
   h.flushFrames();h.flushFrames();expect(h.lifecycle.renderingFinished).toHaveBeenCalledExactlyOnceWith(update);expect(h.lifecycle.renderingFailed).not.toHaveBeenCalled()
+ })
+ it('does not announce export readiness while an ECharts transition is still rendering',()=>{
+  const h=setup();h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify({type:'bar',config:{cardStyle:'plain'}})}};h.chart.setOption=vi.fn();h.visual.update(options(h));h.flushFrames();expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled()
+  h.events.finished();h.flushFrames();expect(h.lifecycle.renderingFinished).toHaveBeenCalledOnce();h.events.finished();h.flushFrames();expect(h.lifecycle.renderingFinished).toHaveBeenCalledOnce()
+ })
+ it('holds timeline autoplay until a completed first frame and then restores author playback',()=>{
+  const h=setup(),template={meta:{id:'lifecycle-timeline'},slots:{v:{kind:'measure'}},template:{baseOption:{timeline:{autoPlay:true,data:['A','B']},xAxis:{type:'category'},yAxis:{type:'value'}},options:[{series:[{type:'bar',data:'$slot.v.values'}]},{series:[{type:'bar',data:'$slot.v.values'}]}]}}
+  h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify({type:'custom',template})}};h.chart.setOption=vi.fn();h.visual.update(options(h))
+  expect(h.chart.setOption.mock.calls[0][0].baseOption.timeline.autoPlay).toBe(false);expect(h.chart.dispatchAction).not.toHaveBeenCalledWith(expect.objectContaining({type:'timelinePlayChange'}))
+  h.events.finished();h.flushFrames();expect(h.lifecycle.renderingFinished).toHaveBeenCalledOnce();expect(h.chart.dispatchAction).toHaveBeenCalledWith({type:'timelinePlayChange',playState:true,timelineIndex:0});expect(h.visual.lastOption.baseOption.timeline.autoPlay).toBe(true)
+ })
+ it('fails a chart that never settles rather than telling the host a partial frame is ready',()=>{
+  vi.useFakeTimers()
+  try{const h=setup();h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify({type:'bar'})}};h.chart.setOption=vi.fn();h.visual.update(options(h));vi.advanceTimersByTime(60000);expect(h.lifecycle.renderingFinished).not.toHaveBeenCalled();expect(h.lifecycle.renderingFailed).toHaveBeenCalledExactlyOnceWith(expect.anything(),expect.stringContaining('within60seconds'));h.visual.destroy()}finally{vi.useRealTimers()}
+ })
+ it('completes hidden first-frame clips without RAF and defers autoplay until visible',()=>{
+  vi.useFakeTimers()
+  try{
+   const h=setup(),visibility={},clip={stopAnimation:vi.fn()},root={stopAnimation:vi.fn(),getClipPath:()=>clip,traverse(){}}
+   h.documentState.hidden=true;h.documentState.addEventListener=(n,f)=>{visibility[n]=f};h.documentState.removeEventListener=()=>{}
+   const zr=h.chart.getZr();h.chart.getZr=()=>({...zr,animation:{pause:vi.fn(),resume:vi.fn()},storage:{getRoots:()=>[root]},flush:()=>h.events.finished?.()});h.chart.setOption=vi.fn()
+   h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify({type:'custom',template:{meta:{id:'hidden-lifecycle'},slots:{v:{kind:'measure'}},template:{baseOption:{timeline:{autoPlay:true,data:['A','B']},xAxis:{type:'category'},yAxis:{type:'value'}},options:[{series:[{type:'bar',data:'$slot.v.values'}]},{series:[{type:'bar',data:'$slot.v.values'}]}]}}})}}
+   h.visual.update(options(h));vi.advanceTimersByTime(0);expect(clip.stopAnimation).toHaveBeenCalledWith(null,true);expect(h.lifecycle.renderingFinished).toHaveBeenCalledOnce();expect(h.chart.dispatchAction).not.toHaveBeenCalledWith(expect.objectContaining({playState:true}))
+   h.documentState.hidden=false;visibility.visibilitychange();expect(h.chart.dispatchAction).toHaveBeenCalledWith({type:'timelinePlayChange',playState:true,timelineIndex:0});h.visual.destroy()
+  }finally{vi.useRealTimers()}
  })
  it('fails a superseded frame and completes the current update without stale callbacks',()=>{
   const h=setup(),first=options(h),second=options(h);h.visual.update(first);h.visual.update(second);h.flushFrames()
@@ -759,4 +785,53 @@ it('renders scoped-measure host query results identically to the SSR resolver fi
   expect(actual.series[0].id).toBe('vilsem-template-0')
   expect(JSON.stringify(actual.series.map(({id,...series})=>series))).toBe(JSON.stringify(ssr.series))
   expect(actual.xAxis.data).toEqual(ssr.xAxis.data)
+})
+
+describe('aggregate native context scope',()=>{
+ function setup(){
+  const h=harness(),columns=[['A','A','B','B'],['X','Y','X','Y']].map((values,index)=>({source:{queryName:'Column'+index},values,identity:values.map(value=>({fixtureKey:value}))}))
+  const id=parts=>({parts,equals(other){return JSON.stringify(parts)===JSON.stringify(other.parts)}})
+  h.host.createSelectionIdBuilder=()=>{
+   const parts=[]
+   const builder={withCategory(column,index){parts.push([column.source.queryName,column.identity[index].fixtureKey]);return builder},createSelectionId(){return id(parts)}}
+   return builder
+  }
+  return{...h,columns,ids:columns[0].values.map((_,i)=>columns.reduce((b,c)=>b.withCategory(c,i),h.host.createSelectionIdBuilder()).createSelectionId())}
+ }
+ it('builds the common parent identity for a complete aggregate without retaining a child filter',()=>{
+  const h=setup(),scope=h.visual.primitiveContextIdentity(h.columns,[0,1],h.ids,false)
+  expect(scope.parts).toEqual([['Column0','A']]);expect(scope.equals(h.ids[0])).toBe(false)
+ })
+ it('preserves the complete identity of a single multi-level row',()=>{
+  const h=setup();expect(h.visual.primitiveContextIdentity(h.columns,[2],h.ids,false)).toBe(h.ids[2])
+ })
+ it('wires an aggregate mark menu to the shared host identity without changing click selection',()=>{
+  const h=setup(),template={meta:{id:'context-wire'},slots:{a:{kind:'dimension'},b:{kind:'dimension'},v:{kind:'measure'}},template:{xAxis:{type:'category'},yAxis:{type:'value'},series:[{type:'bar',data:'$slot.v.values'}]}}
+  h.visual.renderPrimitiveChart({categorical:{categories:h.columns,values:[{source:{displayName:'Revenue',roles:{content:true}},values:[1,2,3,4]}]}},{type:'custom',template})
+  const indexes=[0,1].map(i=>h.visual.templateRowSources.indexOf(i)),event={clientX:20,clientY:30,defaultPrevented:false,preventDefault(){this.defaultPrevented=true}}
+  h.events.contextmenu({data:{rowIndexes:indexes},event:{event}})
+  expect(h.selection.showContextMenu.mock.calls.at(-1)[0].parts).toEqual([['Column0','A']]);expect(h.selection.select).not.toHaveBeenCalled()
+  h.rootEvents.contextmenu(event);expect(h.selection.showContextMenu).toHaveBeenCalledTimes(1)
+ })
+ it('does not use the first contributor when the mark cannot be expressed by one category scope',()=>{
+  const h=setup();h.visual.primitiveContextIdentity(h.columns,[0,3],h.ids,false)
+  expect(h.visual.primitiveContextIdentity(h.columns,[0,3],h.ids,false)).toEqual({})
+  h.host.createSelectionIdBuilder=()=>{throw Error('Stale host identity')};expect(h.visual.primitiveContextIdentity(h.columns,[0,1],h.ids,false)).toEqual({})
+ })
+ it.each([[0,3],[0,1,2],[0,1,2,3]].map(rows=>[rows]))('uses a background menu for a non-representable or whole-visual set %j',(rows)=>{
+  const h=setup();expect(h.visual.primitiveContextIdentity(h.columns,rows,h.ids,false)).toEqual({})
+ })
+ it('does not widen a selected subset to a shared scope containing an additional source row',()=>{
+  const h=setup();h.columns[0].identity[2]={fixtureKey:'A'}
+  expect(h.visual.primitiveContextIdentity(h.columns,[0,1],h.ids,false)).toEqual({})
+ })
+ it('refuses incomplete, invalid and segmented aggregate views without parsing opaque identities',()=>{
+  const h=setup();expect(h.visual.primitiveContextIdentity(h.columns,[0,1],h.ids,true)).toEqual({});expect(h.visual.primitiveContextIdentity(h.columns,[0,99],h.ids,false)).toEqual({})
+  delete h.columns[1].identity;expect(h.visual.primitiveContextIdentity(h.columns,[0,1],h.ids,false)).toEqual({})
+ })
+ it('opens one background menu and does not replace a handled mark menu',()=>{
+  const h=harness(),event={clientX:12,clientY:34,defaultPrevented:false,preventDefault(){this.defaultPrevented=true}}
+  h.rootEvents.contextmenu(event);expect(h.selection.showContextMenu).toHaveBeenLastCalledWith({},{x:12,y:34})
+  h.rootEvents.contextmenu(event);expect(h.selection.showContextMenu).toHaveBeenCalledTimes(1)
+ })
 })

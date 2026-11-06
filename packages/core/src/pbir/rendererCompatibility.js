@@ -8,8 +8,8 @@ import {scopedMeasuresOf} from '../spec/migrate.js'
 export function requiredRendererVersion(spec, bindings = {}) {
   let minor = 0
   const require = version => { minor = Math.max(minor, version) }
-  if(spec?.specVersion==='0.7')require(36)
-  if(spec?.template?.meta?.formatVersion===4)require(36)
+  if(spec?.specVersion==='0.7')require(39)
+  if(spec?.template?.meta?.formatVersion===4)require(39)
   if(spec?.formatting&&Object.keys(spec.formatting).length)require(35)
   // Older bundles defaulted to a dark canvas and ignored model formats. Refuse
   // silent preview/native divergence; never replace an existing report resource.

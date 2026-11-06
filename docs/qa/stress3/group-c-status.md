@@ -5,10 +5,19 @@ stress3 feature branches, not merged or released. Public source is synced to
 the Group C candidate; production MCP dependency still points to core0.6 until
 coordinated release assets exist. Do not confuse source sync with publication.
 
+Latest follow-up: private and public app/core1351/1351 PASS each in117 files
+(`cache/round3-d-final-core-all.log` and public `round3-d-final-public-all.log`).
+Complete app build and public native package PASS. MCP298/298 PASS checkpoint
+in412.55seconds; final PNG exactness regression passes4/4 after removing sample
+reuse, with the full suite and final package being refreshed after
+context-menu, lifecycle/visibility and
+object-value currency fixes. Older frozen counts below are historical checkpoints. See
+[Desktop follow-up](native-follow-up.md) for the new native evidence and limits.
+
 | Area | Current evidence | Remaining |
 |---|---|---|
 | Expression language | Closed JSON AST, bounds, typed diagnostics, renderer/SSR integration, fuzz/security contracts | Native acceptance and release packaging |
-| Former (c) visuals | All11 have validate/explain/real-data preview/commit tool passes; inspected PNGs; see expression-results.md | Desktop marks/interaction verification; arbitrary area-proportional Euler fitting remains a separate gap |
+| Former (c) visuals | All11 have real-data tool passes, SSR inspection and native static marks/geometry inspection | Native title/bounds and interaction verification; arbitrary area-proportional Euler fitting remains a separate gap |
 | Weighted geometry | Voronoi area/order/lineage tests,50 probes and independent interior coverage; grid contour interpolation/saddle tests | Native resize/filter acceptance |
 | Motion | Ten live-data tool cycles; actual browser-clock APNG; chart retention/handler, frame selection/index, nested formatting and visibility tests | Native acceptance;5000-point60fps; final visual inspection |
 | Template memory | OS/shared-folder library, save/list/read/delete, commit saveAs and collision SDK tests; hardened file boundary | Published-artifact standalone verification |
@@ -35,14 +44,19 @@ Some repeat exercise scripts may explicitly reuse the previously retrieved
 schema only after checking the same live Desktop port; previews still query
 the engine. Raw schema/data evidence stays private under MCP test-results.
 
-Desktop remains hasUnsavedChanges:true. Reload checks stop before page changes
-or reload. Computer Use native pipe/browser host are unavailable; no native
-PASS is inferred from a successful SDK write or SSR image. The pending user
-save/blank-window question has not been answered in this continuation.
+The owned Desktop report was reopened after the user's closed-window reply.
+Current PID20988/port62071 reports hasUnsavedChanges:false; report-only bridge
+reloads succeeded. Twenty-four detail pages were added to the owned QA report.
+The original report/model is untouched. Eleven expression native captures and
+three reference captures were inspected. Computer Use's refreshed native pipe
+still fails (os error2). The user reports visible foreground charts; the newest
+Sankey bridge capture is blank, so native motion/export acceptance remains open.
 
-Open correctness concerns: aggregate context-menu drill-through currently uses
-one source identity (INTERACTION-CONTEXT-011). Chart retention and browser
-interpolation capture have automated coverage; neither proves native behavior. Actual
+Aggregate context menus now use an exact shared category identity when
+representable, otherwise a background menu, never an arbitrary first row.
+Host selector/event tests pass; physical drill-through remains unverified.
+Chart retention and browser interpolation capture have automated coverage;
+neither proves native behavior. Actual
 Desktop cross-filter/highlight/bookmark/report-tooltip gestures are unverified.
 
 The 5000-point real-clock canvas baseline FAILS:24.92 RAF fps,72.2ms p95.

@@ -33,3 +33,7 @@ it('retains model axis formats when a timeline frame only changes dataZoom and i
  expect(option.baseOption.yAxis.axisLabel.formatter(12.5)).toBe('$12.50')
  for(const frame of option.options)expect(frame.yAxis.axisLabel.formatter(12.5)).toBe('$12.50')
 })
+it('formats object-valued bar and line axes during a bar/pie morph without treating the pie as Cartesian',()=>{
+ const item={type:'custom',template:{meta:{id:'object-axis-units',formatVersion:4},slots:{time:{kind:'dimension'},revenue:{kind:'measure'}},template:{baseOption:{timeline:{data:['Bar','Pie','Line']},xAxis:{type:'category',data:'$slot.time.categories'},yAxis:{type:'value'}},options:[{series:[{type:'bar',data:'$slot.revenue.pieData'}]},{xAxis:{show:false},yAxis:{show:false},series:[{type:'pie',data:'$slot.revenue.pieData'}]},{series:[{type:'line',data:'$slot.revenue.pieData'}]}]}}}
+ const option=resolveVisualSpec(item,rows,context);expect(option.options[0].yAxis.axisLabel.formatter(12.5)).toBe('$12.50');expect(option.options[2].yAxis.axisLabel.formatter(12.5)).toBe('$12.50');expect(option.options[1].yAxis.show).toBe(false)
+})

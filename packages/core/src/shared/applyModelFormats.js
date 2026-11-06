@@ -58,7 +58,7 @@ export function applyModelFormats(option, spec, measures = [], options = {}) {
       else if(projection==='pairs'){component=1;tupleUnits=[null,index];axisUnits={yAxis:[index]}}
       else if(projection==='pairsSwapped'){component=0;tupleUnits=[index,null];axisUnits={xAxis:[index]}}
       else if(projection==='matrix'){component=2;tupleUnits=[null,null,index]}
-      else if(projection!=='pieData' && projection!=='radar') {
+      else if(projection!=='radar' && (projection!=='pieData' || ['bar','line','pictorialBar'].includes(s.type))) {
         const horizontal=axesOf('yAxis',s.yAxisIndex)?.type==='category' && axesOf('xAxis',s.xAxisIndex)?.type==='value'
         axisUnits=horizontal?{xAxis:[index]}:{yAxis:[index]}
       }

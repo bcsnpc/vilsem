@@ -27,7 +27,7 @@ import { createModelFormatter } from '../shared/modelFormatting.js'
 import {validateExpression,resolveExpressionTokens,compileExpressionSeries} from '../expressions/index.js'
 import {applyAnimation,validateAnimation} from './animation.js'
 export {mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex} from './timeline.js'
-export {createMotionVisibilityController} from './motionVisibility.js'
+export {createMotionVisibilityController,finishChartFrame} from './motionVisibility.js'
 import {applyTemplateTooltipPolicy} from './tooltipPolicy.js'
 
 // ── numeric formatting (deterministic, no Intl dependency) ──────────────────

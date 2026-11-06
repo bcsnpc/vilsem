@@ -86,9 +86,9 @@ describe('core PBIR insertion',()=>{
     const slots=Object.entries(lollipop.slots)
     spec.template.transforms[0].waterfall={category:slots.find(([,s])=>s.kind==='dimension')[0],value:slots.find(([,s])=>s.kind==='measure')[0]}
     const before=await snapshot()
-    await expect(injectVisual({...args(),visualName:'advanced',spec})).rejects.toThrow(/requires vilsem Renderer 4.36/)
+    await expect(injectVisual({...args(),visualName:'advanced',spec})).rejects.toThrow(/requires vilsem Renderer 4.39/)
     expect(await snapshot()).toEqual(before)
-    await expect(injectVisual({...args(),visualName:'basic'})).rejects.toThrow(/4.36/)
+    await expect(injectVisual({...args(),visualName:'basic'})).rejects.toThrow(/4.39/)
     expect(await snapshot()).toEqual(before)
   })
   it('detects feature floors and compares complete renderer versions',()=>{

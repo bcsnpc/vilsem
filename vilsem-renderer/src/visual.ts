@@ -4,7 +4,7 @@ import {migrate} from '@vilsem/core/spec/migrate'
 import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
 import { createModelFormatter, scopedMeasureFormat, applyModelFormats } from '@vilsem/core/formatting'
-import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController } from '@vilsem/core/templates'
+import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController,finishChartFrame } from '@vilsem/core/templates'
 /*
  * vilsem Renderer — Power BI custom visual
  * ─────────────────────────────────────────────────
@@ -204,6 +204,12 @@ export class Visual implements IVisual {
     this.root.setAttribute("tabindex", "0")
     this.root.setAttribute("role", "group")
     this.root.setAttribute("aria-label", "vilsem visual. Use arrow keys to choose a point, Enter to select, Escape to clear.")
+    this.root.addEventListener("contextmenu", (event: MouseEvent) => {
+      // A handled mark prevents the same event from opening a second menu.
+      if (event.defaultPrevented) return
+      event.preventDefault()
+      this.selectionManager.showContextMenu({}, { x: event.clientX, y: event.clientY })
+    })
     this.root.addEventListener("keydown", (event: KeyboardEvent) => {
       const ids = this.currentSelectionIds
       if (event.key === "Escape") {
@@ -319,7 +325,14 @@ export class Visual implements IVisual {
   }
 
   private specReadError: string | null = null
-  private pendingRender: {options:VisualUpdateOptions;frame?:number;timer?:ReturnType<typeof setTimeout>} | null = null
+  private pendingRender: {options:VisualUpdateOptions;frame?:number;timer?:ReturnType<typeof setTimeout>;frameTimer?:ReturnType<typeof setTimeout>;waitForChart?:boolean;hiddenFrame?:boolean;cleanup?:()=>void;resume?:()=>void} | null = null
+
+  private queueRenderFinish(pending: NonNullable<Visual['pendingRender']>): void {
+    if(this.pendingRender!==pending || pending.frame!==undefined || pending.frameTimer!==undefined)return
+    const finish=()=>{if(this.pendingRender===pending)this.settleRender()}
+    if(!pending.hiddenFrame&&typeof requestAnimationFrame==='function')pending.frame=requestAnimationFrame(finish)
+    else pending.frameTimer=setTimeout(finish,0)
+  }
 
   private settleRender(error?:string): void {
     const pending=this.pendingRender
@@ -327,8 +340,10 @@ export class Visual implements IVisual {
     this.pendingRender=null
     if(pending.frame!==undefined)cancelAnimationFrame(pending.frame)
     if(pending.timer!==undefined)clearTimeout(pending.timer)
+    if(pending.frameTimer!==undefined)clearTimeout(pending.frameTimer)
+    pending.cleanup?.()
     if(error)this.host.eventService?.renderingFailed(pending.options,error)
-    else this.host.eventService?.renderingFinished(pending.options)
+    else {this.host.eventService?.renderingFinished(pending.options);pending.resume?.()}
   }
 
   public update(options: VisualUpdateOptions): void {
@@ -339,14 +354,10 @@ export class Visual implements IVisual {
     }
     try{
       this.updateContent(options)
-      // setOption draws synchronously; signal after the browser has a complete
-      // first frame, including the HTML/empty-state paths. Never finish twice.
+      // Animated ECharts options wait for `finished`, then a painted frame.
+      // HTML/empty states have no chart event and finish after their first frame.
       const pending=this.pendingRender
-      if(pending){
-        const finish=()=>{if(this.pendingRender===pending)this.settleRender()}
-        if(typeof requestAnimationFrame==='function')pending.frame=requestAnimationFrame(finish)
-        else pending.timer=setTimeout(finish,0)
-      }
+      if(pending&&!pending.waitForChart)this.queueRenderFinish(pending)
     }catch(error){
       this.settleRender((error as Error).message)
       this.renderError(`Rendering failed: ${(error as Error).message}`,'visual')
@@ -739,12 +750,46 @@ export class Visual implements IVisual {
     }
     this.chart = retained || echarts.init(chartRoot)
     this.chartReuseKey=requestedKey
+    const isVisible=()=>document.hidden!==true&&chartRoot.clientWidth>0&&chartRoot.clientHeight>0
+    let deferredPlayback:(()=>void)|null=null
+    const pending=this.pendingRender
+    const chartReady=pending?()=>this.queueRenderFinish(pending):null
+    if(pending){
+      const chart=this.chart
+      pending.waitForChart=true
+      pending.cleanup=()=>chart.off?.('finished',chartReady!)
+      pending.timer=setTimeout(()=>{if(this.pendingRender===pending)this.settleRender('Chart did not complete a frame within60seconds')},60000)
+      // Continuous timelines otherwise start their next transition before the
+      // first frame can settle. Keep author state; resume only after completion.
+      const owner=option.baseOption??option,raw=owner.timeline,timelines=Array.isArray(raw)?raw:raw?[raw]:[],playing=timelines.map((t:any,i:number)=>t.autoPlay?i:-1).filter((i:number)=>i>=0)
+      if(playing.length){
+        const paused=timelines.map((t:any)=>({...t,autoPlay:false})),timeline=Array.isArray(raw)?paused:paused[0]
+        option=option.baseOption?{...option,baseOption:{...option.baseOption,timeline}}:{...option,timeline};this.lastOption=option
+        pending.resume=()=>{
+          const target=this.lastOption.baseOption??this.lastOption,current=Array.isArray(target.timeline)?target.timeline:[target.timeline]
+          target.timeline=Array.isArray(raw)?current.map((t:any,i:number)=>({...t,autoPlay:timelines[i].autoPlay})):{...current[0],autoPlay:timelines[0].autoPlay}
+          const play=()=>{for(const timelineIndex of playing)chart.dispatchAction({type:'timelinePlayChange',playState:true,timelineIndex})}
+          if(isVisible())play();else deferredPlayback=play
+        }
+      }
+    }
     try {
-      if(retained){this.chart.resize();option=preserveTimelineIndex(option,retainedIndex);this.chart.setOption(this.withTreeState(option),{notMerge:false,replaceMerge:['series','xAxis','yAxis','tooltip']})}
+      if(retained){this.chart.resize();option=preserveTimelineIndex(option,retainedIndex)}
+      // A resize may emit `finished` for the preceding option. Only listen
+      // after that resize, immediately before drawing this update's option.
+      if(chartReady)this.chart.on('finished',chartReady)
+      if(retained)this.chart.setOption(this.withTreeState(option),{notMerge:false,replaceMerge:['series','xAxis','yAxis','tooltip']})
       else this.chart.setOption(this.withTreeState(option))
     } catch(error) {this.renderError(`Rendering failed: ${(error as Error).message}`,visualType);return}
-    const visibility=createMotionVisibilityController(this.chart,()=>document.hidden!==true&&chartRoot.clientWidth>0&&chartRoot.clientHeight>0)
-    const syncVisibility=()=>visibility.sync()
+    const visibility=createMotionVisibilityController(this.chart,isVisible,{beforePause:()=>{
+      if(this.pendingRender===pending&&pending){
+        pending.hiddenFrame=true
+        const ready=pending.frame!==undefined
+        if(ready){cancelAnimationFrame(pending.frame!);pending.frame=undefined}
+        if(finishChartFrame(this.chart)||ready)this.queueRenderFinish(pending)
+      }
+    }})
+    const syncVisibility=()=>{visibility.sync();if(isVisible()&&deferredPlayback){const play=deferredPlayback;deferredPlayback=null;play()}}
     document.addEventListener?.('visibilitychange',syncVisibility)
     const visibilityObserver=typeof ResizeObserver!=='undefined'?new ResizeObserver(syncVisibility):null
     visibilityObserver?.observe(chartRoot);visibility.sync()
@@ -870,10 +915,10 @@ export class Visual implements IVisual {
       }))
       this.chart.on("contextmenu", (params: any) => {
         const indexes = this.primitiveCategoryIndexes(params)
-        const index = indexes[0]
         const event = params?.event?.event
         event?.preventDefault?.()
-        if (selectionIds[index]) this.selectionManager.showContextMenu(selectionIds[index], { x: event?.clientX || 0, y: event?.clientY || 0 })
+        const identity = this.primitiveContextIdentity(cat?.categories || [], indexes, selectionIds, !!dv.metadata?.segment)
+        this.selectionManager.showContextMenu(identity, { x: event?.clientX || 0, y: event?.clientY || 0 })
       })
       const tooltip = this.host.tooltipService
       if (tooltip?.enabled() && nativeTooltipRequested) {
@@ -951,6 +996,36 @@ export class Visual implements IVisual {
     }
     const index=this.primitiveCategoryIndex(params)
     return index<0?[]:[index]
+  }
+
+  // The host context-menu API accepts one identity, unlike click selection.
+  // An aggregate may use the common category scope only if it describes exactly
+  // its contributing rows in a complete DataView. Never drill through one
+  // arbitrary contributor or inspect undocumented opaque identity properties.
+  private primitiveContextIdentity(columns: powerbi.DataViewCategoryColumn[], indexes: number[], ids: powerbi.visuals.ISelectionId[], segmented: boolean): powerbi.extensibility.ISelectionId {
+    const rows = [...new Set(indexes)]
+    if (!rows.length || rows.some(i => !Number.isInteger(i) || i < 0 || i >= ids.length)) return {}
+    if (rows.length === 1) return ids[rows[0]]
+    if (segmented || ids.length > 10000 || !columns.length || columns.length > 6 || columns.some(c => c.values.length !== ids.length || c.identity?.length !== ids.length)) return {}
+    try {
+      const cache = columns.map(() => new Map<number, powerbi.visuals.ISelectionId>())
+      const identity = (column: number, row: number) => {
+        if (!cache[column].has(row)) cache[column].set(row, this.host.createSelectionIdBuilder().withCategory(columns[column], row).createSelectionId())
+        return cache[column].get(row)!
+      }
+      const shared = columns.map((_, i) => i).filter(i => rows.every(row => identity(i, rows[0]).equals(identity(i, row))))
+      if (!shared.length) return {}
+      const selected = new Set(rows)
+      for (let row = 0; row < ids.length; row++) {
+        const matches = shared.every(i => identity(i, rows[0]).equals(identity(i, row)))
+        if (matches !== selected.has(row)) return {}
+      }
+      return shared.reduce((builder, i) => builder.withCategory(columns[i], rows[0]), this.host.createSelectionIdBuilder()).createSelectionId()
+    } catch {
+      // Host identities can become stale during a filter/update. A background
+      // menu is preferable to either a crash or a misleading data scope.
+      return {}
+    }
   }
 
   private primitiveCategoryIndex(params: any): number {

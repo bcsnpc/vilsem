@@ -42,7 +42,13 @@ p95 18.2 ms; the threshold is >=57 fps and <=20 ms p95. It is not enabled in the
 product and neither measurement represents the Power BI host. See
 [the engineering adoption gates](../../engineering/batch-motion.md).
 
-Native checks remain blocked by unsaved Desktop state and unavailable Computer
-Use capture. Reload refuses to discard unknown edits. No physical gesture,
-bookmark, report-page tooltip or PDF/subscription behavior is inferred from
-automated host stubs or SSR images.
+Native follow-up: the owned report reopened cleanly on Desktop62071 and report
+reloads succeeded. All ten motion captures and three reference captures were
+inspected. Most show expected marks; the line first-frame marker fix is verified
+natively. Sankey captures remain partial/blank, while the user reports visible
+charts. Object-valued Cartesian currency axes were fixed after this inspection
+and need a fresh native recheck. The table's Unverified cells describe full
+native motion acceptance, not absence of static captures. Auto Recovery obscures
+headings. No physical gesture, bookmark, report-page tooltip or PDF/subscription
+behavior is inferred from host stubs, SSR images or static captures. See
+[native follow-up](native-follow-up.md).

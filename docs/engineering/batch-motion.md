@@ -32,3 +32,12 @@ runs still FAIL. The idle cadence is below60 too, so this laptop/browser run
 cannot establish a60fps result. That does not excuse the regular-path cost or
 approve the prototype's missing interaction/style parity. Earlier measurements
 are retained rather than replacing failures with the best observed run.
+
+A second QA-only experiment grouped identical translations while retaining all
+5000 individual symbols, per-point styles and stable identities. Browser click,
+hover and context-menu probes identified point246 correctly. It measured only
+15.67 RAF fps /116.9ms p95, with180-341ms synchronous updates. It is rejected
+for production adoption: correct identity mapping alone does not meet the
+performance budget. Private reproducible source is MCP
+`scripts/round3-group-motion-probe.mjs`; result is
+`test-results/stress3/browser-motion/group-motion-probe.json`.

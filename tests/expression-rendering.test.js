@@ -20,7 +20,7 @@ describe('one expression resolver for native and SSR',()=>{
   const option=resolveVisualSpec(spec,rows,{theme:'light'});expect(option.series[0].renderItem.vilsemExpression.version).toBe(1)
   const chart=echarts.init(null,null,{renderer:'svg',ssr:true,width:600,height:400})
   try{chart.setOption(option);const svg=chart.renderToSVGString();expect(svg).toContain('$12');expect(svg).toContain('$3');expect(svg).not.toContain('NaN');expect(svg).toContain('clipPath')}finally{chart.dispose()}
-  expect(requiredRendererVersion(spec)).toBe('4.36.0.0')
+  expect(requiredRendererVersion(spec)).toBe('4.39.0.0')
  })
  it('applies manual formatting to custom text without enabling caller callbacks',()=>{
   const option=resolveVisualSpec(example(),rows,{formatPaneOverrides:{labels:{fontSize:18,format:'0.0%'}}})

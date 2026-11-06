@@ -1,23 +1,25 @@
 # Round 3 expression exercise results
 
 These are live Desktop-model queries and MCP tool results, followed by manual
-inspection of the SSR PNG. They are **not Power BI Desktop rendering passes**.
+inspection of the SSR PNG. A later native static-rendering check is recorded
+separately below; it does not prove interaction or complete clipping behavior.
 The owned report contains the new `Stress3` page. The original PBIP/model was
-not edited. Live connection: port 57149, process-workspace-port-file discovery.
+not edited. Initial connection57149; reopened Desktop62071, both discovered by
+process-workspace-port-file.
 
-| Visual | validate / explain / preview / commit | Inspected preview | Native |
+| Visual | validate / explain / preview / commit | Inspected preview | Native static marks / full interactions |
 |---|---|---|---|
-| Marimekko | PASS, 18 grouped rows | PASS after bounded cell labels | Not verified |
-| Mosaic | PASS, 18 grouped rows | PASS after bounded cell labels | Not verified |
-| Violin | PASS, 130 sold SKUs | PASS after normalized paths and stroke fix | Not verified |
-| Ridgeline | PASS, 130 sold SKUs | PASS after normalized paths and stroke fix | Not verified |
-| Venn | PASS, 293 product rows | PASS, exact observed set counts | Not verified |
-| Beeswarm | PASS, 130 sold SKUs | PASS | Not verified |
-| Flame | PASS, 130 sold SKUs | PASS, small labels suppressed | Not verified |
-| Word cloud | PASS, 130 sold SKUs | PASS after foreground contrast fix | Not verified |
-| Hexbin | PASS, 130 sold SKUs / 10 occupied bins | PASS after axis/colorbar spacing correction | Not verified |
-| Contour | PASS, 130 sold SKUs / 65 segments | PASS after axis/colorbar spacing correction | Not verified |
-| Weighted Voronoi treemap | PASS, 18 rows / 24 parent and leaf cells | PASS, small labels suppressed | Not verified |
+| Marimekko | PASS, 18 grouped rows | PASS after bounded cell labels | Inspected / unverified |
+| Mosaic | PASS, 18 grouped rows | PASS after bounded cell labels | Inspected / unverified |
+| Violin | PASS, 130 sold SKUs | PASS after normalized paths and stroke fix | Inspected / unverified |
+| Ridgeline | PASS, 130 sold SKUs | PASS after normalized paths and stroke fix | Inspected / unverified |
+| Venn | PASS, 293 product rows | PASS, exact observed set counts | Inspected / unverified |
+| Beeswarm | PASS, 130 sold SKUs | PASS | Inspected after capture retry / unverified |
+| Flame | PASS, 130 sold SKUs | PASS, small labels suppressed | Inspected / unverified |
+| Word cloud | PASS, 130 sold SKUs | PASS after foreground contrast fix | Inspected / unverified |
+| Hexbin | PASS, 130 sold SKUs / 10 occupied bins | PASS after axis/colorbar spacing correction | Inspected / unverified |
+| Contour | PASS, 130 sold SKUs / 65 segments | PASS after axis/colorbar spacing correction | Inspected / unverified |
+| Weighted Voronoi treemap | PASS, 18 rows / 24 parent and leaf cells | PASS, small labels suppressed | Inspected / unverified |
 
 Venn circles are schematic; their areas do not encode set cardinalities.
 Independent live DAX COUNTROWS/FILTER queries also verified all eight exclusive
@@ -35,6 +37,8 @@ passing JSON examples are in vilsem-mcp/templates/stress3-*-expression.*.
 Private evidence is under vilsem-mcp/test-results/stress3, including failed
 before-fix images. Raw model schemas and data are not public release artifacts.
 
-Native blocker: Desktop reports unsaved changes; reload was refused before any
-page activation change. Computer Use's native pipe and browser host are
-unavailable. A successful commit or SSR image does not resolve that blocker.
+Native follow-up: all11 examples have inspected marks/geometry in Desktop bridge
+captures on individual owned detail pages. The first beeswarm capture timed out
+and its retry succeeded. An Auto Recovery banner obscures headings; title/bounds
+acceptance and physical filtering/selection are not verified. Computer Use still
+fails with native pipe os error2. See [native follow-up](native-follow-up.md).
