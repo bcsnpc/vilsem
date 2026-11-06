@@ -7,11 +7,11 @@ coordinated release assets exist. Do not confuse source sync with publication.
 
 Latest follow-up: private and public app/core1351/1351 PASS each in117 files
 (`cache/round3-d-final-core-all.log` and public `round3-d-final-public-all.log`).
-Complete app build and public native package PASS. MCP298/298 PASS checkpoint
-in412.55seconds; final PNG exactness regression passes4/4 after removing sample
-reuse, with the full suite and final package being refreshed after
-context-menu, lifecycle/visibility and
-object-value currency fixes. Older frozen counts below are historical checkpoints. See
+Complete app build and public native package PASS. Final frozen MCP298/298
+PASS in418.18seconds after the exact final-PNG regression. Fresh final paired
+tarball install passes live Desktop/schema/preview/commit, installed timeline
+PNG equality and APNG/contact-sheet checks. It uses a local core override;
+the published0.7 URL is still a release gate. Older counts below are historical checkpoints. See
 [Desktop follow-up](native-follow-up.md) for the new native evidence and limits.
 
 | Area | Current evidence | Remaining |

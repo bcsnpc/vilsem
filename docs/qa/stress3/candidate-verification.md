@@ -8,7 +8,7 @@ main merge is approved by these results alone.
 | Private app/core | npm test -- --maxWorkers=2; round3-d-final-core-all.log | 1,351/1,351 PASS, 117 files |
 | Public app/core | npm test -- --maxWorkers=2; round3-d-final-public-all.log | 1,351/1,351 PASS, 117 files |
 | MCP direct command | vitest run --maxWorkers=2 without the package timeout | 292 PASS, 3 timeouts at 5 seconds; retained failure |
-| MCP canonical command | npm test (configured 30-second timeout, one worker); round3-d-batched-final-mcp-all.log | 298/298 PASS checkpoint,12files/412.55seconds; final PNG exactness follow-up below |
+| MCP canonical command | npm test (configured 30-second timeout, one worker); round3-d-exact-final-mcp-all.log | 298/298 PASS,12files/418.18seconds, including exact final-PNG regression |
 | App targets | npm run build; round3-d-final-app-build.log | Native/UI/Fabric/Electron/NSIS PASS; public native package also PASS |
 | Dependencies | Frozen-source npm audit in all four package roots | Root 6 moderate; native tooling 13 moderate + 4 low; UI/MCP 0; zero high/critical |
 | Model integrity | Owned renderer installation checks all baseline hashes before/after | 21/21 unchanged; original PBIP untouched |
@@ -56,5 +56,17 @@ it does not address the separate5000-point animated-canvas FPS failure.
 The next installed-package pixel check found83 differing pixels along the
 timeline control when reusing the last sampled PNG. Final-image reuse was
 removed; sampled-frame batching remains. A regression reproduces the mismatch
-before the fix and passes afterwards (all4 motion-preview tests PASS). A final
-unchanged-source full run and refreshed installed package are in progress.
+before the fix and passes afterwards (all4 motion-preview tests PASS). Final
+unchanged-source full run PASSES298/298 in418.18seconds. The fresh installed
+package passes real Desktop schema/validate/explain/browser-APNG/resource/commit
+and synthetic timeline batch/final-pixel equality, APNG and contact-sheet checks.
+All21 semantic-model files remain unchanged.
+
+Final paired local candidate fingerprints (not published release assets):
+
+* Core0.7 SHA256: `2fb5085dfc8f225585109a2bc8139c3309f8f8b03d0e3cdbf6e278c625306e1d`.
+* MCP0.7 SHA256: `c11400b9bf534ef79fb6cecb0e8fe7afabdfcb18c4ed31817080465cb5fd93fa`.
+
+The installed MCP uses a local core override. This is not verification of a
+published0.7 dependency URL. Native physical interactions/export and5000-point
+motion performance remain open release gates; no0.7 release/main merge is claimed.
