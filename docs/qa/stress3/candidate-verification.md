@@ -1,5 +1,13 @@
 # Group C candidate verification ledger
 
+> Current checkpoint: core 0.7.2 / renderer 4.42 and MCP 0.7.3 are published
+> evaluation patches. App-core 1,357 tests per checkout and MCP 311 tests pass.
+> Real-data compatibility edits and 170/170 custom-visual validation pass; two
+> known-contract warnings remain explicit. Native acceptance is blocked; the
+> animated 5,000-point target fails. See [current follow-up](round3-follow-up.md).
+> Earlier version-specific results below are historical.
+
+
 This ledger preserves historical development checkpoints. Updated2026-11-06:
 private/public core1353/1353 each PASS after the real hidden-Sankey fix;
 renderer4.40 and the complete app build PASS. Core/MCP0.7 is published as

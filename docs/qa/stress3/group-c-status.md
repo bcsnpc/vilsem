@@ -1,4 +1,12 @@
-﻿# Round3 Group C: 0.7 evaluation prerelease
+# Round3 Group C: 0.7 evaluation prerelease
+
+> Current checkpoint: core 0.7.2 / renderer 4.42 and MCP 0.7.3 are published
+> evaluation patches. App-core 1,357 tests per checkout and MCP 311 tests pass.
+> Real-data edits and 170/170 custom-visual validation pass; two known-contract
+> warnings are explicit. Native acceptance is blocked; the animated 5,000-point
+> target fails. See [current follow-up](round3-follow-up.md). Earlier results
+> below are historical.
+
 
 Updated2026-11-06. Groups A/B are published as0.5/0.6. Group C is
 published as an evaluation prerelease; stable0.6 remains the previous release

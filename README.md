@@ -1,6 +1,6 @@
 # vilsem
 
-Round 3 is in progress: [current correctness tests, native acceptance gates and release limitations](docs/qa/stress3/group-a-status.md).
+Round 3 evaluation patches are published: core 0.7.2 / renderer 4.42 and MCP 0.7.3. See [current tests and acceptance limits](docs/qa/stress3/round3-follow-up.md). Native host checks remain blocked and the animated 5,000-point frame-rate target fails; this is not production sign-off.
 
 Engineering audit: see the [verified fixes and remaining work](docs/qa/fix-status.md), [audit report](docs/qa/full-audit-report.md),
 [current architecture](docs/architecture.md), and [tested regression status](docs/qa/regression-status.md).

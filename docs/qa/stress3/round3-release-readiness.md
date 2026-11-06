@@ -1,5 +1,13 @@
 # Round3 release readiness
 
+> Current checkpoint: core 0.7.2 / renderer 4.42 and MCP 0.7.3 are published
+> evaluation patches. App-core 1,357 tests per checkout and MCP 311 tests pass.
+> Real-data compatibility edits and 170/170 custom-visual validation pass; two
+> known-contract warnings remain explicit. Native acceptance is blocked; the
+> animated 5,000-point target fails. See [current follow-up](round3-follow-up.md).
+> Earlier version-specific results below are historical.
+
+
 Groups A and B are published as0.5 and0.6. Group C is published as a0.7
 **evaluation prerelease**, preserving the stable0.6 release channel. A prerelease
 does not convert a failed or blocked check into PASS.

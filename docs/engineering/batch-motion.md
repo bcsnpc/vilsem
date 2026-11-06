@@ -54,3 +54,15 @@ results are `test-results/stress3/performance-options.mjs` and
 
 Core/MCP0.7 is an evaluation prerelease with this failed target explicitly
 listed. It does not claim60fps or certify performance for production workloads.
+
+## 2026-11-06 isolated follow-up
+
+After build/test activity stopped, the portable synthetic benchmark retained
+all 5,000 points, real animation and the unmodified clock. Idle: 60.42 RAF fps,
+16.9ms p95. Canvas: 11.22 fps/266.5ms; dirty-rectangle canvas: 12.52/233.3ms;
+SVG: 8.62/250ms. Every chart run FAILS the >=57fps / <=20ms p95 acceptance
+budget. None is a Power BI host measurement. This run bypasses the declarative
+spec interpreter, so it does not support blaming AST execution for the cost.
+No rejected batch/grouping prototype, point dropping or hidden animation
+disabling is enabled. Private result: MCP test-results/stress3/round3-f-performance.json.
+The portable source is scripts/benchmark-motion.mjs in the MCP repository.

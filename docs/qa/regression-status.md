@@ -1,3 +1,20 @@
+## Round 3 current checkpoint - 2026-11-06
+
+Core **0.7.2 / renderer 4.42** and MCP **0.7.3** are published evaluation
+prereleases on public main. Private/public app-core suites each pass **1,357**
+tests; the frozen MCP suite passes **311**. Full app build passes. Real Desktop
+port **62071** was auto-detected; both newer-declared visuals pass real-data
+edit/restore, and validation accepts **170/170** Vilsem visuals with two explicit
+known-contract warnings. All **15 native fixture files / 21 model files** are
+unchanged. Newer declarations are preserved; full declared-schema validation
+is not claimed.
+
+Native interaction, final paint/export and bookmark acceptance remains
+**BLOCKED/UNVERIFIED** (supported helper pipe OS error 2). The **5,000-point
+animated frame-rate target FAILS**. No point dropping, hidden motion disabling
+or rejected batching is enabled. This is not full Round 3 production sign-off.
+See [current evidence](stress3/round3-follow-up.md) and its native checklist.
+
 ## Stress round3 - core/MCP0.6 published; GroupC next
 
 Core **core-v0.6.0** (`67899a3`) and MCP **v0.6.0** (`df7e783`) are pushed to public main and released. Clean public app/core **1168/1168**, MCP **225/225**, and renderer/UI/Fabric/Electron builds PASS. The69property contract includes independent axes and automatic bounds. Fresh standalone install uses the real public core URL, no app path/override; live Desktop schema, preview/variants, prompt/resource and commit/read/dry-run/update PASS. Published MCP hash matches. All21owned QA model definitions remain unchanged. Audits: root6moderate, native13moderate+4low, UI/MCP0;0high/critical.

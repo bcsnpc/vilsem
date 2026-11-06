@@ -1,101 +1,158 @@
-# Round3 follow-up: responsive reference panels
+# Round 3 follow-up: current verification
 
-The0.7.0 evaluation releases remain immutable. This follow-up publishes core/MCP
-0.7.1 and renderer4.41, with the same GUID and legacy format-pane property.
-It does not promote the evaluation releases to production acceptance.
+Updated 2026-11-06. This supersedes the 0.7.0 and 0.7.1 checkpoints; their tags,
+assets and earlier failed test logs remain unchanged. Group C is an evaluation
+prerelease, not production acceptance. Groups A/B remain published as 0.5/0.6.
 
-## Change
+## Delivered fixes
 
-`viewportWidth` and `viewportHeight` are zero-argument, bounded numeric
-operations in the closed expression language. They call only trusted ECharts
-dimension getters and recompute on resize. All existing AST budgets and
-security restrictions remain. Specs using either operation require renderer
-4.41; other0.7 specs retain their4.40 requirement.
+- Core 0.7.1 added bounded `viewportWidth`/`viewportHeight` expression operations.
+  The Figma example now draws an inset rounded panel that recomputes on resize.
+  Its axis spacing was corrected after inspection. Viewport operations require
+  renderer 4.41; other original 0.7 expressions retain their 4.40 reader floor.
+- Core 0.7.2 / renderer 4.42 preserves authored opacity for explicitly silent
+  annotation leaves. Interactive marks still dim on selection/highlight. The
+  reader floor covers literal and conditional/parameterized silent annotations.
+  The renderer GUID and legacy `semantica.primitiveSpec` property are unchanged.
+- MCP 0.7.2 fixes reference-card contrast under a dark report theme and excludes
+  proven static viewport decoration from measured-series/palette counts and
+  zero-data warnings. Real zeros and data-dependent annotations remain checked.
+  An explicit opaque chart background takes precedence in global text-contrast
+  feedback. Filled-mark contrast still needs visual review.
+- MCP 0.7.3 fixes edits/validation of existing Vilsem visuals whose official
+  Microsoft 2.x container declaration advanced beyond the bundled schema. The
+  entire payload must fit the known 2.7 contract; unknown fields/malformed data
+  are refused. `containerValidation` explicitly discloses that full validation
+  against the declared schema was not performed. The declaration, query, layout
+  and manual formatting are preserved. New commits still use the bundled
+  schema. Native objects remain outside MCP editing/validation scope.
 
-The shipped Figma reference template now draws the inset rounded white panel
-on its pale backdrop. It shrinks its inset/radius for tiny containers, does
-not invent business axes or embed reference numbers, and preserves the actual
-bar data. The decoration is silent, has no tooltip and sits below marks.
+## Test and build evidence
 
-## Verification
+| Check | Result |
+|---|---|
+| Private app/core | 1,357/1,357 PASS, bounded workers, unchanged deadlines/assertions |
+| Public app/core | 1,357/1,357 PASS on the same implementation |
+| Full build | Native, UI, Fabric, Electron and NSIS PASS; independent native resource contents match |
+| Frozen MCP 0.7.2 with public core | 303/303 PASS, 13 files, 602.13 seconds |
+| Frozen MCP 0.7.3 with public core | 311/311 PASS, 14 files, 610.07 seconds |
+| Responsive card | Real Chromium: 900x550 -> 320x240 -> 40x24 -> 900x550; exact return bounds and data/decorative click isolation PASS |
+| Selection regression | Before: panel opacity 0.25; after: panel 1, bars 0.25/1; blank-area click routing PASS |
+| Theme regression | Actual SVG text and model currency formatting PASS in light/dark; authored fixed light palette is intentional |
+| Compatibility regression | Eight tests: newer declaration, complete known contract, nonmutation, malformed/unknown-field rejection, no external fetch, edit preservation and custom-only scope PASS |
+| Audits | Root 6 moderate; native tooling 13 moderate/4 low; UI/MCP 0; high/critical 0 |
+| Model preservation | All 21 owned semantic-model baseline files unchanged; original PBIP untouched |
 
-Core tests cover changing dimensions, zero sizes, missing/invalid API values,
-operation arity and the reader floor. A real Chromium regression resizes the
-same chart900x550 ->320x240 ->40x24 ->900x550, checks panel bounds and exact
-return geometry, and physically clicks a bar and the decoration. Only the bar
-produces a data click. SSR uses the same interpreter. This verifies panel
-geometry and input isolation, not readability of an entire chart at40x24.
+The tiny-container check proves panel geometry, not readability of an entire
+chart at 40x24. Browser mocks/geometry do not certify Power BI interactions.
+Earlier failures are retained: loaded test runs timed out or observed an older
+module during a late source edit. Fresh frozen runs above passed without
+changing assertions or increasing canonical deadlines.
 
-## Remaining acceptance
+Private logs: `round3-g-core-tests.log` in each app checkout;
+MCP `round3-i-tests.log`, `round3-j-tests.log` and focused feedback/browser logs.
+The current full app build is `cache/round3-h-app-build.log`.
+No new app installer was published; its existing build remains unsigned,
+uses the default icon and retains application version 1.0.0-beta.3.
 
-Windows Computer Use was initialized and checked again: native pipe connection
-fails with os error2. No UI input or unsupported replacement helper was used.
-The Desktop bridge supports state, reload and capture, not interaction input;
-its snapshots previously destabilized the native report. Those operations
-cannot prove native click/Ctrl, slicer/highlight, drill-through, tooltips,
-bookmarks, Edit Interactions None or PDF/subscription acceptance.
+## Live model and distribution
 
-The5000-point animated performance target remains FAIL. The upstream ECharts
-animation guidance recommends thresholds/disabling motion for large data;
-that would not satisfy the requested animated target. Its older v6 large-data
-regression21434 concerns jitter/progressive paths and was fixed upstream; it
-does not establish a fix for this6.1 animated ordinary-scatter workload.
-No points are removed, no animation is silently disabled and no rejected
-batch prototype is enabled to relabel this failure.
+Desktop AS port 62071 was auto-discovered by `process-workspace-port-file`.
+The published MCP 0.7.1 connection/schema workflow returned 13 tables and 39
+measures. Published 0.7.2 validated/explained/previewed six real country rows,
+saved both the reference and interaction-template visual, and left all 15
+native fixture files unchanged. Model connection code is unchanged in 0.7.3.
 
-Sources: https://echarts.apache.org/handbook/en/how-to/animation/transition/
-and https://github.com/apache/echarts/issues/21434 .
+Fresh normal public-URL and Git-tag 0.7.2 installations pass stdio handshake,
+19 tools/one prompt, viewport-spec validation and resource checks, with audit 0,
+no app-path variable, no development symlink and no dependency override.
+Public asset hashes match the tested archives. The original 0.7.2 validator
+reported 168/170 custom visuals valid: the other two used Desktop's 2.14.0
+declaration, whose official schema URL returned HTTP 404. Both real-data
+read/previews passed and their complete field structures passed the known
+contract on in-memory clones. This led to PBIR-COMPAT-030 and the 0.7.3 fix.
 
-Test/build, package and live-tool results are recorded below.
+Final 0.7.3 packaged live-edit/public-install acceptance is recorded below.
 
-## Core candidate verification (2026-11-06)
+## Native acceptance is blocked
 
-Private app/core1355/1355 PASS. Public app/core1355/1355 PASS with maxWorkers2 and unchanged deadlines/assertions; its initial overlapping run had one5000ms transpilation-test timeout, retained in round3-f-tests.log. Native packages built independently with identical resource contents. Full UI/Fabric/Electron/NSIS build exited0; installer remains unsigned/default-icon, app version1.0.0-beta.3, and is not a new installer release. Audits: root6moderate, UI0, native tooling13moderate/4low, zero high/critical.
+Both supported computer-use interfaces fail to connect to the native helper
+pipe with OS error 2. No unsupported input workaround was used. Asking the
+user to foreground Desktop does not repair this helper. Bridge snapshots had
+previously destabilized capture layout, so no further captures were requested.
+Guarded state/report-only reload acceptance does not prove paint or gestures.
 
-Both built-in computer-use interfaces were checked. Both fail to connect to the native pipe with os error2; the alternate inventory also reports browser access host unavailable. This is not a foreground/window-selection issue.
+Six coexistence pages were prepared outside MCP in the owned QA report:
+19 new visuals (four Vilsem, 15 native), actual model bindings, explicit
+filter/highlight/NoFilter references, drillthrough and standard/report-page
+tooltip fixtures. Microsoft schema, bounds and reference checks pass. Existing
+pages/visuals/report settings were preserved during fixture creation, and all
+21 model files remain unchanged. No fake bookmark state was written.
 
-Live candidate connect_model uses AS62071 via process-workspace-port-file; get_schema returns13tables/39measures. Validate, explain, real6row preview, read, dry-run update and saved update PASS on the owned Figma reference visual. The initial120second schema request timed out; the retry used the previous live-QA600second budget and succeeded. Neither request changed the model. All21model hashes remain unchanged. Native rendering/gestures remain UNVERIFIED.
+See [native-interaction-checklist.md](native-interaction-checklist.md) for
+click/Ctrl/clear, slicer/highlight, drillthrough, tooltips, bookmarks, keyboard,
+resize and export checks. They remain BLOCKED/UNVERIFIED, including the final
+native Sankey/currency-axis and PDF/subscription rechecks.
 
-A raster repeat probe produced six byte-identical PNGs for the same SVG. Raw real-model previews remain private. MCP full-suite finalization and public-package acceptance follow the core release.
+## Performance remains failed
 
-##0.7.2 correctness follow-up
+The isolated repeat with an unmodified real clock measured idle 60.42 RAF fps
+(p95 16.9ms), canvas 11.22 (266.5ms), dirty-rectangle canvas 12.52 (233.3ms),
+and SVG 8.62 (250ms). All 5,000 points and animation remain enabled. These are
+pure ECharts browser measurements, not Power BI host measurements. The target
+is at least 57 RAF fps and p95 at most 20ms; every chart run FAILS. No point
+removal, hidden animation disabling or rejected batching experiment is enabled.
 
-Final dark-thumbnail inspection found REFERENCE-CONTRAST-027: the intentionally
-light reference card inherited near-white axes in a dark report theme. The
-MCP template now explicitly colors its category/value labels and axis name.
-The rendered-text regression passes both themes; the0.7.1 release notes disclose
-the issue and its artifacts remain immutable.
+The benchmark bypasses the spec interpreter. ECharts' animation guidance can
+reduce/disable animation, but that does not meet the requested animated target.
+The latest checked ECharts version is already 6.1.0. Previously rejected batch
+and grouped prototypes have unresolved performance/style/interaction/native
+parity gates. See [batch-motion.md](../../engineering/batch-motion.md).
+The portable synthetic benchmark is MCP `scripts/benchmark-motion.mjs`; the
+latest private result is `test-results/stress3/round3-f-performance.json`.
 
-Selection review also found REFERENCE-SELECTION-028. The native adapter styles
-all series data, including a decorative panel's synthetic invocation row.
-Core0.7.1 then multiplied that inherited opacity into the panel. The actual
-browser reproducer measured panel opacity0.25 with ordinary bars0.25/1; a
-separate core test reproduced authored0.6 becoming0.15. Both fail before the
-shared-interpreter fix and pass afterwards. Explicitly silent annotation leaves
-now retain authored leaf opacity; ordinary/interactive marks still dim. The
-actual browser also verifies that clicking the panel remains a blank-area
-click, permitting the native adapter's existing clear path.
+Sources: [ECharts animation guidance](https://echarts.apache.org/handbook/en/how-to/animation/transition/)
+and [upstream progressive-data issue](https://github.com/apache/echarts/issues/21434).
+Exact area-proportional Euler fitting, unshipped geographic assets and 3D remain
+explicit format limits. Schematic Venn circles do not imply exact area fitting.
 
-Core0.7.2 / renderer4.42 carries that narrow rule and a reader floor for literal
-or parameterized/conditional silent annotations. Viewport operations alone
-retain their4.41 floor; other0.7 specs retain4.40. GUID and legacy pane property
-are unchanged. Private/public core1357tests each PASS; full app build exits0,
-including native/UI/Fabric/Electron/NSIS. Independently built renderer42 resource
-contents match. The owned report's resource update preserves21model hashes.
-MCP's full contrast-only checkpoint passes301tests on public core0.7.1; final
-301-test acceptance against actual public core0.7.2 follows publication.
+## MCP 0.7.3 packaged live acceptance
 
-The native fixtures/checklist are now prepared in the owned QA copy: six new
-pages,19visuals (4Vilsem/15native), schema/bounds/reference checks PASS,
-report settings and existing pages/visuals preserved during fixture creation,
-21model files unchanged and clean report-only reload accepted. Physical
-interaction, paint, bookmark capture and export acceptance remain UNVERIFIED.
-See native-interaction-checklist.md. No native authoring operation was added
-to MCP and no fake bookmark selection state was written.
+Before publication, the isolated packed candidate connected to Desktop 62071,
+read/previewed both actual 2.14-declared QA visuals, performed ETag-protected
+title dry runs and saved edits, then restored their original titles. Both
+migrated specs, queries, positions, schema declarations and manual formatting
+were preserved. A legacy unversioned spec can acquire its normal specVersion
+migration during a save; no container-schema retag occurs. The initial overly
+strict whole-file equality assertion caught that expected migration and is
+retained in the private acceptance log. The corrected check compares migrated
+specs and separately requires every surrounding container field unchanged.
 
-The isolated real-clock repeat still FAILS: idle60.42RAFfps/p95=16.9ms;
-canvas11.22/266.5ms; dirty rectangle12.52/233.3ms; SVG8.62/250ms. All5000points
-and animation remain enabled. This bypasses the spec interpreter and is not a
-Power BI host measurement. npm's latest ECharts remains6.1.0 as of this check;
-no dependency upgrade or configuration-only fix is available from that check.
-Rejected batching remains disabled pending interaction/style/native parity.
+`validate_visuals` now returns 170/170 valid Vilsem visuals, with exactly two
+explicit known-2.7-contract warnings and zero native objects reported. All 15
+native fixture files remain byte-identical. The model's 21 baseline hashes
+remain unchanged. The final guarded report-only reload accepted renderer 4.42
+with a clean owned report; no capture/input was requested and no native paint
+or gesture PASS is inferred.
+
+Core 0.7.2 is published at aba7112; MCP 0.7.3 at a9b31e9. Both public main
+branches contain the tested changes; evaluation prereleases do not replace
+stable 0.6. The private app source is also pushed. All prior tags/assets remain
+immutable. Downloaded assets have these SHA256 values:
+
+| Asset | SHA256 |
+|---|---|
+| Core 0.7.2 | ad838693fe9531de5be68aea610d29d1ba78d2173eecb402390b2054ab07ddca |
+| Renderer 4.42 | 391f271d7976e651caa50544af5527d46e90a8238060725b8c74a9d7cd4a4fbc |
+| MCP 0.7.3 | 3bb36a77b9b3fd821bc16617c57eaa553157f888c0bb6cf2d121f68efbb360aa |
+
+Releases: [core-v0.7.2](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.7.2)
+and [MCP v0.7.3](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.7.3).
+
+Fresh public-URL and documented Git-tag installs of MCP 0.7.3 both PASS:
+normal npm install, audit 0, stdio handshake, 19 tools/one prompt, viewport-spec
+validation and documentation resources. Both use genuine core 0.7.2 installs
+with no app path, development link or dependency override. The actual public-
+URL installation connects to Desktop 62071 and validates 170/170 Vilsem visuals,
+including the two explicit known-contract warnings. Downloaded archive SHA256
+matches the pre-publication candidate above. Raw live-model evidence is private.

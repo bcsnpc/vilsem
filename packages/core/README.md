@@ -1,5 +1,7 @@
 # @vilsem/core
 
+Current evaluation package: core **0.7.2 / renderer 4.42**, paired with MCP **0.7.3**. Private/public app-core suites each pass 1,357 tests; MCP passes 311. Native host acceptance remains blocked and the animated 5,000-point frame-rate target fails. See the repository Round 3 follow-up for live-tool, package and compatibility evidence. Earlier version-specific sections below are historical.
+
 Shared, headless Vilsem visual primitives, declarative templates, DAX/row helpers, spec serialization and PBIR operations. The package contains no Electron or React imports and requires no browser globals.
 
 Run `npm run core:build` from the workspace root before importing compiled ECharts compositions. `npm run powerbi:build` builds the renderer and refreshes `assets/renderer.pbiviz`. The root application build includes the workspace package in the Electron archive.
