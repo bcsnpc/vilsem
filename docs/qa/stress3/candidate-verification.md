@@ -1,7 +1,11 @@
 # Group C candidate verification ledger
 
-This is a development checkpoint, not a release announcement. No 0.7 tag or
-main merge is approved by these results alone.
+This ledger preserves historical development checkpoints. Updated2026-11-06:
+private/public core1353/1353 each PASS after the real hidden-Sankey fix;
+renderer4.40 and the complete app build PASS. Core/MCP0.7 is being published as
+an evaluation prerelease with explicit failed/blocked acceptance, as described
+in round3-release-readiness.md. Final publication and package results are
+appended below; older counts and local-override hashes remain historical.
 
 | Gate | Command / evidence | Result |
 |---|---|---|

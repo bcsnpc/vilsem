@@ -1,7 +1,7 @@
 # Group C format additions (development, not a released contract)
 
 All examples use `template.meta.formatVersion:4`, specVersion `0.7`, and native
-renderer 4.39 or newer. Call validate_spec before preview. Exact field names
+renderer 4.40 or newer. Call validate_spec before preview. Exact field names
 below are slot names, not DAX expressions. Transforms never rewrite the model.
 
 ## Expression geometry

@@ -41,3 +41,16 @@ for production adoption: correct identity mapping alone does not meet the
 performance budget. Private reproducible source is MCP
 `scripts/round3-group-motion-probe.mjs`; result is
 `test-results/stress3/browser-motion/group-motion-probe.json`.
+
+The final configuration comparison used Intel UHD620/ANGLE Direct3D11 with an
+unmodified real animation clock. Idle measured60.41 RAF fps/17ms p95, but normal
+canvas12.44fps/299.8ms, dirty-rectangle canvas12.51fps/233ms and SVG10.26fps/266.6ms.
+Each retained5000 points with animation enabled. None meets the budget and none
+is a native Power BI host measurement. Switching renderer or enabling dirty
+rectangles is therefore not adopted as a fix. The earlier lower idle cadence
+does not explain away the chart rendering cost. Private reproducible source and
+results are `test-results/stress3/performance-options.mjs` and
+`round3-e-performance-options.json` in the MCP checkout.
+
+Core/MCP0.7 is an evaluation prerelease with this failed target explicitly
+listed. It does not claim60fps or certify performance for production workloads.

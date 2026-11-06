@@ -1,92 +1,51 @@
-# Round 3 Group C development status
+﻿# Round3 Group C: 0.7 evaluation prerelease
 
-Updated 2026-11-05. Group A/core-MCP0.5 and Group B/core-MCP0.6 are released. Group C is on
-stress3 feature branches, not merged or released. Public source is synced to
-the Group C candidate; production MCP dependency still points to core0.6 until
-coordinated release assets exist. Do not confuse source sync with publication.
+Updated2026-11-06. Groups A/B are published as0.5/0.6. Group C is being
+published as an evaluation prerelease; stable0.6 remains the previous release
+channel. Publication does not certify native behavior or the failed FPS target.
+See round3-release-readiness.md and round3-report.md for scope and limitations.
 
-Latest follow-up: private and public app/core1351/1351 PASS each in117 files
-(`cache/round3-d-final-core-all.log` and public `round3-d-final-public-all.log`).
-Complete app build and public native package PASS. Final frozen MCP298/298
-PASS in418.18seconds after the exact final-PNG regression. Fresh final paired
-tarball install passes live Desktop/schema/preview/commit, installed timeline
-PNG equality and APNG/contact-sheet checks. It uses a local core override;
-the published0.7 URL is still a release gate. Older counts below are historical checkpoints. See
-[Desktop follow-up](native-follow-up.md) for the new native evidence and limits.
-
-| Area | Current evidence | Remaining |
+| Area | Evidence | Remaining/limits |
 |---|---|---|
-| Expression language | Closed JSON AST, bounds, typed diagnostics, renderer/SSR integration, fuzz/security contracts | Native acceptance and release packaging |
-| Former (c) visuals | All11 have real-data tool passes, SSR inspection and native static marks/geometry inspection | Native title/bounds and interaction verification; arbitrary area-proportional Euler fitting remains a separate gap |
-| Weighted geometry | Voronoi area/order/lineage tests,50 probes and independent interior coverage; grid contour interpolation/saddle tests | Native resize/filter acceptance |
-| Motion | Ten live-data tool cycles; actual browser-clock APNG; chart retention/handler, frame selection/index, nested formatting and visibility tests | Native acceptance;5000-point60fps; final visual inspection |
-| Template memory | OS/shared-folder library, save/list/read/delete, commit saveAs and collision SDK tests; hardened file boundary | Published-artifact standalone verification |
-| Reference images | Tableau, authored Figma-style mockup and licensed whiteboard photograph: live tool cycles and commits | Native acceptance; mockup outer-card styling remains partial |
+| Core correctness | Private/public1353/1353 tests each PASS;1000valid/1000invalid AST fuzz probes included | Native physical acceptance is separate |
+| Build | Renderer4.40 and complete UI/Fabric/Electron/NSIS build PASS | Installer remains unsigned/default-icon and is not a new installer release |
+| Expressions | All11 former(c) families pass real-data tools/SSR; native static marks inspected | Title/bounds/resize/filter gestures partial or unverified |
+| Motion | Ten real-data cycles; controlled-clock APNG;9focused motion/browser tests PASS | Native motion/export and5000point60fps remain unverified/FAIL |
+| Hidden Sankey | Actual entry-clip regression fails before fix and matches settled static canvas exactly afterwards | Desktop PDF/subscription check unverified |
+| Formatting |71pane properties; independent axes; currency inheritance and named-value fixes tested | Final native currency-axis recheck pending |
+| Memory | OS/shared library; save/list/read/delete/saveAs with hardened file boundary | Shared-folder permissions belong to the user/admin |
+| References | Three real-data reference workflows complete; native static examples inspected | Mockup outer-card fidelity partial |
+| Thumbnails | Full light/dark catalog regeneration in progress with synthetic fixtures | Original before-state screenshots remain historical |
+| Distribution | Core0.7 then matching MCP0.7 prerelease publication in progress | Final real-URL install and published hashes recorded after upload |
 
-Frozen private and public app/core:1333/1333 in117 files each, maxWorkers2,
-cache/round3-c-zoom-core-full-tests.log and public cache/round3-c-zoom-public-full-tests.log.
-Frozen MCP:295/295 in12 files using the canonical npm test command,
-test-results/stress3/round3-c-zoom-mcp-full-tests.log (487.34seconds).
-An earlier direct invocation omitted the existing30second timeout and had
-three5second timeouts (292pass); the failed log is retained, not hidden.
-Full Electron/UI/Fabric/native/NSIS build passed after the last source edit.
-Two intervening full runs were interrupted for excessive concurrent load;
-logs remain and are not passes. Do not treat checkpoint counts as release gates.
+The original PBIP is untouched. All21 owned QA model-definition files remain
+SHA256-identical. Desktop20988/AS62071 was discovered through
+process-workspace-port-file; the report is open and clean. Twenty-four owned
+detail pages isolate the new exercises. Raw schemas, model rows, reference
+photographs and native screenshots remain private QA evidence.
 
-Renderer4.36 packaged successfully after visibility/flow changes and was
-installed only into the owned QA copy. Its21 semantic-model files remain
-SHA256-identical. GUID and semantica.primitiveSpec property remain unchanged.
+Computer Use still cannot connect to its native pipe (os error2), including a
+fresh client reset. Native click/Ctrl-click, slicer/highlight, drill-through,
+report-page/native tooltips, bookmarks and Edit Interactions None are therefore
+UNVERIFIED. Bridge captures have returned partial/blank pages despite the user
+seeing charts; repeated capture was stopped after finding the independently
+reported Microsoft capture-layout issue. No unsupported input workaround is used.
 
-Live model: Desktop57149, process-workspace-port-file discovery. Data queries
-are read-only. Owned report: cache/qa-round3-theme-20261103/Stress3 Theme Light.
-New pages: Stress3, Stress-Motion, Stress-Reference. Original PBIP untouched.
-Some repeat exercise scripts may explicitly reuse the previously retrieved
-schema only after checking the same live Desktop port; previews still query
-the engine. Raw schema/data evidence stays private under MCP test-results.
+Renderer4.40 fixes an actual hidden-Sankey bug: stopAnimation(true) aborted the
+callback removing the temporary entry clip. Trusted normal clip completion now
+runs before flushing; permanent clipping survives. Elements are snapshotted
+before callbacks remove siblings. Browser canvas equality is a real regression
+check, but is not a Desktop gesture/export result.
 
-The owned Desktop report was reopened after the user's closed-window reply.
-Current PID20988/port62071 reports hasUnsavedChanges:false; report-only bridge
-reloads succeeded. Twenty-four detail pages were added to the owned QA report.
-The original report/model is untouched. Eleven expression native captures and
-three reference captures were inspected. Computer Use's refreshed native pipe
-still fails (os error2). The user reports visible foreground charts; the newest
-Sankey bridge capture is blank, so native motion/export acceptance remains open.
+Performance remains FAIL. Normal animated5000point scatter was about20-25RAFfps
+in earlier runs; batch/grouped experiments also failed adoption gates. A final
+Intel UHD620/D3D11 comparison measured idle60.41fps but canvas12.44fps,
+dirty-rectangle canvas12.51fps and SVG10.26fps. All5000points and animation were
+preserved. These are not Power BI host measurements and no experiment is enabled
+in production. See docs/engineering/batch-motion.md.
 
-Aggregate context menus now use an exact shared category identity when
-representable, otherwise a background menu, never an arbitrary first row.
-Host selector/event tests pass; physical drill-through remains unverified.
-Chart retention and browser interpolation capture have automated coverage;
-neither proves native behavior. Actual
-Desktop cross-filter/highlight/bookmark/report-tooltip gestures are unverified.
-
-The 5000-point real-clock canvas baseline FAILS:24.92 RAF fps,72.2ms p95.
-A QA-only batched-path prototype improved this to55.95 RAF fps,18.2ms p95,
-still below the>=57fps threshold. It is not enabled in the product; individual
-styles, identity, resize/export and native interactions require parity tests.
-See [batch-motion design](../../engineering/batch-motion.md). Browser-clock
-APNG captures are not FPS measurements. Do not drop points/disable animation
-to claim a performance pass.
-
-Final unloaded-process repeat also FAILS: idle page54.79 RAF fps, regular
-scatter20.36fps/107.8ms p95, experimental batch55.12fps/18.2ms p95. This laptop's
-idle capture cadence is below60; that neither proves native performance nor
-removes the regular rendering bottleneck. Earlier failures remain in evidence.
-
-Paired local0.7 tarballs passed standalone install, Desktop schema/query,
-browser APNG preview and commit without an app checkout or VILSEM_APP_PATH.
-This used a local core override, not a published0.7 dependency URL. Repeat with
-final artifacts and the real release URL before claiming release installation.
-The final KPI retry passed validate/explain/real-data preview/commit with stat
-records preserving aggregate source IDs and model number formatting.
-Final image review found and fixed MOTION-FORMAT-017: timeline options changing
-only dataZoom now inherit formatted base axes. Seven formatting tests, the full
-suites and a911-row live tool retry pass; settled PNG and browser APNG both show
-currency ticks. The refreshed tarballs passed another isolated live install.
-
-Frozen-source audits: root6moderate; UI0; renderer tooling
-13moderate+4low; MCP lock0; no high/critical. Complete build and21/21model hashes
-passed. The generated installer is unsigned/default-icon and not published.
-Frozen-code paired local tarball standalone install also passed; the production
-release-URL install remains required. MCP still
-uses a local development core link; production URL/lock remains core0.6 until
-core0.7 is actually released. No new public release is claimed.
+Arbitrary exact area-proportional Euler fitting, unshipped geo assets and3D
+remain explicit limits. Venn circles are schematic. Historical605 before-state
+and cross-target image records are not relabelled as current native evidence.
+The latest full MCP count, final distribution URLs/hashes and publication commits
+are recorded in candidate-verification.md after the frozen-source package run.

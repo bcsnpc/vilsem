@@ -32,6 +32,24 @@ Desktop discovery uses CIM to identify `msmdsrv.exe` with a Desktop parent and r
 
 `createMicrosoftLogin()` owns Microsoft authorization URL generation, S256 PKCE, state validation and authorization-code exchange. It exposes `authorizationUrl`, `matchesRedirect(url)` and `completeRedirect(url)`; the app owns its browser surface, and core has no Electron/UI dependency. Duplicate navigation callbacks exchange only once. `createAuth({resource})` supports other Microsoft resources such as Azure Storage while keeping cache scopes separate. Core auth failures preserve the application's AUTH_FAILED classification. Browser completion/cancel/failure handoff tests cover both first login and reauthentication.
 
+## Core0.7 prerelease
+
+Adds the closed JSON expression-series interpreter, bounded geometry/data
+transforms, declarative race/timeline animation, image-statistics utilities and
+renderer4.40. Specifications remain JSON; the package never accepts author
+JavaScript, calls an LLM or writes model definitions. The renderer GUID and
+`objects.semantica.primitiveSpec` property remain unchanged.
+
+The expression grammar and budgets are documented in
+`docs/expression-language.md` in the parent repository. Trusted runtime motion
+helpers use the rendering engine's existing completion callbacks to finish a
+hidden frame, including removing temporary Sankey entry clips; permanent plot
+clips survive. Authored JSON cannot supply those callbacks.
+
+This is an evaluation prerelease. Native physical interactions/export require
+further verification and the5000-point60fps motion target is not met. See the
+Round3 QA ledger and motion benchmark report for measured results and limits.
+
 ## Expressive template format 2
 
 Core 0.3 adds six category slots, ordered sum/lag/share windows, UTC dates, bounded samples, weighted links, hierarchies and facets with bounded repeat expansion. Renderer 4.14 registers native Sankey, sunburst and graph charts and preserves category bindings and transformed selection identities. See the MCP [spec-format reference](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/spec-format.md) and [expressiveness report](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/expressiveness-gaps.md). Templates never execute caller code; custom renderItem is rejected.

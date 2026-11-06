@@ -3,8 +3,29 @@
 export function finishChartFrame(chart){
  const zr=chart.getZr?.(),roots=zr?.storage?.getRoots?.()
  if(!Array.isArray(roots)||typeof zr.flush!=='function')return false
- const seen=new Set(),finish=el=>{if(!el||seen.has(el))return;if(seen.size>=100000)throw Error('Frame completion exceeds100000 elements');seen.add(el);el.stopAnimation?.(null,true);finish(el.getClipPath?.());finish(el.getTextContent?.());finish(el.getTextGuideLine?.())}
- for(const root of roots){finish(root);root.traverse?.(finish)}
+ const seen=new Set(),elements=[],collect=el=>{
+  if(!el||seen.has(el))return
+  if(seen.size>=100000)throw Error('Frame completion exceeds100000 elements')
+  seen.add(el);elements.push(el)
+  collect(el.getClipPath?.());collect(el.getTextContent?.());collect(el.getTextGuideLine?.())
+ }
+ // Completion callbacks can remove siblings. Snapshot before invoking them so
+ // traversal never skips an animated element after an earlier callback runs.
+ for(const root of roots){collect(root);root.traverse?.(collect)}
+ for(const el of elements){
+  // stopAnimation(true) forwards values but ABORTS: Sankey's temporary entry
+  // clip is removed by its completion callback, so aborting keeps labels cut.
+  // Mirror the trusted engine's normal completion using its clip interface.
+  // Never remove arbitrary clip paths: authored/permanent plot clips survive.
+  for(const animator of [...(el.animators||[])]){
+   const clip=animator.getClip?.()
+   if(typeof clip?.onframe==='function'&&typeof clip?.ondestroy==='function'){
+    const animation=clip.animation
+    clip.onframe(1);clip.ondestroy();animation?.removeClip?.(clip)
+   }
+  }
+  el.stopAnimation?.(null,true)
+ }
  zr.flush();return true
 }
 export function createMotionVisibilityController(chart,isVisible=()=>true,{beforePause}={}){

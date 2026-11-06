@@ -11,6 +11,17 @@ it('settles clips and attached text before flushing an offscreen first frame',()
 it('finishes an explicit hidden-frame callback before pausing its animation clock',()=>{
  const order=[],chart={getZr:()=>({animation:{pause:()=>order.push('pause')}}),dispatchAction:()=>order.push('timeline')},controller=createMotionVisibilityController(chart,()=>false,{beforePause:()=>order.push('finish')});controller.sync();expect(order).toEqual(['finish','timeline','pause']);controller.dispose()
 })
+it('completes transient clip callbacks and preserves permanent clipping',()=>{
+ const order=[],permanent={stopAnimation:vi.fn()},clip={onframe:value=>order.push(['frame',value]),ondestroy:()=>order.push(['done']),animation:{removeClip:()=>order.push(['remove'])}},root={animators:[{getClip:()=>clip}],stopAnimation:vi.fn(),getClipPath:()=>permanent},flush=()=>order.push(['flush'])
+ expect(finishChartFrame({getZr:()=>({storage:{getRoots:()=>[root]},flush})})).toBe(true)
+ expect(order).toEqual([['frame',1],['done'],['remove'],['flush']]);expect(root.getClipPath()).toBe(permanent);expect(permanent.stopAnimation).toHaveBeenCalledOnce()
+})
+it('snapshots sibling elements before completion callbacks remove them',()=>{
+ const second={stopAnimation:vi.fn()},children=[],first={animators:[{getClip:()=>({onframe:()=>{},ondestroy:()=>children.splice(0,1)})}],stopAnimation:vi.fn()};children.push(first,second)
+ const root={traverse:visit=>{for(const child of children)visit(child)}}
+ finishChartFrame({getZr:()=>({storage:{getRoots:()=>[root]},flush:()=>{}})})
+ expect(first.stopAnimation).toHaveBeenCalledOnce();expect(second.stopAnimation).toHaveBeenCalledOnce()
+})
 it('releases its paused clock when a retained chart replaces the visibility controller',()=>{
  const clock={pause:vi.fn(),resume:vi.fn()},chart={getZr:()=>({animation:clock}),getOption:()=>({timeline:[{autoPlay:true}]}),dispatchAction:vi.fn()},old=createMotionVisibilityController(chart,()=>false)
  old.sync();old.dispose();old.dispose();expect(clock.resume).toHaveBeenCalledOnce();expect(old.paused).toBe(false);expect(chart.dispatchAction).toHaveBeenCalledExactlyOnceWith({type:'timelinePlayChange',playState:false})
