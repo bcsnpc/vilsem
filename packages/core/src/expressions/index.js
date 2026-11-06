@@ -272,7 +272,10 @@ export function createExpressionRenderer(ast,{path='/renderItem',locale='en-US',
      else if(styles[key]==='string'&&/url\(|javascript:|[;{}<>]/i.test(text(v,p)))throw Error(p+'/style/'+key+': unsafe style string')
     }
     const explicitOpacity=!node.style?.op&&own(node.style||{},'opacity')?ownStyle.opacity:1
-    style.opacity=inheritedOpacity*Math.max(0,Math.min(1,number(explicitOpacity,p+'/style/opacity')))
+    // Noninteractive annotations are visual chrome, not the synthetic row used
+    // to invoke renderItem. Preserve their authored opacity during selection.
+    const selectionOpacity=role==='annotation'&&out.silent===true?1:inheritedOpacity
+    style.opacity=selectionOpacity*Math.max(0,Math.min(1,number(explicitOpacity,p+'/style/opacity')))
     out.style=style
    }
    if(node.children)out.children=node.children.map((c,i)=>render(c,p+'/children/'+i)).filter(Boolean)

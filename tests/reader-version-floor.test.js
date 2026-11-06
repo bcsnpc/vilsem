@@ -4,6 +4,10 @@ import os from'node:os'
 import path from'node:path'
 import{requiredRendererVersion}from'../packages/core/src/pbir/rendererCompatibility.js'
 import{injectVisual,RENDERER_GUID}from'../packages/core/src/pbir/injectVisual.js'
+it('requires renderer42 for explicit or parameterized silent annotation opacity',()=>{
+ for(const silent of [true,'$param.decorative',{op:'eq',args:[1,1]}])expect(requiredRendererVersion({type:'custom',specVersion:'0.7',template:{template:{series:[{renderItem:{language:'vilsem-expression',root:{type:'rect',role:'annotation',silent}}}]}}})).toBe('4.42.0.0')
+ expect(requiredRendererVersion({type:'custom',specVersion:'0.7',template:{template:{series:[{renderItem:{language:'vilsem-expression',root:{type:'rect',role:'annotation',silent:false}}}]}}})).toBe('4.40.0.0')
+})
 it('requires renderer41 for responsive expression panels even when the spec is older',()=>{
  for(const op of ['viewportWidth','viewportHeight'])expect(requiredRendererVersion({type:'custom',specVersion:'0.7',template:{template:{series:[{type:'custom',renderItem:{language:'vilsem-expression',root:{type:'rect',shape:{width:{op,args:[]}}}}}]}}})).toBe('4.41.0.0')
 })

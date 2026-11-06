@@ -7,6 +7,13 @@ const label=x=>ast({type:'text',style:{text:x}})
 const api={value:i=>[12,.2345,'Bikes'][i],coord:p=>p.map(n=>n*10),size:p=>p.map(n=>n*5),visual:()=> '#123456',style:()=>({fill:'#123456',opacity:1})}
 const draw=(a,options={},customApi=api)=>createExpressionRenderer(a,options)({dataIndex:3},customApi)
 describe('bounded expression operations',()=>{
+ it('keeps explicitly silent annotation decoration stable while data marks dim',()=>{
+  const a=rect(0);a.root.role='annotation';a.root.silent=true;a.root.style.opacity=.6
+  const selectedApi={...api,style:()=>({fill:'#abcdef',opacity:.25})}
+  expect(draw(a,{},selectedApi).style.opacity).toBe(.6)
+  a.root.silent=false;expect(draw(a,{},selectedApi).style.opacity).toBe(.15)
+  a.root.silent=true;a.root.role='mark';expect(draw(a,{},selectedApi).style.opacity).toBe(.15)
+ })
  it('reads only trusted viewport dimensions and recomputes them after resize',()=>{
   let width=900,height=550
   const a=ast({type:'rect',shape:{x:12,y:12,width:op('max',0,op('sub',op('viewportWidth'),24)),height:op('max',0,op('sub',op('viewportHeight'),24)),r:12},style:{fill:'#ffffff'}})

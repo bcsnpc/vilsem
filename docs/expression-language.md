@@ -87,6 +87,14 @@ contains the complete JSON AST. Keep decorative series `silent:true`, disable
 their tooltip, and put them below data marks. The panel does not supply data
 or change the plot's axes, values, identities or field bindings.
 
+Core0.7.2 / renderer4.42 keeps an explicitly silent annotation leaf
+(`"role":"annotation","silent":true`) at its authored opacity during host
+selection/highlight. This is appropriate for a viewport background panel whose
+single synthetic invocation row is not a business datum. Ordinary marks,
+interactive annotations and labels retain data selection dimming. Authored
+opacity still applies; groups do not implicitly change their children's roles.
+The reader floor also covers a parameterized/conditional silent flag.
+
 ## Graphic elements
 
 Output types: rect(x,y,width,height,optional r);circle(cx,cy,r);polygon(points);polyline(points,optional smooth);path(pathData,optional x/y/width/height);text;group(children). Shapes use the shape object. Required shape fields are checked. Width/height/radius must be nonnegative. Each coordinate/transform is finite and bounded in absolute value by1,000,000.

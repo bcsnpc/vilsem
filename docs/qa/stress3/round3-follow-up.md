@@ -1,6 +1,6 @@
 # Round3 follow-up: responsive reference panels
 
-The0.7 evaluation releases remain immutable. This follow-up prepares core/MCP
+The0.7.0 evaluation releases remain immutable. This follow-up publishes core/MCP
 0.7.1 and renderer4.41, with the same GUID and legacy format-pane property.
 It does not promote the evaluation releases to production acceptance.
 
@@ -46,7 +46,7 @@ batch prototype is enabled to relabel this failure.
 Sources: https://echarts.apache.org/handbook/en/how-to/animation/transition/
 and https://github.com/apache/echarts/issues/21434 .
 
-Final test/build, package and live-tool results will be appended after runs.
+Test/build, package and live-tool results are recorded below.
 
 ## Core candidate verification (2026-11-06)
 
@@ -57,3 +57,45 @@ Both built-in computer-use interfaces were checked. Both fail to connect to the 
 Live candidate connect_model uses AS62071 via process-workspace-port-file; get_schema returns13tables/39measures. Validate, explain, real6row preview, read, dry-run update and saved update PASS on the owned Figma reference visual. The initial120second schema request timed out; the retry used the previous live-QA600second budget and succeeded. Neither request changed the model. All21model hashes remain unchanged. Native rendering/gestures remain UNVERIFIED.
 
 A raster repeat probe produced six byte-identical PNGs for the same SVG. Raw real-model previews remain private. MCP full-suite finalization and public-package acceptance follow the core release.
+
+##0.7.2 correctness follow-up
+
+Final dark-thumbnail inspection found REFERENCE-CONTRAST-027: the intentionally
+light reference card inherited near-white axes in a dark report theme. The
+MCP template now explicitly colors its category/value labels and axis name.
+The rendered-text regression passes both themes; the0.7.1 release notes disclose
+the issue and its artifacts remain immutable.
+
+Selection review also found REFERENCE-SELECTION-028. The native adapter styles
+all series data, including a decorative panel's synthetic invocation row.
+Core0.7.1 then multiplied that inherited opacity into the panel. The actual
+browser reproducer measured panel opacity0.25 with ordinary bars0.25/1; a
+separate core test reproduced authored0.6 becoming0.15. Both fail before the
+shared-interpreter fix and pass afterwards. Explicitly silent annotation leaves
+now retain authored leaf opacity; ordinary/interactive marks still dim. The
+actual browser also verifies that clicking the panel remains a blank-area
+click, permitting the native adapter's existing clear path.
+
+Core0.7.2 / renderer4.42 carries that narrow rule and a reader floor for literal
+or parameterized/conditional silent annotations. Viewport operations alone
+retain their4.41 floor; other0.7 specs retain4.40. GUID and legacy pane property
+are unchanged. Private/public core1357tests each PASS; full app build exits0,
+including native/UI/Fabric/Electron/NSIS. Independently built renderer42 resource
+contents match. The owned report's resource update preserves21model hashes.
+MCP's full contrast-only checkpoint passes301tests on public core0.7.1; final
+301-test acceptance against actual public core0.7.2 follows publication.
+
+The native fixtures/checklist are now prepared in the owned QA copy: six new
+pages,19visuals (4Vilsem/15native), schema/bounds/reference checks PASS,
+report settings and existing pages/visuals preserved during fixture creation,
+21model files unchanged and clean report-only reload accepted. Physical
+interaction, paint, bookmark capture and export acceptance remain UNVERIFIED.
+See native-interaction-checklist.md. No native authoring operation was added
+to MCP and no fake bookmark selection state was written.
+
+The isolated real-clock repeat still FAILS: idle60.42RAFfps/p95=16.9ms;
+canvas11.22/266.5ms; dirty rectangle12.52/233.3ms; SVG8.62/250ms. All5000points
+and animation remain enabled. This bypasses the spec interpreter and is not a
+Power BI host measurement. npm's latest ECharts remains6.1.0 as of this check;
+no dependency upgrade or configuration-only fix is available from that check.
+Rejected batching remains disabled pending interaction/style/native parity.

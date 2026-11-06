@@ -18,6 +18,10 @@ Structured `buildVisualDax` bindings qualify and escape model identifiers. `prep
 
 Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.6.0/vilsem-core-0.6.0.tgz`.
 
+That installs the stable0.6 connection API. For the current expression/panel
+evaluation features use
+`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.7.2/vilsem-core-0.7.2.tgz`.
+
 ```js
 import { createConnector } from '@vilsem/core/connect';
 const models = createConnector();
@@ -107,3 +111,5 @@ the primary measure uses General. Category labels keep their configured meaning.
 `@vilsem/core/formatting/pane` defines69common properties and applies authored spec.formatting with separate host overrides. The shared contract covers title, text, palette, labels, legend, independent axes, lines, theme/background and border. Manual properties win individually; resetting them must be explicit. The native package is renderer4.35 with the existing GUID/property unchanged. DOM adapters expose only their implemented Appearance/Title/Border subset. Expression geometry, motion and shared user-template storage remain Round3 GroupC work.
 
 Core0.7.1 adds bounded viewportWidth/viewportHeight expression operations for responsive decorative panels. They require renderer4.41, expose no DOM/host reference, and retain the closed grammar and execution budgets. Other0.7 specs keep their4.40 floor. Native physical acceptance and the5000-point60fps target remain incomplete/failed; this remains an evaluation release.
+
+Core0.7.2 / renderer4.42 preserves authored opacity for explicitly silent annotation leaves during selection/highlight, while ordinary data marks keep their existing dimming behavior. This prevents decorative viewport panels from inheriting a synthetic row selection. The flag combination has its own reader floor; viewport operations alone still require4.41.
