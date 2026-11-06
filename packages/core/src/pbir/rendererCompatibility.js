@@ -20,6 +20,7 @@ export function requiredRendererVersion(spec, bindings = {}) {
   const templateMeasures=Object.values(spec?.template?.slots || {}).filter(slot=>slot?.kind==='measure').reduce((count,slot)=>count+slotCount(slot.count),0)
   if (Object.keys(scopedMeasuresOf(spec)).length || Math.max(templateMeasures,bindings.measures?.length || 0) > 3) require(15)
   const walk = value => {
+    if(['viewportWidth','viewportHeight'].includes(value?.op))require(41)
     if(value?.type==='custom'&&value.renderItem?.language==='vilsem-expression')require(36)
     if(value&&typeof value==='object'&&(Object.hasOwn(value,'timeline')||Object.hasOwn(value,'universalTransition')))require(36)
     if(typeof value==='string'&&/^\$theme\.paletteText(?:\.\d+)?$/.test(value))require(34)

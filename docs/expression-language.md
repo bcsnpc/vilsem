@@ -68,6 +68,8 @@ Examples below use ordinary JSON; value(i) in descriptions means {op:"value",arg
 | colorInterpolate | ["#000000","#ffffff",0.5] ->rgba midpoint;t clamps0..1 |
 | colorScale | [5,0,10,["#000000","#ffffff"]] ->midpoint;palette1..32hex/rgb/rgba colours |
 | dataIndex | [] ->params.dataIndex;no other params property is exposed |
+| viewportWidth | [] ->api.getWidth();current visual width in logical pixels,0..1000000 |
+| viewportHeight | [] ->api.getHeight();current visual height in logical pixels,0..1000000 |
 | value | [0] ->api.value(0);integer dimensions0..255 |
 | coord | [[x,y]] ->api.coord([x,y]);finite output pair |
 | size | [[w,h]] or [[w,h],[x,y]] ->api.size range/optional anchor |
@@ -75,6 +77,15 @@ Examples below use ordinary JSON; value(i) in descriptions means {op:"value",arg
 | style | [] ->a filtered copy of api.style();no host object/reference escapes |
 
 Use nested operation objects rather than textual arithmetic. Conditional branches are statically checked even when unreachable. API values are runtime checked because their types depend on real data; wrong types, division by zero, invalid coordinates and unknown tokens produce errors rather than invented zero values.
+
+Viewport dimensions require core0.7.1 / renderer4.41 and are read again on each
+render, including resize. They expose only bounded numbers, never a window,
+DOM node, host object or additional property access. For a responsive inset
+panel, use `min(25, viewportWidth/4, viewportHeight/4)` for its inset and subtract
+twice that inset from each dimension. The shipped reference Figma example
+contains the complete JSON AST. Keep decorative series `silent:true`, disable
+their tooltip, and put them below data marks. The panel does not supply data
+or change the plot's axes, values, identities or field bindings.
 
 ## Graphic elements
 

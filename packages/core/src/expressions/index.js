@@ -12,7 +12,7 @@ const signatures={
  add:[2,16,'number'],sub:[2,2,'number'],mul:[2,16,'number'],div:[2,2,'number'],mod:[2,2,'number'],pow:[2,2,'number'],neg:[1,1,'number'],abs:[1,1,'number'],sqrt:[1,1,'number'],floor:[1,1,'number'],ceil:[1,1,'number'],round:[1,1,'number'],sin:[1,1,'number'],cos:[1,1,'number'],min:[1,16,'number'],max:[1,16,'number'],clamp:[3,3,'number'],
  eq:[2,2,'boolean'],ne:[2,2,'boolean'],lt:[2,2,'boolean'],lte:[2,2,'boolean'],gt:[2,2,'boolean'],gte:[2,2,'boolean'],and:[2,16,'boolean'],or:[2,16,'boolean'],not:[1,1,'boolean'],if:[3,3,'unknown'],coalesce:[2,8,'unknown'],
  concat:[1,32,'string'],string:[1,1,'string'],number:[1,1,'number'],length:[1,1,'number'],at:[2,2,'unknown'],format:[2,2,'string'],formatNumber:[2,2,'string'],formatDate:[2,2,'string'],colorInterpolate:[3,3,'string'],colorScale:[4,4,'string'],
- dataIndex:[0,0,'number'],value:[1,1,'unknown'],coord:[1,1,'array'],size:[1,2,'array'],visual:[1,1,'string'],style:[0,0,'style'],
+ dataIndex:[0,0,'number'],viewportWidth:[0,0,'number'],viewportHeight:[0,0,'number'],value:[1,1,'unknown'],coord:[1,1,'array'],size:[1,2,'array'],visual:[1,1,'string'],style:[0,0,'style'],
 }
 const shapes={rect:{x:'number',y:'number',width:'number',height:'number',r:'number'},circle:{cx:'number',cy:'number',r:'number'},polygon:{points:'array'},polyline:{points:'array',smooth:'number'},path:{pathData:'string',x:'number',y:'number',width:'number',height:'number'},text:{},group:{}}
 const styles={fill:'string',stroke:'string',lineWidth:'number',strokeNoScale:'boolean',opacity:'number',fontFamily:'string',fontSize:'number',fontWeight:'scalar',text:'scalar',x:'number',y:'number',width:'number',height:'number',lineHeight:'number',align:'string',verticalAlign:'string',overflow:'string',backgroundColor:'string',lineDash:'array',lineCap:'string',lineJoin:'string'}
@@ -200,6 +200,13 @@ export function createExpressionRenderer(ast,{path='/renderItem',locale='en-US',
    if(op==='or'){for(let i=0;i<args.length;i++)if(boolean(arg(i),p))return true;return false}
    if(op==='not')return !boolean(arg(0),p)
    if(op==='dataIndex')return number(params.dataIndex,p)
+   if(op==='viewportWidth'||op==='viewportHeight'){
+    const getter=op==='viewportWidth'?'getWidth':'getHeight'
+    if(typeof api[getter]!=='function')throw Error(p+': viewport dimensions are unavailable')
+    const value=number(api[getter](),p)
+    if(value<0||value>EXPRESSION_LIMITS.coordinate)throw Error(p+': viewport dimension outside0..'+EXPRESSION_LIMITS.coordinate)
+    return value
+   }
    if(op==='value'){const index=n(0);if(!Number.isInteger(index)||index<0||index>255)throw Error(p+': invalid data dimension');return api.value(index)}
    if(op==='visual')return color(api.visual('color'),p)
    if(op==='style')return {...baseStyle}

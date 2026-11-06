@@ -85,7 +85,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.0.1",
-    "@vilsem/core": "0.7.0",
+    "@vilsem/core": "0.7.1",
     "adm-zip": "0.6.1",
     "axios": "^1.8.4",
     "dotenv": "^16.5.0",

@@ -175,3 +175,8 @@ per MCP process. Browser dependencies and the locally installed browser still
 need normal security updates; this is not isolation from a compromised browser
 binary or arbitrary JavaScript supplied by a caller outside the JSON boundary.
 Controlled-clock screenshots demonstrate motion, not real-time performance.
+
+The0.7.1 expression viewportWidth/viewportHeight operations expose only finite
+logical-pixel dimensions from ECharts, bounded to0..1000000. They accept no
+arguments and do not expose the chart, DOM, host or arbitrary API/property
+access. The same AST validation and execution/element budgets still apply.

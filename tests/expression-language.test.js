@@ -7,6 +7,20 @@ const label=x=>ast({type:'text',style:{text:x}})
 const api={value:i=>[12,.2345,'Bikes'][i],coord:p=>p.map(n=>n*10),size:p=>p.map(n=>n*5),visual:()=> '#123456',style:()=>({fill:'#123456',opacity:1})}
 const draw=(a,options={},customApi=api)=>createExpressionRenderer(a,options)({dataIndex:3},customApi)
 describe('bounded expression operations',()=>{
+ it('reads only trusted viewport dimensions and recomputes them after resize',()=>{
+  let width=900,height=550
+  const a=ast({type:'rect',shape:{x:12,y:12,width:op('max',0,op('sub',op('viewportWidth'),24)),height:op('max',0,op('sub',op('viewportHeight'),24)),r:12},style:{fill:'#ffffff'}})
+  expect(validateExpression(a).valid).toBe(true)
+  const render=createExpressionRenderer(a),viewport={...api,getWidth:()=>width,getHeight:()=>height}
+  expect(render({dataIndex:0},viewport).shape).toMatchObject({width:876,height:526})
+  width=240;height=120
+  expect(render({dataIndex:0},viewport).shape).toMatchObject({width:216,height:96})
+  width=0;height=0
+  expect(render({dataIndex:0},viewport).shape).toMatchObject({width:0,height:0})
+  expect(()=>render({dataIndex:0},api)).toThrow(/viewport dimensions are unavailable/)
+  for(const bad of [-1,Infinity,NaN,1000001])expect(()=>render({dataIndex:0},{...viewport,getWidth:()=>bad})).toThrow()
+  expect(validateExpression(rect(op('viewportWidth',1))).errors[0].path).toContain('/args')
+ })
  const numeric=[['add',[2,3],5],['sub',[8,3],5],['mul',[2,3,4],24],['div',[9,3],3],['mod',[9,4],1],['pow',[2,3],8],['neg',[3],-3],['abs',[-3],3],['sqrt',[16],4],['floor',[2.7],2],['ceil',[2.1],3],['round',[2.6],3],['min',[2,1,3],1],['max',[2,1,3],3],['clamp',[10,0,5],5],['sin',[0],0],['cos',[0],1]]
  it.each(numeric)('%s evaluates finite arithmetic', (name,args,expected)=>{const a=rect(op(name,...args));expect(validateExpression(a).valid).toBe(true);expect(draw(a).shape.x).toBe(expected)})
  it.each([['eq',1,1,true],['ne',1,2,true],['lt',1,2,true],['lte',2,2,true],['gt',2,1,true],['gte',2,2,true]])('%s compares values',(name,a,b,expected)=>expect(draw(rect(op('if',op(name,a,b),4,8))).shape.x).toBe(expected?4:8))

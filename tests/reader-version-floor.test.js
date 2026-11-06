@@ -4,6 +4,9 @@ import os from'node:os'
 import path from'node:path'
 import{requiredRendererVersion}from'../packages/core/src/pbir/rendererCompatibility.js'
 import{injectVisual,RENDERER_GUID}from'../packages/core/src/pbir/injectVisual.js'
+it('requires renderer41 for responsive expression panels even when the spec is older',()=>{
+ for(const op of ['viewportWidth','viewportHeight'])expect(requiredRendererVersion({type:'custom',specVersion:'0.7',template:{template:{series:[{type:'custom',renderItem:{language:'vilsem-expression',root:{type:'rect',shape:{width:{op,args:[]}}}}}]}}})).toBe('4.41.0.0')
+})
 it('requires a reader that understands the persisted0.7 semantic version even for an ordinary bar',()=>{
  expect(requiredRendererVersion({type:'bar',canvasTheme:'light',specVersion:'0.7'})).toBe('4.40.0.0')
  expect(requiredRendererVersion({type:'bar',canvasTheme:'light',specVersion:'0.6'})).not.toBe('4.40.0.0')
