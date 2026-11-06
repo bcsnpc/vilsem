@@ -2,7 +2,7 @@
 
 Round 3 evaluation patches are published: core 0.7.2 / renderer 4.42 and MCP 0.7.3. See [current tests and acceptance limits](docs/qa/stress3/round3-follow-up.md). Native host checks remain blocked and the animated 5,000-point frame-rate target fails; this is not production sign-off.
 
-To test another report on another Windows machine, follow the [fresh-machine installation and from-scratch authoring walkthrough](https://github.com/bcsnpc/vilsem-mcp#fresh-windows-machine-recommended-installation). No Vilsem app checkout is required.
+To test another report on another Windows machine, follow the [fresh-machine installation and from-scratch authoring walkthrough](https://github.com/bcsnpc/vilsem-mcp#fresh-windows-machine-recommended-installation). No Vilsem app checkout is required. The same MCP server supports Claude Code, Claude Desktop and Codex; read the [current report/visual limitations](https://github.com/bcsnpc/vilsem-mcp#current-report-and-visual-limitations) and [ten generic prompt recipes](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/author-from-scratch.md) before testing your own model.
 
 Engineering audit: see the [verified fixes and remaining work](docs/qa/fix-status.md), [audit report](docs/qa/full-audit-report.md),
 [current architecture](docs/architecture.md), and [tested regression status](docs/qa/regression-status.md).
