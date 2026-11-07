@@ -17,7 +17,8 @@ Package installation does not replace existing report resources. Save Desktop wo
 - Additional before/after browser matrix: 24/24 cases passed against actual 4.42 and 4.43 bundles.
 - Desktop: actual 4.42 KPI hero, leaderboard and calendar baselines captured in tool transcript. Manual import offered 4.42 -> 4.43, completed, saved and reopened. All three render real values afterward. SVG selected through the new format dropdown renders the calendar, responds to zoom, and opens native Include/Exclude context menu. A native tooltip was observed on canvas.
 - Owned QA model: all 21 baseline model files remain byte-identical. Original source report/model folders were not edited.
-- MCP final package/client acceptance is recorded separately in its release report.
+- MCP: final public-core 0.8 full suite 338/338 PASS across 17 files. Fresh packed installation, CLI/stdIO/resource checks and actual Claude Code initialization plus all three resource reads PASS. No home skill-folder changes during npm install.
+- Fabric Service: a separate six-page canvas/SVG QA report was successfully created with real configured-model data (4 categorical rows, 45 calendar dates), without model edits. Browser access host is unavailable; Service rendering remains unverified pending manual check.
 
 ## Performance and unverified acceptance
 
