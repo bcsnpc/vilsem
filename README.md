@@ -2,6 +2,40 @@
 
 Current evaluation: core 0.8 / renderer 4.43 and MCP 0.8 add packaged agent skills, zoom-aware canvas and optional SVG. See [changes, upgrade steps and verification limits](docs/qa/skill-sharpness-080.md). Dense-chart performance and full native/Service acceptance remain incomplete; this is not production sign-off.
 
+## Current release acceptance and limitations
+
+**MCP 0.8.0 / core 0.8.0 / renderer 4.43.0.0 are evaluation prereleases, not production or Power BI certification sign-off.** This does not release a new signed Electron installer. For agent installation and the full tested/untested matrix, use the [MCP README](https://github.com/bcsnpc/vilsem-mcp#release-status-08-evaluation).
+
+### What was checked
+
+| Scope | Verified evidence |
+| --- | --- |
+| Automated regression | App/core: 1,367 tests per private/public checkout (118 files). MCP: 338 tests (17 files), including 20 actual packaged-renderer browser tests. These counts are not exhaustive product acceptance. |
+| Packaging and onboarding | Public MCP archive/install/stdIO/skill CLI/resource checks passed; an actual Claude Code session received instructions and read three resources. All client UI versions/other machines were not certified. |
+| Desktop | Renderer 4.42-to-4.43 import/save/reopen; real-data hero, leaderboard and calendar; selected SVG mode/context/zoom and canvas tooltip checks. The 21-file QA model baseline remained unchanged. |
+| Power BI Service | Six hero/leaderboard/calendar comparison pages in canvas/SVG at Edge browser 100%/150%; hero and leaderboard values reconciled to live DAX. Leaderboard selection/dimming/clear, native tooltip and Include/Exclude menu presence checked on both painters. |
+| Animation | Real-data annual timeline examples advanced in Service. A separate standard bar/line/donut/scatter page uses fixed data and entrance/update motion; actual-browser previews passed and Service re-entry captured partial line/scatter animation before settling. |
+
+### Known issues and incomplete checks
+
+| Area | Current limitation / outstanding acceptance |
+| --- | --- |
+| Dense animation | **FAIL:** the 5,000-point smooth-motion target was not met. One actual-bundle browser run measured old canvas 11.84 fps, new canvas 9.07, SVG 4.11; these are not Power BI host frame-rate guarantees. |
+| Sharpness | Small canvas labels can still look soft at small Fit-to-page scales. SVG looked cleaner in the inspected layouts; universal equal-to-native sharpness is not verified. |
+| Formatting | The separate summary `*Label` format issue remains open. Every visual property/font/color/axis/legend/label setting and manual reset combination has not been exhaustively tested. |
+| Data and clipping | Full edge-data, long-text, Unicode, dense-category, tiny-size, extreme-aspect-ratio and tooltip-edge coverage is incomplete. |
+| Native interactions | Complete cross-filter/highlight tests with native visuals/slicers, physical Ctrl-click, context action results, drill-through and report-page tooltips remain partial/unverified. Menu presence is not proof that every action works. |
+| State and recovery | Bookmarks, selection restoration across all transforms, save/reopen, timeline state, undo/recovery and concurrent Desktop/external edits need broader native testing. |
+| Scaling/performance | Browser zoom 100%/150% was checked; Windows display scaling 100%/150%, multiple monitors/DPIs, measured <300 ms zoom recovery, long sessions and frame-rate budgets are separate incomplete checks. |
+| Output parity | Every visual/state in Desktop, Service, web, a deployed Fabric app, PDF/PowerPoint/images/subscriptions/printing has not been certified. A Fabric report API upload is not a Fabric app runtime test. Static outputs do not promise animation. |
+| Release hardening | Full application dependency remediation, signed/branded installer readiness, security/accessibility review and Power BI certification remain outstanding. An isolated MCP npm audit 0 does not certify the entire app. |
+
+Canvas is the default drawing mode. SVG is an optional drawing mode for the same spec/bindings, available in **Power BI > Format visual > Appearance > Render mode** for Vilsem Renderer 4.43+. It is not a separate chart type or a control for all native Power BI visuals. Some trail/blend effects require canvas and produce an explicit fallback warning. Ordinary entrance/update animation does not require a race/timeline.
+
+Existing reports retain their registered renderer: installing a new core/MCP alone does not upgrade them. With no pending external changes, import the bundled `renderer.pbiviz` in Desktop, accept Update, save, close and reopen. Preserve the GUID and `semantica.primitiveSpec` property. Save Desktop work **before** external edits; after external edits, reload before saving stale Desktop state.
+
+The MCP authors Vilsem custom visuals in existing enhanced PBIR pages; it does not edit native visuals, slicers, themes, bookmarks or models, create pages, or patch PBIX binaries. QA page preparation and Service publishing were separate orchestration steps, not new MCP tools. For detailed evidence, see [the release QA record](docs/qa/skill-sharpness-080.md), [regression status](docs/qa/regression-status.md), and the [MCP acceptance checklist](https://github.com/bcsnpc/vilsem-mcp#acceptance-checklist-for-your-own-report). Use a recoverable report copy and verify matching filter context/numbers/interactions on the actual target.
+
 To test another report on another Windows machine, follow the [fresh-machine installation and from-scratch authoring walkthrough](https://github.com/bcsnpc/vilsem-mcp#fresh-windows-machine-recommended-installation). No Vilsem app checkout is required. The same MCP server supports Claude Code, Claude Desktop and Codex; read the [current report/visual limitations](https://github.com/bcsnpc/vilsem-mcp#current-report-and-visual-limitations) and [ten generic prompt recipes](https://github.com/bcsnpc/vilsem-mcp/blob/main/docs/author-from-scratch.md) before testing your own model.
 
 Engineering audit: see the [verified fixes and remaining work](docs/qa/fix-status.md), [audit report](docs/qa/full-audit-report.md),
@@ -103,7 +137,7 @@ The only network calls are the ones you'd make anyway, to services you already h
 
 ## Install
 
-**Download** — grab the latest build from [Releases](../../releases). Windows only for now; other platforms are untested.
+**Download** — grab the latest build from [desktop app releases](https://github.com/bcsnpc/vilsem/releases). Windows only for now; other platforms are untested. MCP/core 0.8 tarballs are separate evaluation packages and do not contain a new signed Electron installer.
 
 **From source**
 

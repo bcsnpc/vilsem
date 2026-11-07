@@ -2,6 +2,8 @@
 
 Current evaluation package: core **0.8.0 / renderer 4.43**, paired with MCP **0.8.0**. App/core suites each pass 1,367 tests. Native upgrade and real-data rendering were checked; dense-chart performance and the complete native/Service acceptance matrix remain incomplete. See [sharpness changes and evidence](../../docs/qa/skill-sharpness-080.md). Earlier version-specific sections below are historical.
 
+For the current detailed tested/partial/untested checklist and known failures, read the [repository release acceptance section](../../README.md#current-release-acceptance-and-limitations) and the [MCP release matrix](https://github.com/bcsnpc/vilsem-mcp#what-was-verified-for-08). The full native interaction/formatting/clipping/scaling/export matrix, dense-motion target and summary Label issue are not closed. Canvas is the default; SVG is optional. Ordinary entrance animation and timeline playback are separate behaviors.
+
 Shared, headless Vilsem visual primitives, declarative templates, DAX/row helpers, spec serialization and PBIR operations. The package contains no Electron or React imports and requires no browser globals.
 
 Run `npm run core:build` from the workspace root before importing compiled ECharts compositions. `npm run powerbi:build` builds the renderer and refreshes `assets/renderer.pbiviz`. The root application build includes the workspace package in the Electron archive.
