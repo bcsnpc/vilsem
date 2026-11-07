@@ -31,4 +31,4 @@ Not verified: native Windows 100%/150% scaling matrix beside native comparison v
 - [Core 0.8 evaluation](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.8.0) includes renderer 4.43.
 - [MCP 0.8 evaluation](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.8.0) uses the immutable public core archive. Public MCP archive download matches SHA256 `ec62ad8aedfec177b976ff16d74cad8e15558bb19594470907811927ccfeec6b`; installation and actual stdio/three-resource/CLI smoke checks from that public archive passed with npm audit 0. Source changes are merged to each repository's main branch. Existing release assets/tags were preserved.
 
-Service manual confirmation is pending; a user seeing the three-page Desktop report is not evidence of six-page Service rendering.
+Service manual confirmation (2026-11-06): the user confirmed seeing all six pages in the separate Service QA report. This confirms page availability by user observation; it does not independently verify numeric correctness, every chart element, zoom 100%/150%, or interactions. Automated Service inspection remains unavailable.
