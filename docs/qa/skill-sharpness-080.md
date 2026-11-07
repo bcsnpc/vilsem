@@ -25,3 +25,10 @@ Package installation does not replace existing report resources. Save Desktop wo
 Actual packaged native bundle, headless Edge, 5,000 scatter marks, host scale 1.5, device DPR 1, animation enabled and real frame clock: 4.42 canvas 11.84 RAF fps / 516 ms p95; 4.43 canvas 9.07 / 816 ms; 4.43 SVG 4.11 / 1,216 ms. All 5,000 marks remain. Canvas backing DPR rises from 1 to 1.5, trading raster work for sharpness. This single machine/run is not a robust benchmark, and the no-noticeable-slowdown target has NOT passed. Do not advertise 60 fps or production performance.
 
 Not verified: native Windows 100%/150% scaling matrix beside native comparison visuals; measured native <300 ms response/no-flicker across zoom gestures; full native Ctrl-click/filter matrix for both painters; Power BI Service at browser zoom 100%/150%. Existing broader Round 3 acceptance limits remain until explicitly retested. Browser emulation does not close those items.
+
+## Published packages
+
+- [Core 0.8 evaluation](https://github.com/bcsnpc/vilsem/releases/tag/core-v0.8.0) includes renderer 4.43.
+- [MCP 0.8 evaluation](https://github.com/bcsnpc/vilsem-mcp/releases/tag/v0.8.0) uses the immutable public core archive. Public MCP archive download matches SHA256 `ec62ad8aedfec177b976ff16d74cad8e15558bb19594470907811927ccfeec6b`; installation and actual stdio/three-resource/CLI smoke checks from that public archive passed with npm audit 0. Source changes are merged to each repository's main branch. Existing release assets/tags were preserved.
+
+Service manual confirmation is pending; a user seeing the three-page Desktop report is not evidence of six-page Service rendering.
