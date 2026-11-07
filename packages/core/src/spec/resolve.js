@@ -13,6 +13,7 @@ import {applyAnimation} from '../templates/animation.js'
 export function resolveVisualSpec(spec, rows = [], context = {}) {
   if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw Error('spec must be an object')
   spec=migrate(spec)
+  if(spec.config?.renderer!==undefined&&!['canvas','svg'].includes(spec.config.renderer))throw Error('/config/renderer: renderer must be canvas or svg')
   const formattingErrors=paneValidationErrors(spec.formatting)
   if(formattingErrors.length)throw Error(formattingErrors.map(e=>`${e.path}: ${e.message}`).join('\n'))
   const pane=effectivePaneObjects(spec,context.formatPaneOverrides)

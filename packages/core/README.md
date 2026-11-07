@@ -1,6 +1,6 @@
 # @vilsem/core
 
-Current evaluation package: core **0.7.2 / renderer 4.42**, paired with MCP **0.7.3**. Private/public app-core suites each pass 1,357 tests; MCP passes 311. Native host acceptance remains blocked and the animated 5,000-point frame-rate target fails. See the repository Round 3 follow-up for live-tool, package and compatibility evidence. Earlier version-specific sections below are historical.
+Current evaluation package: core **0.8.0 / renderer 4.43**, paired with MCP **0.8.0**. App/core suites each pass 1,367 tests. Native upgrade and real-data rendering were checked; dense-chart performance and the complete native/Service acceptance matrix remain incomplete. See [sharpness changes and evidence](../../docs/qa/skill-sharpness-080.md). Earlier version-specific sections below are historical.
 
 Shared, headless Vilsem visual primitives, declarative templates, DAX/row helpers, spec serialization and PBIR operations. The package contains no Electron or React imports and requires no browser globals.
 
@@ -22,7 +22,7 @@ Install: `npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0
 
 That installs the stable0.6 connection API. For the current expression/panel
 evaluation features use
-`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.7.2/vilsem-core-0.7.2.tgz`.
+`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.0/vilsem-core-0.8.0.tgz`.
 
 ```js
 import { createConnector } from '@vilsem/core/connect';
@@ -115,3 +115,8 @@ the primary measure uses General. Category labels keep their configured meaning.
 Core0.7.1 adds bounded viewportWidth/viewportHeight expression operations for responsive decorative panels. They require renderer4.41, expose no DOM/host reference, and retain the closed grammar and execution budgets. Other0.7 specs keep their4.40 floor. Native physical acceptance and the5000-point60fps target remain incomplete/failed; this remains an evaluation release.
 
 Core0.7.2 / renderer4.42 preserves authored opacity for explicitly silent annotation leaves during selection/highlight, while ordinary data marks keep their existing dimming behavior. This prevents decorative viewport panels from inheriting a synthetic row selection. The flag combination has its own reader floor; viewport operations alone still require4.41.
+
+
+## Native render surface (0.8)
+
+`@vilsem/core/rendering` exports the pure surface policy. Canvas uses bounded, zoom-aware DPR; `config.renderer:"svg"` selects SVG. Desktop Appearance > Render mode overrides the spec. Trail/blend effects fall back with a warning. See the linked verification report for upgrade instructions and incomplete performance/host checks.

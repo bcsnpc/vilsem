@@ -1,3 +1,4 @@
+import * as renderingSurface from '../packages/core/src/shared/renderingSurface.js'
 import { prepareVisualRows, rowsFromCategorical, normaliseRows } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
 import {migrate,CURRENT_SPEC_VERSION} from '@vilsem/core/spec/migrate'
@@ -24,15 +25,16 @@ import { secondaryAxisMinimumWidth, scrollableChartTooltip } from '../ui/src/app
 const source = fs.readFileSync('vilsem-renderer/src/visual.ts', 'utf8')
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
 
-function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories'], configOverrides = {}) {
+function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories'], configOverrides = {}, surfaceWindow:any=null) {
   const frames=new Map<number,Function>();let nextFrame=0
   const events: Record<string, Function> = {}, zrEvents: Record<string, Function> = {}
   const chart = { getOption:()=>({timeline:[{currentIndex:1}]}), on: (n: string, f: Function) => { events[n] = f }, setOption: vi.fn(()=>events.finished?.()), dispatchAction:vi.fn(), getZr: () => ({ on: (n: string, f: Function) => { zrEvents[n] = f } }), dispose() {} }
+  const init=vi.fn(()=>chart)
   const rootEvents: Record<string, Function> = {}
-  const node = () => ({ style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
+  const node = () => ({ ...(surfaceWindow?{getBoundingClientRect:()=>({width:600*surfaceWindow.hostScale,height:400*surfaceWindow.hostScale})}:{}),style: {}, clientWidth: 600, clientHeight: 400, appendChild() {}, addEventListener: (name, fn) => { rootEvents[name] = fn }, querySelectorAll: () => [], setAttribute() {} })
   const exports: any = {}
   const documentState:any={createElement:node,hidden:false}
-  vm.runInNewContext(js, { exports, document: documentState, console, clearInterval, clearTimeout, setTimeout, requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame}, cancelAnimationFrame(id){frames.delete(id)}, require: (name: string) => {
+  vm.runInNewContext(js, { ...(surfaceWindow?{window:surfaceWindow}:{}), exports, document: documentState, console, clearInterval, clearTimeout, setTimeout, requestAnimationFrame(fn){frames.set(++nextFrame,fn);return nextFrame}, cancelAnimationFrame(id){frames.delete(id)}, require: (name: string) => {
     if (name === '@vilsem/core/dax/rows') return { prepareVisualRows, rowsFromCategorical }
     if (name === '@vilsem/core/spec/resolve') return { resolveVisualSpec }
     if (name === '@vilsem/core/spec/migrate') return {migrate}
@@ -40,7 +42,8 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
     if (name === '@vilsem/core/theme/report') return { resolveReportTheme, reportThemeFromHost, applyReportTheme }
     if (name === '@vilsem/core/formatting') return { createModelFormatter, scopedMeasureFormat, applyModelFormats }
     if (name === '@vilsem/core/templates') return { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,preserveTimelineIndex,createMotionVisibilityController,finishChartFrame }
-    if (name === 'echarts/core') return { use() {}, init: () => chart, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
+    if (name === '@vilsem/core/rendering') return renderingSurface
+    if (name === 'echarts/core') return { use() {}, init, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
     if (name.endsWith('/chrome.js')) return { getCardChromeStyle: () => ({}) }
@@ -66,7 +69,7 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
       { source: { displayName: 'Returns', queryName: 'Measures.Returns', roles: { secondary: true }, isMeasure: true, type: { numeric: true } }, values: categories.map((_, i) => [269, 429, 1130][i] ?? i + 1) },
     ] }).build()!
   visual.renderPrimitiveChart(dv, { type, canvasTheme: 'dark', config: { cardStyle: 'plain', animationEnabled: false, ...configOverrides } })
-  return { visual, chart, events, zrEvents, selection, ids, host, tooltip, rootEvents, documentState, dataView: dv, restoreSelection: ids => restoreSelection?.(ids),flushFrames(){for(const [id,fn]of [...frames]){frames.delete(id);fn()}} }
+  return { visual, chart, init, events, zrEvents, selection, ids, host, tooltip, rootEvents, documentState, dataView: dv, restoreSelection: ids => restoreSelection?.(ids),flushFrames(){for(const [id,fn]of [...frames]){frames.delete(id);fn()}} }
 }
 
 describe('Power BI render lifecycle',()=>{
@@ -256,8 +259,8 @@ describe('Power BI production primitive selection routing', () => {
     expect(spec.canvasTheme).toBe('dark')
     const model = h.visual.getFormattingModel()
     const slices = model.cards[0].groups[0].slices
-    expect(slices.map(s=>s.control.properties.descriptor.propertyName)).toEqual(['useReportTheme','backgroundColor','transparency'])
-    expect(slices.map(s=>s.control.properties.value)).toEqual([true,{value:'#123456'},25])
+    expect(slices.map(s=>s.control.properties.descriptor.propertyName)).toEqual(['useReportTheme','backgroundColor','transparency','renderMode'])
+    expect(slices.map(s=>s.control.properties.value)).toEqual([true,{value:'#123456'},25,{displayName:'Automatic (spec)',value:'auto'}])
   })
   it.each(['line','area','grouped_bar','stacked_bar'])('%s uses bound measure names and refreshes them after rebinding', type => {
     const h=harness(type)
@@ -833,5 +836,31 @@ describe('aggregate native context scope',()=>{
   const h=harness(),event={clientX:12,clientY:34,defaultPrevented:false,preventDefault(){this.defaultPrevented=true}}
   h.rootEvents.contextmenu(event);expect(h.selection.showContextMenu).toHaveBeenLastCalledWith({},{x:12,y:34})
   h.rootEvents.contextmenu(event);expect(h.selection.showContextMenu).toHaveBeenCalledTimes(1)
+ })
+})
+
+
+describe('Power BI sharp rendering lifecycle',()=>{
+ it('initializes the requested painter while retaining canvas as the legacy default',()=>{
+  expect(harness().init.mock.calls[0][2]).toMatchObject({renderer:'canvas',devicePixelRatio:1})
+  const svg=harness('bar',undefined,{renderer:'svg'});expect(svg.init.mock.calls[0][2].renderer).toBe('svg')
+  svg.dataView.metadata.objects={appearance:{renderMode:'canvas'}};svg.visual.renderPrimitiveChart(svg.dataView,{type:'bar',config:{renderer:'svg'}});expect(svg.init.mock.calls.at(-1)[2].renderer).toBe('canvas')
+ })
+ it('debounces zoom-triggered canvas recreation and restores selection/highlight and timeline state',()=>{
+  vi.useFakeTimers()
+  try{
+   const listeners:any={},win={devicePixelRatio:1.5,hostScale:1,matchMedia:()=>({matches:false}),addEventListener:(n,f)=>listeners[n]=f,removeEventListener:(n)=>delete listeners[n]}
+   const h=harness('bar',undefined,{},win),dom={style:{},clientWidth:600,clientHeight:400};Object.assign(h.chart,{getDom:()=>dom,off:vi.fn(),resize:vi.fn(),dispose:vi.fn()});const zr=h.chart.getZr;h.chart.getZr=()=>({...zr(),off:vi.fn()})
+   const spec={type:'custom',template:{meta:{id:'zoom-state'},slots:{c:{kind:'dimension'},v:{kind:'measure'}},template:{baseOption:{timeline:{currentIndex:0,data:['A','B']},xAxis:{type:'category',data:'$slot.c.categories'},yAxis:{type:'value'}},options:[{series:[{type:'bar',data:'$slot.v.values'}]},{series:[{type:'bar',data:'$slot.v.values'}]}]}}}
+   h.dataView.metadata.objects={semantica:{primitiveSpec:JSON.stringify(spec)}}
+   h.selection.getSelectionIds=()=>[h.ids[1]];h.dataView.categorical.values[0].highlights=[null,10,null]
+   h.visual.update({dataViews:[h.dataView],viewport:{width:600,height:400}});h.init.mockClear();h.chart.dispose.mockClear()
+   for(const scale of [1.1,1.2,1.3,1.4]){win.hostScale=scale;listeners.resize();vi.advanceTimersByTime(30)}
+   expect(h.init).not.toHaveBeenCalled();vi.advanceTimersByTime(120)
+   expect(h.init).toHaveBeenCalledOnce();expect(h.init.mock.calls[0][2].devicePixelRatio).toBeCloseTo(2.1);expect(h.chart.dispose).toHaveBeenCalledOnce()
+   expect(h.events.click).toBeTypeOf('function');expect(h.events.contextmenu).toBeTypeOf('function');expect(h.visual.currentSelectionIds).toHaveLength(3);expect(h.visual.highlightIndexes.has(1)).toBe(true)
+   expect(h.chart.setOption.mock.calls.at(-1)[0].baseOption.timeline.currentIndex).toBe(1)
+   const count=h.init.mock.calls.length;listeners.resize();vi.advanceTimersByTime(500);expect(h.init).toHaveBeenCalledTimes(count);h.visual.destroy();expect(listeners.resize).toBeUndefined()
+  }finally{vi.useRealTimers()}
  })
 })

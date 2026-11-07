@@ -1,5 +1,6 @@
 import { prepareVisualRows, rowsFromCategorical } from '@vilsem/core/dax/rows'
 import { resolveVisualSpec } from '@vilsem/core/spec/resolve'
+import {effectiveDpr,rendererPolicy,surfaceNeedsReinit,SURFACE_DEBOUNCE_MS} from '@vilsem/core/rendering'
 import {migrate} from '@vilsem/core/spec/migrate'
 import {applyPaneFormatting,effectivePaneObjects,paneFormattingCards,paneTitleConfig} from '@vilsem/core/formatting/pane'
 import { resolveReportTheme, reportThemeFromHost, applyReportTheme } from '@vilsem/core/theme/report'
@@ -46,7 +47,7 @@ import {
   PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
   VisualMapContinuousComponent, VisualMapPiecewiseComponent, DataZoomSliderComponent, DatasetComponent,
 } from "echarts/components"
-import { CanvasRenderer } from "echarts/renderers"
+import { CanvasRenderer, SVGRenderer } from "echarts/renderers"
 import { LabelLayout, UniversalTransition } from "echarts/features"
 
 echarts.use([
@@ -55,7 +56,7 @@ echarts.use([
   TimelineComponent, TooltipComponent, GridComponent, LegendComponent, DataZoomInsideComponent, DataZoomSliderComponent,
   MarkLineComponent, GraphicComponent, TitleComponent, MarkAreaComponent, MarkPointComponent,
   PolarComponent, RadarComponent, CalendarComponent, ParallelComponent, SingleAxisComponent,
-  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DatasetComponent, CanvasRenderer, LabelLayout, UniversalTransition,
+  VisualMapContinuousComponent, VisualMapPiecewiseComponent, DatasetComponent, CanvasRenderer, SVGRenderer, LabelLayout, UniversalTransition,
 ])
 
 import { composeOption } from "./compositions"
@@ -171,6 +172,42 @@ export class Visual implements IVisual {
   private domVisual: { dispose(): void } | null = null
   private motionVisibilityCleanup: (()=>void) | null = null
   private chartReuseKey = ''
+  private latestUpdate: VisualUpdateOptions | null = null
+  private chartSurface: {renderer:'canvas'|'svg',dpr:number} | null = null
+  private surfaceCleanup: (()=>void) | null = null
+  private surfaceTimer: ReturnType<typeof setTimeout> | null = null
+  private forceSurfaceRefresh = false
+
+  private desiredSurface(renderer:'canvas'|'svg'='canvas') {
+    const width=this.root?.getBoundingClientRect?.().width
+    const logical=this.latestUpdate?.viewport?.width ?? this.root?.clientWidth
+    return {renderer,dpr:effectiveDpr(typeof window==='undefined'?1:window.devicePixelRatio,width,logical)}
+  }
+  private initChartSurface(element:HTMLElement,renderer:'canvas'|'svg'='canvas') {
+    this.chartSurface=this.desiredSurface(renderer)
+    return echarts.init(element,undefined,{renderer,devicePixelRatio:this.chartSurface.dpr})
+  }
+  private watchSurface():void {
+    this.surfaceCleanup?.();this.surfaceCleanup=null
+    if(!this.chart||!this.chartSurface||typeof window==='undefined')return
+    const refresh=()=>{
+      if(this.surfaceTimer!==null){clearTimeout(this.surfaceTimer);this.surfaceTimer=null}
+      if(!this.chartSurface||!surfaceNeedsReinit(this.chartSurface,this.desiredSurface(this.chartSurface.renderer)))return
+      this.surfaceTimer=setTimeout(()=>{
+        this.surfaceTimer=null
+        if(!this.latestUpdate||!this.chartSurface||!surfaceNeedsReinit(this.chartSurface,this.desiredSurface(this.chartSurface.renderer)))return
+        this.forceSurfaceRefresh=true
+        try{this.update(this.latestUpdate)}finally{this.forceSurfaceRefresh=false}
+      },SURFACE_DEBOUNCE_MS)
+    }
+    window.addEventListener?.('resize',refresh)
+    const resize=typeof ResizeObserver==='undefined'?null:new ResizeObserver(refresh);resize?.observe(this.root)
+    const mutation=typeof MutationObserver==='undefined'?null:new MutationObserver(refresh)
+    // Host zoom is an ancestor transform: ResizeObserver alone misses it.
+    for(let node:HTMLElement|null=this.root;node;node=node.parentElement)mutation?.observe(node,{attributes:true,attributeFilter:['style','class']})
+    this.surfaceCleanup=()=>{window.removeEventListener?.('resize',refresh);resize?.disconnect();mutation?.disconnect()}
+    refresh()
+  }
   private backgroundClickHandler: ((event:any)=>void) | null = null
   // Phase 5.3 polish: keep the un-mutated composed option around so we can
   // re-derive a selection-aware option (per-item opacity overrides) without
@@ -232,6 +269,9 @@ export class Visual implements IVisual {
   // Dispose any existing ECharts instance. Called before switching render
   // modes (HTML <-> primitive) and on destroy(). Safe to call when chart is null.
   private disposeChart(): void {
+    this.surfaceCleanup?.();this.surfaceCleanup=null
+    if(this.surfaceTimer!==null){clearTimeout(this.surfaceTimer);this.surfaceTimer=null}
+    this.chartSurface=null
     if(this.backgroundClickHandler)this.chart?.getZr().off?.('click',this.backgroundClickHandler)
     this.backgroundClickHandler=null;this.chartReuseKey=''
     this.motionVisibilityCleanup?.();this.motionVisibilityCleanup=null
@@ -347,6 +387,7 @@ export class Visual implements IVisual {
   }
 
   public update(options: VisualUpdateOptions): void {
+    this.latestUpdate=options
     this.settleRender('Superseded by a newer visual update')
     if(this.host.eventService){
       this.host.eventService.renderingStarted(options)
@@ -354,6 +395,7 @@ export class Visual implements IVisual {
     }
     try{
       this.updateContent(options)
+      this.watchSurface()
       // Animated ECharts options wait for `finished`, then a painted frame.
       // HTML/empty states have no chart event and finish after their first frame.
       const pending=this.pendingRender
@@ -463,9 +505,12 @@ export class Visual implements IVisual {
     // bindings are unchanged. New data/viewport updates can then animate from
     // the previous marks; changing modes or bindings still disposes cleanly.
     const requestedKey=(spec as any).template?JSON.stringify([spec,effectivePaneObjects(spec,dv?.metadata?.objects as any),reportThemeFromHost(this.host),this.host.locale,(dv?.categorical?.categories||[]).map(c=>c.source),(dv?.categorical?.values||[]).map(c=>c.source)]):''
-    const retained=requestedKey&&requestedKey===this.chartReuseKey&&typeof this.chart?.getDom==='function'?this.chart:null
+    const previous=requestedKey&&requestedKey===this.chartReuseKey&&typeof this.chart?.getDom==='function'?this.chart:null
+    const previousSurface=this.chartSurface
+    const preferred=rendererPolicy(spec,{},effectivePaneObjects(spec,dv?.metadata?.objects as any)).renderer
+    let retained=previous&&!this.forceSurfaceRefresh&&previousSurface?.renderer===preferred?previous:null
     const retainedRoot=retained?.getDom()
-    const retainedIndex=(retained?.getOption() as any)?.timeline?.[0]?.currentIndex
+    const retainedIndex=(previous?.getOption() as any)?.timeline?.[0]?.currentIndex
     if(retained){
       retained.off()
       if(this.backgroundClickHandler)retained.getZr().off('click',this.backgroundClickHandler)
@@ -748,7 +793,13 @@ export class Visual implements IVisual {
       chartArea.setAttribute('aria-label', 'Chart; scroll horizontally to view both axes')
       chartRoot.style.minWidth = `${minimumWidth}px`
     }
-    this.chart = retained || echarts.init(chartRoot)
+    const surface=rendererPolicy(spec,option,paneObjects)
+    if(surface.warnings.length)this.host.displayWarningIcon?.('Canvas rendering fallback',surface.warnings.join(' '))
+    // A spec may resolve a canvas-only effect after the initial retention check.
+    if(retained&&previousSurface?.renderer!==surface.renderer){retained.dispose();this.chart=null;retained=null}
+    this.chart = retained&&previousSurface?.renderer===surface.renderer?retained:this.initChartSurface(chartRoot,surface.renderer as 'canvas'|'svg')
+    if(this.chart===retained)this.chartSurface=previousSurface
+    if(previous)option=preserveTimelineIndex(option,retainedIndex)
     this.chartReuseKey=requestedKey
     const isVisible=()=>document.hidden!==true&&chartRoot.clientWidth>0&&chartRoot.clientHeight>0
     let deferredPlayback:(()=>void)|null=null
@@ -1223,7 +1274,7 @@ export class Visual implements IVisual {
     pill.style.cssText = "display:none;align-items:center;gap:8px;padding:0 2px 6px;flex-shrink:0"
     chartArea.insertBefore(pill, chartRoot)
 
-    this.chart = echarts.init(chartRoot)
+    this.chart = this.initChartSurface(chartRoot)
 
     const draw = () => {
       const expanded = this.drillExpanded
@@ -1343,7 +1394,7 @@ export class Visual implements IVisual {
     ctrls.appendChild(btn); ctrls.appendChild(scrub); ctrls.appendChild(tick)
     chartArea.insertBefore(ctrls, chartRoot)
 
-    this.chart = echarts.init(chartRoot)
+    this.chart = this.initChartSurface(chartRoot)
     let idx = 0
     let playing = false
     const anim = Math.max(200, Math.min(560, speed - 60))
@@ -1457,7 +1508,7 @@ export class Visual implements IVisual {
     const bar = document.createElement("div")
     bar.style.cssText = "display:none;align-items:center;gap:5px;flex-wrap:wrap;padding:0 2px 5px;flex-shrink:0;font-size:11px"
     chartArea.insertBefore(bar, chartRoot)
-    this.chart = echarts.init(chartRoot)
+    this.chart = this.initChartSurface(chartRoot)
 
     const crumb = (label: string, toDepth: number, active: boolean): HTMLElement => {
       if (active) {
@@ -1514,7 +1565,7 @@ export class Visual implements IVisual {
     const drawer = document.createElement("div")
     drawer.style.cssText = "width:0;overflow:hidden;flex-shrink:0"
     chartArea.appendChild(drawer)
-    this.chart = echarts.init(chartRoot)
+    this.chart = this.initChartSurface(chartRoot)
 
     const fmt = (n: number): string => {
       const a = Math.abs(n)

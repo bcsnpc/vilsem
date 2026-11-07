@@ -242,6 +242,25 @@
           "type": {
             "numeric": true
           }
+        },
+        "renderMode": {
+          "displayName": "Render mode",
+          "type": {
+            "enumeration": [
+              {
+                "displayName": "Automatic (spec)",
+                "value": "auto"
+              },
+              {
+                "displayName": "Canvas",
+                "value": "canvas"
+              },
+              {
+                "displayName": "SVG",
+                "value": "svg"
+              }
+            ]
+          }
         }
       }
     },

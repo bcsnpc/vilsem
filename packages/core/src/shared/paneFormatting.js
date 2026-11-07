@@ -1,10 +1,11 @@
+import {RENDER_MODES} from './renderingSurface.js'
 import {createModelFormatter} from './modelFormatting.js'
 import {applyAnimation} from '../templates/animation.js'
 import {inheritTimelineFrame} from '../templates/timeline.js'
 
 const field=(name,displayName,type,value)=>({name,displayName,type,value})
 export const PANE_GROUPS=[
- {name:'appearance',displayName:'Appearance',fields:[field('useReportTheme','Use report theme','bool',true),field('backgroundColor','Background colour','color','#ffffff'),field('transparency','Transparency (%)','number',100)]},
+ {name:'appearance',displayName:'Appearance',fields:[field('useReportTheme','Use report theme','bool',true),field('backgroundColor','Background colour','color','#ffffff'),field('transparency','Transparency (%)','number',100),field('renderMode','Render mode','enum','auto')]},
  {name:'motion',displayName:'Animation',fields:[field('enabled','Animation','bool',true),field('reduceMotion','Reduce motion','bool',false)]},
  {name:'title',displayName:'Title',fields:[field('show','Show title','bool',true),field('text','Title text','text',''),field('fontFamily','Font family','text','Segoe UI'),field('fontSize','Font size','number',17),field('color','Colour','color','#252423'),field('bold','Bold','bool',false),field('alignment','Alignment (left/center/right)','text','left')]},
  {name:'typography',displayName:'Chart text',fields:[field('fontFamily','Font family','text','Segoe UI'),field('fontSize','Font size','number',12),field('color','Colour','color','#252423')]},
@@ -16,7 +17,7 @@ export const PANE_GROUPS=[
  {name:'border',displayName:'Border',fields:[field('show','Show border','bool',false),field('color','Colour','color','#cccccc'),field('width','Width','number',1),field('radius','Corner radius','number',0)]},
 ]
 
-export function paneCapabilities(){return Object.fromEntries(PANE_GROUPS.map(g=>[g.name,{displayName:g.displayName,properties:Object.fromEntries(g.fields.map(f=>[f.name,{displayName:f.displayName,type:f.type==='bool'?{bool:true}:f.type==='number'?{numeric:true}:f.type==='color'?{fill:{solid:{color:true}}}:{text:true}}]))}]))}
+export function paneCapabilities(){return Object.fromEntries(PANE_GROUPS.map(g=>[g.name,{displayName:g.displayName,properties:Object.fromEntries(g.fields.map(f=>[f.name,{displayName:f.displayName,type:f.type==='bool'?{bool:true}:f.type==='number'?{numeric:true}:f.type==='color'?{fill:{solid:{color:true}}}:f.type==='enum'?{enumeration:RENDER_MODES}:{text:true}}]))}]))}
 
 export function paneFormattingCards(objects={}, {dom=false,canvasTheme,option,config={}}={}){
  if(option?.baseOption){const index=option.baseOption.timeline?.currentIndex??option.timeline?.currentIndex??0;option={...option,...option.baseOption,...inheritTimelineFrame(option.baseOption,option.options?.[index]??{})}}
@@ -29,11 +30,12 @@ export function paneFormattingCards(objects={}, {dom=false,canvasTheme,option,co
  return PANE_GROUPS.filter(g=>!dom||['appearance','motion','title','border'].includes(g.name)).map(g=>{
   const descriptor=propertyName=>({objectName:g.name,propertyName})
   const shown={...resolved[g.name],...pane[g.name]}
-  return {uid:`vilsem-${g.name}`,displayName:g.displayName,groups:[{uid:`vilsem-${g.name}-settings`,displayName:g.displayName,slices:g.fields.map(f=>{
+  return {uid:`vilsem-${g.name}`,displayName:g.displayName,groups:[{uid:`vilsem-${g.name}-settings`,displayName:g.displayName,slices:g.fields.filter(f=>!dom||f.name!=='renderMode').map(f=>{
    const automatic=f.name==='autoMin'?shown.min===undefined:f.name==='autoMax'?shown.max===undefined:undefined
    let value=shown[f.name]??automatic??(g.name==='appearance'&&f.name==='useReportTheme'?!['light','dark'].includes(canvasTheme):f.value)
+   if(f.type==='enum'&&!RENDER_MODES.some(mode=>mode.value===value))value=f.value
    if(f.type==='text'&&typeof value!=='string'||f.type==='number'&&(typeof value!=='number'||!Number.isFinite(value))||f.type==='bool'&&typeof value!=='boolean'||f.type==='color'&&typeof colorValue(value)!=='string')value=f.value
-   return {uid:`${g.name}-${f.name}`,displayName:f.displayName,...(['min','max'].includes(f.name)?{disabled:shown[f.name==='min'?'autoMin':'autoMax']??shown[f.name]===undefined}:{}),control:{type:{bool:'ToggleSwitch',number:'NumUpDown',text:'TextInput',color:'ColorPicker'}[f.type],properties:{descriptor:descriptor(f.name),value:f.type==='color'?{value:value?.solid?.color || value}:value}}}
+   return {uid:`${g.name}-${f.name}`,displayName:f.displayName,...(['min','max'].includes(f.name)?{disabled:shown[f.name==='min'?'autoMin':'autoMax']??shown[f.name]===undefined}:{}),control:{type:{bool:'ToggleSwitch',number:'NumUpDown',text:'TextInput',color:'ColorPicker',enum:'Dropdown'}[f.type],properties:{descriptor:descriptor(f.name),...(f.type==='enum'?{items:RENDER_MODES}:{}),value:f.type==='color'?{value:value?.solid?.color || value}:f.type==='enum'?RENDER_MODES.find(mode=>mode.value===value):value}}}
   })}],revertToDefaultDescriptors:g.fields.map(f=>descriptor(f.name))}
  })
 }
@@ -71,8 +73,9 @@ export function paneValidationErrors(formatting){
   if(!properties||typeof properties!=='object'||Array.isArray(properties)){errors.push({path:base,message:'Formatting group must be an object',expected:'Property-value object',suggestions:['Supply only the overrides that should change.']});continue}
   for(const [name,value] of Object.entries(properties)){
    const field=contract.fields.find(f=>f.name===name),path=base+'/'+name.replace(/~/g,'~0').replace(/\//g,'~1')
+   if(field?.type==='enum'&&!RENDER_MODES.some(mode=>mode.value===value)){errors.push({path,message:'Render mode must be auto, canvas or svg',expected:{allowed:RENDER_MODES.map(m=>m.value)},suggestions:['Use a supported render mode.']});continue}
    if(!field){errors.push({path,message:'Unknown formatting property',expected:{allowed:contract.fields.map(f=>f.name)},suggestions:['Use a supported property; arbitrary settings are never executed.']});continue}
-   const valid=field.type==='bool'?typeof value==='boolean':field.type==='number'?typeof value==='number'&&Number.isFinite(value):field.type==='text'?typeof value==='string'&&value.length<=2000:typeof colorValue(value)==='string'
+   const valid=field.type==='enum'?RENDER_MODES.some(mode=>mode.value===value):field.type==='bool'?typeof value==='boolean':field.type==='number'?typeof value==='number'&&Number.isFinite(value):field.type==='text'?typeof value==='string'&&value.length<=2000:typeof colorValue(value)==='string'
    if(!valid)errors.push({path,message:'Invalid formatting value',expected:field.type,suggestions:[`Supply a ${field.type} value.`]})
    if(valid&&name==='format'&&value)try{createModelFormatter(value)}catch(error){errors.push({path,message:error.message,expected:'Supported model/Excel number format',suggestions:['Use a format such as0.00%, #,0 or$#,0.00.']})}
   }

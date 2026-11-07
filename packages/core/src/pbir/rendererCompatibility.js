@@ -8,6 +8,7 @@ import {scopedMeasuresOf} from '../spec/migrate.js'
 export function requiredRendererVersion(spec, bindings = {}) {
   let minor = 0
   const require = version => { minor = Math.max(minor, version) }
+  if(spec?.config?.renderer!==undefined||spec?.formatting?.appearance?.renderMode!==undefined)require(43)
   if(spec?.specVersion==='0.7')require(40)
   if(spec?.template?.meta?.formatVersion===4)require(40)
   if(spec?.formatting&&Object.keys(spec.formatting).length)require(35)

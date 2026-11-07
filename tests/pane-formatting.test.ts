@@ -1,3 +1,4 @@
+import {rendererPolicy} from '../packages/core/src/shared/renderingSurface.js'
 import {describe,it,expect} from 'vitest'
 import {readPaneObjects,applyPaneFormatting,PANE_GROUPS,paneCapabilities,paneFormattingCards,effectivePaneObjects,paneValidationErrors} from '../packages/core/src/shared/paneFormatting.js'
 import {resolveReportTheme} from '../packages/core/src/shared/reportTheme.js'
@@ -30,6 +31,7 @@ describe('every declared common pane property has a render contract',()=>{
  const outputs={title:{show:'title.show',text:'title.text',fontFamily:'title.textStyle.fontFamily',fontSize:'title.textStyle.fontSize',color:'title.textStyle.color',bold:'title.textStyle.fontWeight',alignment:'title.left'},typography:{fontFamily:'textStyle.fontFamily',fontSize:'textStyle.fontSize',color:'textStyle.color'},labels:{show:'series.0.label.show',fontFamily:'series.0.label.fontFamily',fontSize:'series.0.label.fontSize',color:'series.0.label.color',position:'series.0.label.position',format:'series.0.label.formatter'},legend:{show:'legend.show',fontFamily:'legend.textStyle.fontFamily',fontSize:'legend.textStyle.fontSize',color:'legend.textStyle.color',position:'legend.left'},lines:{width:'series.0.lineStyle.width',style:'series.0.lineStyle.type',color:'series.0.lineStyle.color'},border:{show:'graphic.0.type',color:'graphic.0.style.stroke',width:'graphic.0.style.lineWidth',radius:'graphic.0.shape.r'},seriesColors:{palette:'color.0'}}
  for(const f of fields)it(`${f.group}.${f.name} reaches its documented rendering surface`,()=>{
   let v=f.type==='bool'?false:f.type==='number'?23:f.type==='color'?{solid:{color:'#123456'}}:'Example'
+  if(f.type==='enum')v='svg'
   if(f.name==='format')v='0.00%'
   if(f.name==='position')v=f.group==='legend'?'right':'inside'
   if(f.name==='alignment')v='center'
@@ -52,6 +54,7 @@ describe('every declared common pane property has a render contract',()=>{
    path=base+'.'+({show:'show',title:'name',fontFamily:'axisLabel.fontFamily',fontSize:'axisLabel.fontSize',color:'axisLabel.color',titleColor:'nameTextStyle.color',titleSize:'nameTextStyle.fontSize',min:'min',max:'max',format:'axisLabel.formatter',gridlines:'splitLine.show',gridColor:'splitLine.lineStyle.color'}[f.name])
   }
   if(f.group==='appearance'){
+   if(f.name==='renderMode'){expect(rendererPolicy({},option(),pane).renderer).toBe('svg');return}
    if(f.name==='useReportTheme'){expect(resolveReportTheme({canvasTheme:'dark'},{theme:'light',useReportTheme:true}).mode).toBe('light');return}
    const applied=applyPaneFormatting(option(),{appearance:{backgroundColor:{solid:{color:'#123456'}},transparency:23}})
    expect(applied.backgroundColor).toBe('rgba(18,52,86,0.77)');return

@@ -1,6 +1,6 @@
 {
   "name": "@vilsem/core",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -72,7 +72,8 @@
     "./formatting/pane": "./src/shared/paneFormatting.js",
     "./expressions": "./src/expressions/index.js",
     "./images": "./src/images/designTokens.js",
-    "./images/decode": "./src/images/decode.js"
+    "./images/decode": "./src/images/decode.js",
+    "./rendering": "./src/shared/renderingSurface.js"
   },
   "scripts": {
     "build": "node scripts/build.mjs"
@@ -120,6 +121,9 @@
       ],
       "images/decode": [
         "src/images/decode.js"
+      ],
+      "rendering": [
+        "src/shared/renderingSurface.js"
       ]
     }
   },

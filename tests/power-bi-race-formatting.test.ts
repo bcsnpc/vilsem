@@ -1,3 +1,4 @@
+import * as renderingSurface from '../packages/core/src/shared/renderingSurface.js'
 import { expect, it, vi } from 'vitest'
 import fs from 'node:fs'
 import vm from 'node:vm'
@@ -17,6 +18,7 @@ it('retains race axis and tooltip settings when scrubbing frames', () => {
   const source = fs.readFileSync('vilsem-renderer/src/visual.ts', 'utf8')
   const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText
   vm.runInNewContext(js, { exports, console, clearInterval, document: { createElement: node }, require: (name: string) => {
+    if (name === '@vilsem/core/rendering') return renderingSurface
     if (name === 'echarts/core') return { use() {}, init: () => chart }
     if (name.endsWith('/axisTextConfig.js')) return { applyAxisTextConfig }
     if (name.endsWith('/applyTooltipConfig.js')) return { applyTooltipConfig }
