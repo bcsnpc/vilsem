@@ -725,3 +725,5 @@ FORMAT-PBI-068 reproduced in Service (`Value`/`Secondary` instead of bound field
 2026-11-06 - MCP0.8 published and public download SHA verified; public-install stdIO/3 resources/CLI PASS, audit0. All current source changes pushed to main. User asked about canvas/SVG page comparison; no six-page Service rendering confirmation yet.
 
 2026-11-06 - User confirmed seeing all six Service QA pages. Recorded as user-reported page availability, not automated rendering/number/interaction/zoom certification. Dense-chart performance and full native scaling remain unresolved.
+
+2026-11-06 - Live Edge Service follow-up: 12/12 visible layouts (6 pages x browser100/150) render; hero/leaderboard live DAX values match. Canvas/SVG selection/dimming/clear, native tooltip and Include/Exclude menu observed. Returned browser100 and heroSVG, no report writes. Tiny canvas text remains soft at small Fit scale; cross-filter/native/Ctrl/bookmarks and dense performance remain open.
