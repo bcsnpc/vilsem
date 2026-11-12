@@ -46,6 +46,9 @@ function harness(type = 'bar', categories = ['Clothing', 'Bikes', 'Accessories']
     if (name === 'echarts/core') return { use() {}, init, format: {getTextRect:(text,font)=>({width:String(text).length*Number(/(\d+)px/.exec(font)?.[1] || 10)})} }
     if (name === './compositions') return { composeOption }
     if (name === './primitives/escapeHtml') return { escapeHtml }
+    // HTML safety is exercised against the real DOMPurify in the packaged
+    // browser suite; this harness deliberately supplies a minimal fake DOM.
+    if (name === '../generated/powerbiDom.js') return { sanitizeMeasureHtml: html => html }
     if (name.endsWith('/chrome.js')) return { getCardChromeStyle: () => ({}) }
     if (name.endsWith('/chartTitle.js')) return { chartTitleStyle }
     if (name.endsWith('/secondaryAxis.js')) return { secondaryAxisMinimumWidth, scrollableChartTooltip }
