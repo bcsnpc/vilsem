@@ -3,6 +3,9 @@ const path=require('node:path'),fs=require('node:fs'),crypto=require('node:crypt
 const {inspectLocalProject}=require('../pbir/localProject.cjs')
 let active=null
 function bridge(payload){return new Promise((resolve,reject)=>{
+ // Bypass applies only to this bundled, caller-independent -File script so an
+ // unsigned npm install works under Windows' default execution policy. It does
+ // not change machine/user policy or execute PowerShell supplied by the caller.
  const child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',path.join(__dirname,'localBridge.ps1').replace(/app\.asar([\\/])/, 'app.asar.unpacked$1')],{windowsHide:true,stdio:['pipe','pipe','pipe']});let output='',errors='';const timeout=setTimeout(()=>{child.kill();reject(Error('Local Power BI query timed out. Check that the model is open in Desktop.'))},60000)
  child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>errors+=b);child.on('error',e=>{clearTimeout(timeout);reject(e)});child.on('close',code=>{clearTimeout(timeout);try{const r=JSON.parse(output.replace(/^\uFEFF/,''));if(code||r.error)reject(Error(r.error||'Local query failed'));else resolve(r)}catch{reject(Error(errors||'Local Power BI returned an invalid response.'))}});child.stdin.end(JSON.stringify(payload))
 })}
