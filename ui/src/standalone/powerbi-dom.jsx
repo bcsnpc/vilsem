@@ -1,4 +1,5 @@
 import React from 'react'
+export { sanitizeMeasureHtml } from './sanitizeMeasureHtml.js'
 import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 import CompactWaffle from '../appspec/visuals/CompactWaffle.jsx'

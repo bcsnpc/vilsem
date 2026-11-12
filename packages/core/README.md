@@ -1,5 +1,19 @@
 # @vilsem/core
 
+Prepared security patch: **0.8.1 / Renderer 4.44.0.0**. HTML-measure fallback
+content is sanitized; the Desktop bridge loads ADOMD only from the exact official
+Desktop package or the standard Program Files location. Online axios/token-cache
+work (S10/S11) is deferred. See the [patch verification](../../docs/qa/security-core-081.md).
+
+Existing reports must import the new `assets/renderer.pbiviz` via **Home > More
+visuals > From my files**, accept **Update**, save, close and reopen. Package
+installation alone does not fix registered renderers; `commit_visual` never
+silently replaces one. Save Desktop work and resolve external changes first.
+
+After release approval, install with:
+`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.1/vilsem-core-0.8.1.tgz`.
+This URL is reserved for the prepared release and is not published yet.
+
 Current evaluation package: core **0.8.0 / renderer 4.43**, paired with MCP **0.8.0**. App/core suites each pass 1,367 tests. Native upgrade and real-data rendering were checked; dense-chart performance and the complete native/Service acceptance matrix remain incomplete. See [sharpness changes and evidence](../../docs/qa/skill-sharpness-080.md). Earlier version-specific sections below are historical.
 
 For the current detailed tested/partial/untested checklist and known failures, read the [repository release acceptance section](../../README.md#current-release-acceptance-and-limitations) and the [MCP release matrix](https://github.com/bcsnpc/vilsem-mcp#what-was-verified-for-08). The full native interaction/formatting/clipping/scaling/export matrix, dense-motion target and summary Label issue are not closed. Canvas is the default; SVG is optional. Ordinary entrance animation and timeline playback are separate behaviors.

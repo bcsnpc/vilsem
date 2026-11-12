@@ -18,9 +18,11 @@ try {
   @{sessions=$sessions} | ConvertTo-Json -Depth 12 -Compress
   exit 0
  }
- $install=(Get-AppxPackage '*PowerBI*' | Select-Object -First 1).InstallLocation
- if(-not $install){$install='C:/Program Files/Microsoft Power BI Desktop'}
- [Reflection.Assembly]::LoadFrom((Join-Path $install 'bin/Microsoft.PowerBI.AdomdClient.dll')) | Out-Null
+ # Only the official Desktop package may supply ADOMD; never a wildcard match.
+ $install=(Get-AppxPackage -Name 'Microsoft.MicrosoftPowerBIDesktop' -ErrorAction SilentlyContinue | Select-Object -First 1).InstallLocation
+ $dll=if($install){Join-Path $install 'bin/Microsoft.PowerBI.AdomdClient.dll'}else{$null}
+ if(-not $dll -or -not(Test-Path -LiteralPath $dll)){$dll='C:\Program Files\Microsoft Power BI Desktop\bin\Microsoft.PowerBI.AdomdClient.dll'}
+ [Reflection.Assembly]::LoadFrom($dll) | Out-Null
  $conn=New-Object Microsoft.AnalysisServices.AdomdClient.AdomdConnection
  $builder=New-Object System.Data.Common.DbConnectionStringBuilder
  if($inputData.endpoint){

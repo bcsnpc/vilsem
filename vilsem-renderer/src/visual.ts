@@ -16,7 +16,7 @@ import { nativeTemplateTooltipItems,mapTimelineSeries,collectTimelineSeries,pres
  */
 
 import "./../style/visual.less"
-import { mountPowerBIDomVisual } from '../generated/powerbiDom.js'
+import { mountPowerBIDomVisual, sanitizeMeasureHtml } from '../generated/powerbiDom.js'
 
 import powerbi from "powerbi-visuals-api"
 import IVisual = powerbi.extensibility.visual.IVisual
@@ -2066,7 +2066,7 @@ export class Visual implements IVisual {
   private renderHtmlWithSelection(dv: DataView, cat: powerbi.DataViewCategorical, html: string): void {
     try {
       // eslint-disable-next-line powerbi-visuals/no-inner-outer-html
-      this.root.innerHTML = html
+      this.root.innerHTML = sanitizeMeasureHtml(html)
       this.animateCountUp()
       this.wireAxisPills()
     } catch { this.renderEmpty(); return }
@@ -2289,7 +2289,7 @@ export class Visual implements IVisual {
 
     try {
       // eslint-disable-next-line powerbi-visuals/no-inner-outer-html
-      this.root.innerHTML = html
+      this.root.innerHTML = sanitizeMeasureHtml(html)
       this.animateCountUp()
       this.wireAxisPills()
     } catch {

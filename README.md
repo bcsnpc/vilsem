@@ -1,5 +1,21 @@
 # vilsem
 
+## Prepared security patch: Core 0.8.1 / Renderer 4.44
+
+This patch sanitizes legacy HTML-measure fallback content using the renderer's
+bundled DOMPurify and pins the local ADOMD bridge to the official Power BI
+Desktop package, with the standard Program Files installation as fallback.
+It preserves the renderer GUID and `objects.semantica.primitiveSpec` property.
+See [verification and release notes](docs/qa/security-core-081.md).
+S10 (axios) and S11 (online token-cache protection) are not included.
+
+**Existing reports need a renderer update to receive the HTML fix.** Save your
+Desktop work and resolve pending external changes. In Power BI Desktop choose
+**Home > More visuals > From my files**, select the new
+`@vilsem/core/assets/renderer.pbiviz`, accept **Update**, save, then close and
+reopen the report. Installing a new core/MCP package does not update a renderer
+already registered in a report. `commit_visual` never silently replaces it.
+
 Current evaluation: core 0.8 / renderer 4.43 and MCP 0.8 add packaged agent skills, zoom-aware canvas and optional SVG. See [changes, upgrade steps and verification limits](docs/qa/skill-sharpness-080.md). Dense-chart performance and full native/Service acceptance remain incomplete; this is not production sign-off.
 
 ## Current release acceptance and limitations
