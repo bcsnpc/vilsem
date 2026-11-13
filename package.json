@@ -21,7 +21,7 @@
     "pretest": "npm run core:build",
     "preui:build": "npm run core:build",
     "prepowerbi:build": "npm run core:build",
-    "postpowerbi:build": "node packages/core/scripts/copy-renderer.mjs"
+    "postpowerbi:build": "node packages/core/scripts/renderer-notices.mjs && node packages/core/scripts/copy-renderer.mjs"
   },
   "build": {
     "appId": "com.semantica.app",
@@ -85,7 +85,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.0.1",
-    "@vilsem/core": "0.8.2",
+    "@vilsem/core": "0.8.3",
     "adm-zip": "0.6.1",
     "axios": "^1.8.4",
     "dotenv": "^16.5.0",

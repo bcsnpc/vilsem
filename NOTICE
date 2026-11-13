@@ -1,7 +1,11 @@
 vilsem
 Copyright 2026 Chiranjeevi Bhogireddy
 
-Repository: https://github.com/bcsnpc/semantic_app
+Repository: https://github.com/bcsnpc/vilsem
+
+The vilsem Renderer and the @vilsem/core package ship a generated, complete list of
+bundled third-party components with their license texts in
+packages/core/THIRD_PARTY_NOTICES.md (also embedded in the renderer's visual.js).
 
 This product is licensed under the MIT License (see the LICENSE file). It
 includes third-party software under the terms of their respective
@@ -15,7 +19,7 @@ Apache-2.0 dependencies (NOTICE propagation required by Apache-2.0 section 4d)
 ================================================================================
 
 Apache ECharts (echarts)
-Copyright 2017-2025 The Apache Software Foundation
+Copyright 2017-2026 The Apache Software Foundation
 
   This product includes software developed at
   The Apache Software Foundation (https://www.apache.org/).

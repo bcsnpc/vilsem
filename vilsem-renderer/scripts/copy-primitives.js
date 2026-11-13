@@ -19,6 +19,8 @@ execFileSync(process.execPath, [path.join(UI_ROOT, 'node_modules/vite/bin/vite.j
 const DOM_DST = path.resolve(__dirname, '../generated/powerbiDom.js')
 fs.mkdirSync(path.dirname(DOM_DST), { recursive: true })
 fs.copyFileSync(path.resolve(UI_ROOT, '../cache/powerbi-dom/powerbiDom.js'), DOM_DST)
+// The bundled-package list feeds the renderer's third-party notices (packages/core/scripts/renderer-notices.mjs).
+fs.copyFileSync(path.resolve(UI_ROOT, '../cache/powerbi-dom/powerbiDom.packages.json'), path.resolve(__dirname, '../generated/powerbiDom.packages.json'))
 // Remove the former generated location; authored sources stay under src/.
 const OLD_DOM_DST = path.resolve(__dirname, '../src/powerbiDom.js')
 if (fs.existsSync(OLD_DOM_DST)) fs.unlinkSync(OLD_DOM_DST)
