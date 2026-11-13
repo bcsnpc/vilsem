@@ -1,6 +1,12 @@
 # @vilsem/core
 
-Prepared security patch: **0.8.1 / Renderer 4.44.0.0**. HTML-measure fallback
+Current release: **0.8.2 / Renderer 4.45.0.0** adds the `{value:compact}`
+formatter token (compact K/M/B/T units that keep the measure's currency symbol;
+requires Renderer 4.45), bounded schema profiling (`profile`, `samples`,
+`tables`, a 20-second budget) and clearer Desktop connection errors. Install with
+`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.2/vilsem-core-0.8.2.tgz`.
+
+Security patch **0.8.1 / Renderer 4.44.0.0** (released). HTML-measure fallback
 content is sanitized; the Desktop bridge loads ADOMD only from the exact official
 Desktop package or the standard Program Files location. Online axios/token-cache
 work (S10/S11) is deferred. See the [patch verification](../../docs/qa/security-core-081.md).
@@ -10,9 +16,7 @@ visuals > From my files**, accept **Update**, save, close and reopen. Package
 installation alone does not fix registered renderers; `commit_visual` never
 silently replaces one. Save Desktop work and resolve external changes first.
 
-After release approval, install with:
-`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.1/vilsem-core-0.8.1.tgz`.
-This URL is reserved for the prepared release and is not published yet.
+0.8.1 install URL: `https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.1/vilsem-core-0.8.1.tgz`.
 
 Current evaluation package: core **0.8.0 / renderer 4.43**, paired with MCP **0.8.0**. App/core suites each pass 1,367 tests. Native upgrade and real-data rendering were checked; dense-chart performance and the complete native/Service acceptance matrix remain incomplete. See [sharpness changes and evidence](../../docs/qa/skill-sharpness-080.md). Earlier version-specific sections below are historical.
 

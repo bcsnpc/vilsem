@@ -62,7 +62,7 @@ export function validateSpecDetailed(spec){
  }
  function convert(message){
   const path=locate(message)
-  if(message.includes('formatter'))return diagnostic(path,message,'{value}, {value:thousands}, {value:percent}, {name}, {seriesName}, or a documented formatter token','Replace the unrecognized formatter with a supported token.','{value}')
+  if(message.includes('formatter'))return diagnostic(path,message,'{value}, {value:thousands}, {value:percent}, {value:compact}, {value:date}, {value.0}, {name}, {seriesName}, or a documented formatter token','Replace the unrecognized formatter with a supported token.','{value}')
   if(message.includes('token'))return diagnostic(path,message,'A declared plain $slot, $calc, $param, $theme or scoped $item path','Use a declared name and documented accessor; use a bounded transform for calculations.')
   if(message.includes('renderItem')||message.includes('executable')||message.includes('unsafe'))return diagnostic(path,message,'Declarative JSON without executable callbacks or prototype keys','Remove executable/prototype content; use shipped declarative operations.')
   return diagnostic(path,message,'The supported spec-format grammar','Read the named field contract in vilsem://docs/spec-format and correct this node.')

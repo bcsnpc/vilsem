@@ -25,6 +25,7 @@ export function requiredRendererVersion(spec, bindings = {}) {
     if(['viewportWidth','viewportHeight'].includes(value?.op))require(41)
     if(value?.type==='custom'&&value.renderItem?.language==='vilsem-expression')require(36)
     if(value&&typeof value==='object'&&(Object.hasOwn(value,'timeline')||Object.hasOwn(value,'universalTransition')))require(36)
+    if(typeof value==='string'&&/\{(?:value|c)(?:\.[0-5])?:compact\}/.test(value))require(45)
     if(typeof value==='string'&&/^\$theme\.paletteText(?:\.\d+)?$/.test(value))require(34)
     if(typeof value==='string'&&/^\$theme\.(readablePalette|pageBackground)(?:\.\d+)?$/.test(value))require(36)
     if(typeof value==='string'&&/^\$item\.(pixelSpan|labelWidth|labelVisible)$/.test(value))require(30)

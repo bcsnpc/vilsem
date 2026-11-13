@@ -18,7 +18,9 @@
 //   $theme.palette / .palette.<i> / .font / .textMuted / .gridStroke / .accent
 //
 // Formatter DSL (only inside a `formatterTemplate` string):
-//   {value} {value:thousands} {value:percent} {name} {seriesName}
+//   {value} {value:thousands} {value:percent} {value:compact} {value:date} {name} {seriesName}
+//   {value.N[:fmt]} picks tuple component N (e.g. {value.0:percent} for [value, category] pairs).
+//   {value:compact} scales to K/M/B/T and keeps the measure's currency symbol ($9.9B).
 
 import { pal, MULTI_COLORS } from '../shared/palettes.js'
 import { derive, validateTransforms, BLOCKED } from './transforms.js'
@@ -45,6 +47,25 @@ function fmtPercent(v) {
   if (!Number.isFinite(n)) return String(v ?? '')
   const pct = Math.round(n * 1000) / 10
   return `${pct}%`
+}
+// Compact units for labels and axes: 950, 14.6K, 9.9B, 1.2T. One decimal below
+// 100 of a unit, none above; a trailing ".0" is dropped so axes read $2B, $4B.
+// `style` comes from the bound measure's format: only its currency symbol is kept.
+function fmtCompact(v, style) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return String(v ?? '')
+  const units = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']]
+  const abs = Math.abs(n)
+  // The 0.9995 threshold promotes values that would round up to 1000 of a unit (999,960 -> 1M).
+  const [div, unit] = units.find(([d]) => abs >= d * 0.9995) || [1, '']
+  const scaled = abs / div
+  // Whole units (axis ticks such as 2,000,000,000) read $2B; other values keep one
+  // decimal below 100 of a unit so neighbouring labels align ($2.0B next to $2.3B).
+  const whole = Math.abs(scaled - Math.round(scaled)) < 1e-9
+  const text = abs < 1 ? (Math.round(scaled * 100) / 100).toString()
+    : whole || scaled >= 100 ? Math.round(scaled).toString()
+    : (Math.round(scaled * 10) / 10).toFixed(1)
+  return (n < 0 ? '-' : '') + (style?.prefix || '') + text + unit + (style?.suffix || '')
 }
 function numberOrNull(v) {
   if (v == null || v === '') return null
@@ -316,6 +337,16 @@ export function makeFormatter(tpl,emptyText='') {
         const v = Array.isArray(raw) ? raw[indexed ? Number(indexed[2]) : raw.length - 1] : indexed ? null : raw
         if(v==null || v==='' || (typeof v==='number'&&!Number.isFinite(v)))return emptyText
         if (fmt === 'date') { const ms=typeof v==='number'?v:Date.parse(String(v??''));return Number.isFinite(ms)?new Date(ms).toISOString().slice(0,10):'' }
+        if (fmt === 'compact') {
+          // Compact scaling takes precedence over the measure's own display format,
+          // keeping only its currency symbol; percent/date/text measures keep theirs.
+          const component=Array.isArray(raw)?(indexed?Number(indexed[2]):raw.length-1):undefined
+          const own=typeof modelFormatter!=='function'?null:component==null?modelFormatter
+            :modelFormatter.vilsemTupleFormatters?.[component] || (component===(modelFormatter.vilsemValueIndex ?? raw.length-1)?modelFormatter:null)
+          const style=own?.vilsemNumberStyle
+          if(own && style && style.kind!=='number' && style.kind!=='general')return own(v)
+          return fmtCompact(v, style)
+        }
         if(typeof modelFormatter==='function') {
           const component=Array.isArray(raw)?(indexed?Number(indexed[2]):raw.length-1):undefined
           const tupleFormatter=component==null?null:modelFormatter.vilsemTupleFormatters?.[component]

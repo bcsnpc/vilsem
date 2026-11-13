@@ -1,6 +1,26 @@
 # vilsem
 
-## Prepared security patch: Core 0.8.1 / Renderer 4.44
+## Current release: Core 0.8.2 / Renderer 4.45
+
+Adds the `{value:compact}` formatter token: labels and value axes show compact
+units (`950`, `14.6K`, `$9.9B`, `1.2T`) and keep only the bound measure's
+currency symbol, so a visual no longer needs a scaled visual-scoped measure to
+show `$9.9B`. Percent, date and text measures keep their own formats. On value
+axes, an authored `formatterTemplate` now receives the measure format, so
+`{value}` is unchanged and `{value:compact}` can scale it. Specs that use
+`compact` require Renderer 4.45; older registered renderers refuse the commit
+with an upgrade message instead of breaking. GUID and
+`objects.semantica.primitiveSpec` are unchanged. To use it in an existing
+report, import the updated renderer as described below.
+
+Core 0.8.2 also bounds schema profiling for agents: `enrichSchema` accepts
+`profile:false` (fields, measures and formats only, no queries), `samples:false`
+(sample queries are skipped, not just hidden), `tables:[...]` (profile only those
+tables) and a default 20-second budget that labels any columns it did not reach.
+Desktop connection errors now list each open session's port and `.pbip` path,
+and explain a model that is still loading.
+
+## Core 0.8.1 / Renderer 4.44 security patch
 
 This patch sanitizes legacy HTML-measure fallback content using the renderer's
 bundled DOMPurify and pins the local ADOMD bridge to the official Power BI

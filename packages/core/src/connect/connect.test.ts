@@ -18,6 +18,17 @@ describe('standalone core connections',()=>{
   await expect(api.connect({kind:'desktop'})).rejects.toThrow('Multiple Desktop')
   await expect(api.connect({kind:'desktop',port:65536})).rejects.toThrow('Invalid Desktop port')
  })
+ it('lists each open Desktop session with its port and project so an agent can choose',async()=>{
+  const api=createConnector({bridge:async()=>({sessions:[{port:52583,projectPath:'D:\\Reports\\Contoso.pbip'},{port:49219,projectPath:''}]})})
+  const error=await api.connect({kind:'desktop'}).catch(e=>e)
+  expect(error.message).toContain('port 52583: D:\\Reports\\Contoso.pbip')
+  expect(error.message).toContain('port 49219 (project path unknown)')
+  expect(error.message).toContain('kind:"report"')
+ })
+ it('explains a model that is still loading instead of a generic catalog error',async()=>{
+  const api=createConnector({bridge:async p=>p.action==='catalogs'?{catalogs:[]}:{sessions:[]}})
+  await expect(api.connect({kind:'desktop',port:53002})).rejects.toThrow('has no model loaded yet')
+ })
  it('caps Desktop rows and refuses model mutation commands',async()=>{
   const api=createConnector({bridge:async()=>({rows:[{x:1},{x:2}]})}),c={source:{kind:'desktop',port:1},catalog:'m'}
   expect(await api.query(c,'EVALUATE ROW("x", 1)',1)).toEqual([{x:1}])

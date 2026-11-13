@@ -4,6 +4,11 @@ const {createMicrosoftLogin}=require('./microsoft.cjs');
 const metadata=require('./metadata.cjs');
 const {normalizeLocalMetadata}=require('./fieldContext.cjs');
 const {readReportConnection,offlineSchema,sessionMatches}=require('./report.cjs');
+// Lists open Desktop sessions so an agent can choose without searching port files.
+function describeSessions(sessions){
+ const lines=sessions.slice(0,10).map(s=>`port ${s.port}${s.projectPath?`: ${s.projectPath}`:' (project path unknown)'}`)
+ return `Multiple Desktop models are open (${lines.join('; ')}). Connect with source:{kind:"report",reportDir:"<the .Report folder>"} to match the right one automatically, or with source:{kind:"desktop",port:<port>}.`
+}
 /** Each connection owns its model IDs; no process-global dataset mutation. */
 function createConnector(options={}){
  const invoke=options.bridge || bridge, credentials=options.auth || auth,http=options.http || require('axios');
@@ -38,9 +43,11 @@ function createConnector(options={}){
   if(source.kind==='desktop'){
    if(process.platform!=='win32' && !options.bridge)throw Error('Power BI Desktop connections require Windows');
    let port=source.port,session;
-   if(!port){const {sessions}=await invoke({action:'sessions'});const unique=[...new Map(sessions.map(s=>[s.port,s])).values()];if(unique.length!==1)throw Error(unique.length?'Multiple Desktop models are open; specify source.port':'No local Analysis Services instance found; open a model in Power BI Desktop');session=unique[0];port=session.port}
+   if(!port){const {sessions}=await invoke({action:'sessions'});const unique=[...new Map(sessions.map(s=>[s.port,s])).values()];if(unique.length!==1)throw Error(unique.length?describeSessions(unique):'No local Analysis Services instance found; open a model in Power BI Desktop');session=unique[0];port=session.port}
    if(!Number.isInteger(port)||port<1||port>65535)throw Error('Invalid Desktop port');
-   const {catalogs}=await invoke({action:'catalogs',port});if(catalogs.length!==1)throw Error('Desktop must expose exactly one model');
+   const {catalogs}=await invoke({action:'catalogs',port});
+   if(!catalogs.length)throw Error(`Power BI Desktop on port ${port} has no model loaded yet. Large models take a while to open: wait until the report finishes loading in Desktop, then retry.`);
+   if(catalogs.length!==1)throw Error(`Power BI Desktop on port ${port} exposes ${catalogs.length} models; Vilsem expects one model per Desktop session.`);
    const catalog=catalogs[0].CATALOG_NAME;
    return {source:{kind:'desktop',port},catalog,metadata:await invoke({action:'metadata',port,catalog}),discovery:session?.method || 'explicit-port'};
   }

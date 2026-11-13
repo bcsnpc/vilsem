@@ -45,7 +45,7 @@ export function createModelFormatter(format, { blank = '(Blank)', locale = 'en-U
   const aliases={percent:'0.00%',currency:'$#,0.00','whole number':'#,0','decimal number':'#,0.00','short date':'m/d/yyyy','long date':'dddd, mmmm d, yyyy'}
   const raw=aliases[String(format).toLowerCase()]??String(format||'General')
   const parts=sections(raw)
-  return value=>{
+  return Object.assign(value=>{
     if(value==null||value===''||(typeof value==='number'&&!Number.isFinite(value)))return blank
     if(raw.toLowerCase()==='general')return typeof value==='number'?new Intl.NumberFormat(locale,{useGrouping:false,maximumSignificantDigits:10}).format(value):String(value)
     if(/[ydh]/i.test(skeleton(parts[0])) && !/[0#?]/.test(skeleton(parts[0])))return dateFormatter(parts[0],value,locale)
@@ -64,7 +64,21 @@ export function createModelFormatter(format, { blank = '(Blank)', locale = 'en-U
     const body=new Intl.NumberFormat(locale,{useGrouping:numeric.includes(','),minimumFractionDigits,maximumFractionDigits}).format(scaled)
     const prefix=unquote(pattern.slice(0,match.index)),suffix=unquote(pattern.slice(match.index+match[0].length))
     return (number<0&&index===0?'-':'')+prefix+body+suffix
-  }
+  },{vilsemNumberStyle:numberStyle(raw,parts)})
+}
+
+// What a compact formatter may keep from a measure format: only its currency
+// symbols. Unit literals such as "M" or "B" are dropped, because compact
+// scaling supplies its own unit; percent/date/text formats are left alone.
+function numberStyle(raw,parts) {
+  if(raw.toLowerCase()==='general')return {kind:'general',prefix:'',suffix:''}
+  const pattern=parts[0],plain=skeleton(pattern)
+  if(/[ydh]/i.test(plain) && !/[0#?]/.test(plain))return {kind:'date',prefix:'',suffix:''}
+  const match=/[0#?][0#?,]*(?:\.[0#?]+)?(?:,+)?/.exec(plain)
+  if(!match)return {kind:'text',prefix:'',suffix:''}
+  if(/%/.test(plain))return {kind:'percent',prefix:'',suffix:''}
+  const currency=text=>(unquote(text).match(/\p{Sc}/u)||[''])[0]
+  return {kind:'number',prefix:currency(pattern.slice(0,match.index)),suffix:currency(pattern.slice(match.index+match[0].length))}
 }
 
 export function scopedMeasureFormat(spec,name) {

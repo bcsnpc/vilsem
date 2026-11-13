@@ -12,10 +12,13 @@ beforeAll(async()=>{
  if(!executablePath)throw Error('Renderer security tests require local Chrome/Edge (or VILSEM_PREVIEW_BROWSER_PATH). No browser tests may be skipped for release.')
  const zip=new AdmZip('packages/core/assets/renderer.pbiviz')
  metadata=JSON.parse(zip.readAsText(zip.getEntries().find(e=>e.entryName.endsWith('.pbiviz.json'))!))
- expect(metadata.visual).toMatchObject({guid,version:'4.44.0.0'})
+ // The bundled renderer must be the one built from this tree (sanitizer present since 4.44).
+ const built=JSON.parse(fs.readFileSync('vilsem-renderer/pbiviz.json','utf8')).visual.version
+ expect(metadata.visual).toMatchObject({guid,version:built})
+ expect(Number(built.split('.')[1])).toBeGreaterThanOrEqual(44)
  browser=await chromium.launch({executablePath,headless:true,chromiumSandbox:true,env:Object.fromEntries(Object.entries(process.env).filter(([key])=>!/^ELECTRON_/i.test(key)))})
 },60000)
-afterAll(async()=>{await browser?.close()})
+afterAll(async()=>{await browser?.close()},60000) // Browser shutdown can exceed the 10 s default under a parallel full-suite run.
 
 async function fixture(){
  const page=await browser.newPage()
