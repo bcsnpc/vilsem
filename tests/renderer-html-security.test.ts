@@ -18,7 +18,7 @@ beforeAll(async()=>{
  expect(Number(built.split('.')[1])).toBeGreaterThanOrEqual(44)
  browser=await chromium.launch({executablePath,headless:true,chromiumSandbox:true,env:Object.fromEntries(Object.entries(process.env).filter(([key])=>!/^ELECTRON_/i.test(key)))})
 },60000)
-afterAll(async()=>{await browser?.close()})
+afterAll(async()=>{await browser?.close()},60000) // Browser shutdown can exceed the 10 s default under a parallel full-suite run.
 
 async function fixture(){
  const page=await browser.newPage()
