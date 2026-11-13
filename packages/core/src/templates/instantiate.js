@@ -59,7 +59,12 @@ function fmtCompact(v, style) {
   // The 0.9995 threshold promotes values that would round up to 1000 of a unit (999,960 -> 1M).
   const [div, unit] = units.find(([d]) => abs >= d * 0.9995) || [1, '']
   const scaled = abs / div
-  const text = (abs < 1 ? Math.round(scaled * 100) / 100 : scaled < 100 ? Math.round(scaled * 10) / 10 : Math.round(scaled)).toString()
+  // Whole units (axis ticks such as 2,000,000,000) read $2B; other values keep one
+  // decimal below 100 of a unit so neighbouring labels align ($2.0B next to $2.3B).
+  const whole = Math.abs(scaled - Math.round(scaled)) < 1e-9
+  const text = abs < 1 ? (Math.round(scaled * 100) / 100).toString()
+    : whole || scaled >= 100 ? Math.round(scaled).toString()
+    : (Math.round(scaled * 10) / 10).toFixed(1)
   return (n < 0 ? '-' : '') + (style?.prefix || '') + text + unit + (style?.suffix || '')
 }
 function numberOrNull(v) {

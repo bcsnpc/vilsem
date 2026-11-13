@@ -18,9 +18,12 @@ describe('{value:compact} formatter token',()=>{
   expect(compact(1.2e12)).toBe('1.2T')
   expect(compact(-28200)).toBe('-28.2K')
  })
- it('drops a trailing .0 and promotes values that round up to the next unit',()=>{
+ it('shows whole units without a decimal, keeps one decimal otherwise, and promotes round-ups',()=>{
   expect(compact(2e9)).toBe('2B')
-  expect(compact(999960)).toBe('1M')
+  expect(compact(2041483190.9)).toBe('2.0B')
+  expect(compact(14000)).toBe('14K')
+  expect(compact(999960)).toBe('1.0M')
+  expect(compact(1e6)).toBe('1M')
   expect(compact(999400)).toBe('999K')
  })
  it('keeps only the currency symbol from the measure format, never its unit literal',()=>{
