@@ -1,0 +1,17 @@
+@vilsem/core and the vilsem Renderer
+Copyright 2026 Chiranjeevi Bhogireddy
+https://github.com/bcsnpc/vilsem
+
+This package is licensed under the MIT License (see LICENSE). The bundled
+renderer (assets/renderer.pbiviz) includes third-party software, each under
+its own license; see THIRD_PARTY_NOTICES.md for the complete list and license
+texts. That list is generated from the renderer build and is also embedded in
+the renderer's visual.js.
+
+This product includes Apache ECharts:
+
+  Apache ECharts
+  Copyright 2017-2026 The Apache Software Foundation
+
+  This product includes software developed at
+  The Apache Software Foundation (https://www.apache.org/).

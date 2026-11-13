@@ -1,6 +1,11 @@
 # @vilsem/core
 
-Current release: **0.8.2 / Renderer 4.45.0.0** adds the `{value:compact}`
+Current release: **0.8.3 / Renderer 4.46.0.0** ships complete third-party
+notices (`THIRD_PARTY_NOTICES.md`, `NOTICE`, and embedded in the renderer); no
+functional changes. Install with
+`npm install https://github.com/bcsnpc/vilsem/releases/download/core-v0.8.3/vilsem-core-0.8.3.tgz`.
+
+**0.8.2 / Renderer 4.45.0.0** adds the `{value:compact}`
 formatter token (compact K/M/B/T units that keep the measure's currency symbol;
 requires Renderer 4.45), bounded schema profiling (`profile`, `samples`,
 `tables`, a 20-second budget) and clearer Desktop connection errors. Install with

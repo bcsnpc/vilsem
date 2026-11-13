@@ -1,6 +1,14 @@
 # vilsem
 
-## Current release: Core 0.8.2 / Renderer 4.45
+## Current release: Core 0.8.3 / Renderer 4.46
+
+Third-party notices: the renderer bundles open-source components (Apache ECharts,
+React, d3 and others). Their complete list and license texts are generated from
+the build into [`packages/core/THIRD_PARTY_NOTICES.md`](packages/core/THIRD_PARTY_NOTICES.md),
+shipped in the core package with a [`NOTICE`](packages/core/NOTICE), and embedded
+in the renderer's `visual.js`. No functional changes from 0.8.2 / 4.45.
+
+## Core 0.8.2 / Renderer 4.45
 
 Adds the `{value:compact}` formatter token: labels and value axes show compact
 units (`950`, `14.6K`, `$9.9B`, `1.2T`) and keep only the bound measure's
