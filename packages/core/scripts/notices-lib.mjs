@@ -43,11 +43,10 @@ const KNOWN_HOLDERS = {
 }
 // Packages offered under a choice of licenses: the one Vilsem takes.
 const ELECTED = {dompurify: 'Apache-2.0 (DOMPurify is dual licensed MPL-2.0 OR Apache-2.0; Vilsem uses it under Apache-2.0)'}
-// Unmodified native binaries under MPL-2.0: where to get the license and the source.
-const MPL_SOURCE = {
-  '@resvg/resvg-js': 'https://github.com/thx/resvg-js',
-  '@resvg/resvg-js-win32-x64-msvc': 'https://github.com/thx/resvg-js',
-}
+// MPL-2.0 packages distributed unmodified are listed with where to get the license and
+// the source, taken from the package's own repository field.
+const isMpl = license => license === 'MPL-2.0'
+const httpsUrl = repo => String(repo).replace(/^git@github\.com:/, 'https://github.com/').replace(/^git:\/\//, 'https://').replace(/^github:/, 'https://github.com/')
 
 export function packageNameFromDir(dir) {
   const parts = dir.split(/[\\/]/)
@@ -72,9 +71,9 @@ function readPackage(dir) {
   let text = licenseFile ? fs.readFileSync(path.join(dir, licenseFile), 'utf8').replace(/\r\n/g, '\n').trim() : ''
   if (!text) {
     const base = FALLBACK[license] || (/MIT/.test(license) ? MIT : /ISC/.test(license) ? ISC : '')
-    if (!base && !MPL_SOURCE[pkg.name]) throw Error(`${pkg.name}@${pkg.version}: no license file and no known ${license} text`)
+    if (!base && !isMpl(license)) throw Error(`${pkg.name}@${pkg.version}: no license file and no known ${license} text`)
     const holder = KNOWN_HOLDERS[pkg.name] || `Copyright (c) ${typeof pkg.author === 'string' ? pkg.author : pkg.author?.name || pkg.name + ' contributors'}`
-    text = MPL_SOURCE[pkg.name] ? '' : `${holder}\n\n${base}`
+    text = isMpl(license) ? '' : `${holder}\n\n${base}`
   }
   const notice = noticeFile ? fs.readFileSync(path.join(dir, noticeFile), 'utf8').replace(/\r\n/g, '\n').trim() : ''
   return {name: pkg.name, version: pkg.version, license, text, notice, repository: String(pkg.repository?.url || pkg.repository || pkg.homepage || '').replace(/^git\+/, '').replace(/\.git$/, '')}
@@ -104,7 +103,7 @@ export function buildNotices(packageDirs, {title, intro, exclude = []}) {
   const groups = new Map()
   const mpl = [], apache = []
   for (const p of packages) {
-    if (MPL_SOURCE[p.name]) { mpl.push(p); continue }
+    if (isMpl(p.license)) { mpl.push(p); continue }
     if (/apache/i.test(p.license) && !ELECTED[p.name] || ELECTED[p.name]?.startsWith('Apache')) apache.push(p)
     const {holders, body} = splitLicense(p.text)
     const key = body.replace(/\s+/g, ' ')
@@ -120,7 +119,7 @@ export function buildNotices(packageDirs, {title, intro, exclude = []}) {
   }
   if (mpl.length) {
     out.push('', '## Mozilla Public License 2.0 components', '')
-    for (const p of mpl) out.push(`- ${p.name} ${p.version} is distributed unmodified under MPL-2.0 (https://mozilla.org/MPL/2.0/). Source code: ${MPL_SOURCE[p.name]}`)
+    for (const p of mpl) out.push(`- ${p.name} ${p.version} is distributed unmodified under MPL-2.0 (https://mozilla.org/MPL/2.0/). Source code: ${httpsUrl(p.repository)}`)
   }
   out.push('', '## License texts', '')
   for (const g of groups.values()) {
