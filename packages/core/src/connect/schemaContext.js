@@ -33,17 +33,26 @@ export function schemaDetail(schema,detail='summary') {
  return {...summary,detail,measures:schema.measures.map(({expression,...measure})=>measure)}
 }
 
-export async function enrichSchema(schema,query,{schemaOnly=false}={}) {
+// Options keep agent context bounded on large models:
+//  profile:false  names/types/measures only (no DAX profiling or sampling)
+//  samples:false  skip distinct-sample queries entirely (not just hide them)
+//  tables:[...]   profile only these tables (case-insensitive)
+//  budgetMs       stop starting new profiling queries after this long; columns
+//                 not reached say so, so the caller can ask for specific tables.
+export async function enrichSchema(schema,query,{schemaOnly=false,profile=true,samples=true,tables=null,budgetMs=20000,now=()=>Date.now()}={}) {
  const result={...fieldsOnly(schema),samplingAsOf:new Date().toISOString(),statisticsDefinition:'Exact DAX cardinality includes BLANK; nullShare is the fraction of rows satisfying ISBLANK, null for an empty table. Samples contain up to10 distinct values and are not a population distribution.'}
- const tasks=[]
+ const tasks=[],wanted=Array.isArray(tables)&&tables.length?new Set(tables.map(t=>String(t).toLowerCase())):null
  for(const table of result.tables) {
   const eligible=[]
   for(const column of table.columns) {
    Object.assign(column,{cardinality:null,nullShare:null,min:null,max:null,sampleValues:[]})
    if(schemaOnly){column.profileSkipped='Schema-only connection; open the model and reconnect for live profiling';column.sampleSkipped=column.profileSkipped;continue}
    if(/^RowNumber-/.test(column.name)){column.sampleSkipped='Internal Analysis Services row identity is not queryable';column.profileSkipped=column.sampleSkipped;continue}
+   if(!profile){column.profileSkipped='Not profiled (profile:false)';column.sampleSkipped=column.profileSkipped;continue}
+   if(wanted&&!wanted.has(table.name.toLowerCase())){column.profileSkipped='Not profiled: table not in the requested tables';column.sampleSkipped=column.profileSkipped;continue}
    eligible.push(column)
-   tasks.push(async()=>{
+   if(!samples){column.sampleSkipped='Samples not requested (samples:false)';continue}
+   tasks.push(Object.assign(async()=>{
     const ref=columnRef(table.name,column.name)
     try {
      const rows=await query(`EVALUATE TOPN(10, VALUES(${ref}), ${ref}, ASC)`,10)
@@ -55,12 +64,12 @@ export async function enrichSchema(schema,query,{schemaOnly=false}={}) {
      }catch(fallback){error=fallback}
      column.sampleError=error.message
     }
-   })
+   },{sampleColumn:column}))
   }
   for(let start=0;start<eligible.length;start+=8) {
    const columns=eligible.slice(start,start+8)
-   tasks.push(async()=>{
-    async function profile(batch,compositeSafe=false) {
+   tasks.push(Object.assign(async()=>{
+    async function profileBatch(batch,compositeSafe=false) {
      const [row]=await query(columnProfileQuery(table.name,batch,{compositeSafe}),1)
      const count=value(row,'__rows'),rows=count===null?0:count
      if(!Number.isSafeInteger(rows)||rows<0)throw Error('Profile returned an invalid row count')
@@ -70,17 +79,30 @@ export async function enrichSchema(schema,query,{schemaOnly=false}={}) {
       Object.assign(column,{cardinality:distinct,nullShare:rows?blanks/rows:null,min:numericOrDate(column.dataType)?value(row,`c${i}Min`) ?? null:null,max:numericOrDate(column.dataType)?value(row,`c${i}Max`) ?? null:null})
      })
     }
-    try{await profile(columns)}catch(error){
+    try{await profileBatch(columns)}catch(error){
      // One inaccessible field must not erase the context for its neighbours.
-     for(const column of columns)try{await profile([column])}catch(failure){
-      if(/composite key/i.test(failure.message))try{await profile([column],true);continue}catch(fallback){failure=fallback}
+     for(const column of columns)try{await profileBatch([column])}catch(failure){
+      if(/composite key/i.test(failure.message))try{await profileBatch([column],true);continue}catch(fallback){failure=fallback}
       column.profileError=failure.message
      }
     }
-   })
+   },{columns}))
   }
  }
- let next=0
- await Promise.all(Array.from({length:Math.min(4,tasks.length)},async()=>{while(next<tasks.length)await tasks[next++]()}))
+ // Profile batches carry their columns so a budget stop can label what was skipped.
+ const started=now(),budget=Number.isFinite(budgetMs)&&budgetMs>0?budgetMs:Infinity
+ let next=0,stopped=false
+ await Promise.all(Array.from({length:Math.min(4,tasks.length)},async()=>{while(next<tasks.length){
+  if(now()-started>=budget){stopped=true;break}
+  await tasks[next++]()
+ }}))
+ if(stopped){
+  const note='Not profiled: time budget reached on a large model. Call get_schema with tables:["<table>"] to profile specific tables.'
+  for(const task of tasks.slice(next)){
+   for(const column of task.columns || [])if(column.cardinality===null&&!column.profileError)column.profileSkipped=note
+   if(task.sampleColumn&&!task.sampleColumn.sampleValues.length&&!task.sampleColumn.sampleError)task.sampleColumn.sampleSkipped=note
+  }
+  result.profileIncomplete=`Profiling stopped after ${Math.round(budget/1000)} s; ${tasks.length-next} of ${tasks.length} profiling queries were not run. Columns marked profileSkipped were not profiled.`
+ }
  return result
 }

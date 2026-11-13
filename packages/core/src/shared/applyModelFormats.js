@@ -83,6 +83,7 @@ export function applyModelFormats(option, spec, measures = [], options = {}) {
     // coordinate. Its trusted formatter already supplies a bounded default.
     const format=Object.assign(value=>formatters[index](value),{
       vilsemMeasureName:measures[index].name,vilsemValueIndex:component,vilsemDirectBinding:directBinding,
+      vilsemNumberStyle:formatters[index].vilsemNumberStyle,
       vilsemTupleFormatters:tupleUnits?.map(unit=>unit==null?null:formatters[unit]),
       vilsemTupleFields:tupleUnits?.map(unit=>unit==null?null:{name:measures[unit].name,format:formatters[unit]}),
     })
@@ -114,7 +115,10 @@ export function applyModelFormats(option, spec, measures = [], options = {}) {
       if(!spec.template && key==='yAxis' && axisIndex===1 && (spec.config?.secondaryAxisPrefix || spec.config?.secondaryAxisSuffix))return axis
       const matching=seriesFormats.flatMap((entry,i)=>entry && (series[i][key+'Index']||0)===axisIndex ? (entry.axisUnits[key] || []) : [])
       if(!matching.length || matching.some(index=>!formats[index]) || new Set(matching.map(index=>formats[index])).size!==1)return axis
-      return {...axis,axisLabel:{...axis.axisLabel,formatter:formatters[matching[0]]}}
+      // An authored formatterTemplate receives the measure format (so {value} is
+      // unchanged and {value:compact} can scale it); otherwise use the format directly.
+      const measureFormat=formatters[matching[0]],authored=axis.axisLabel?.formatter
+      return {...axis,axisLabel:{...axis.axisLabel,formatter:authored?.vilsemFormatter?Object.assign(value=>authored(value,measureFormat),{vilsemOriginalFormatter:authored}):measureFormat}}
     })
     out[key]=Array.isArray(option[key])?formatted:formatted[0]
   }

@@ -21,7 +21,7 @@ it.each([
  $dll | ConvertTo-Json -Compress`
  const output=execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{encoding:'utf8',windowsHide:true})
  expect(JSON.parse(output.trim())).toBe(fixture.expected)
-})
+},30000) // Each case starts a real PowerShell process, which can exceed 5 s under a parallel full-suite run.
 it('keeps execution-policy bypass scoped to the fixed bundled script',()=>{
  const runtime=fs.readFileSync(new URL('./localRuntime.cjs',import.meta.url),'utf8')
  expect(runtime).toContain("'-ExecutionPolicy','Bypass','-File',path.join(__dirname,'localBridge.ps1')")
